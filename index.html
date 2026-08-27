@@ -1,0 +1,679 @@
+<title>화개장터 네컷</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Gaegu:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+  :root{
+    --cream:#fdf3df;
+    --paper:#fffaf0;
+    --red:#c8352b;
+    --red-dark:#9c241c;
+    --gold:#e2a63b;
+    --ink:#3a2a1e;
+    --pink:#f6b8cf;
+    --green:#4c7a4a;
+    --shadow:rgba(58,42,30,0.25);
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0;
+    padding:0;
+    background:var(--cream);
+    color:var(--ink);
+    font-family:'Gaegu','Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+    min-height:100%;
+    overflow-x:hidden;
+  }
+  .stage{
+    max-width:460px;
+    margin:0 auto;
+    min-height:100vh;
+    position:relative;
+    padding:18px 16px 40px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+  }
+  .bg-stripe{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+    background:
+      repeating-linear-gradient(135deg, var(--pink) 0 18px, transparent 18px 36px),
+      var(--cream);
+    opacity:0.35;
+  }
+  h1.title{
+    font-family:'Black Han Sans',sans-serif;
+    color:var(--red);
+    text-shadow:2px 2px 0 var(--gold), 4px 4px 0 var(--shadow);
+    font-size:2.1rem;
+    text-align:center;
+    margin:10px 0 2px;
+    letter-spacing:1px;
+  }
+  .subtitle{
+    font-size:1.15rem;
+    color:var(--ink);
+    text-align:center;
+    margin:0 0 14px;
+    opacity:0.85;
+  }
+  .badge-row{
+    display:flex;
+    gap:8px;
+    justify-content:center;
+    margin-bottom:14px;
+    flex-wrap:wrap;
+  }
+  .badge{
+    background:var(--red);
+    color:var(--paper);
+    font-family:'Black Han Sans',sans-serif;
+    font-size:0.75rem;
+    padding:5px 12px;
+    border-radius:999px;
+    box-shadow:1px 1px 0 var(--shadow);
+  }
+  .badge.gold{background:var(--gold); color:var(--ink);}
+  .badge.green{background:var(--green); color:var(--paper);}
+
+  .panel{
+    background:var(--paper);
+    border-radius:22px;
+    padding:20px 18px;
+    width:100%;
+    box-shadow:0 10px 24px var(--shadow), 0 0 0 3px var(--gold) inset;
+    position:relative;
+    overflow:hidden;
+  }
+  .panel::before{
+    content:"";
+    position:absolute;
+    top:0;left:0;right:0;
+    height:12px;
+    background:repeating-linear-gradient(90deg, var(--red) 0 14px, var(--paper) 14px 28px);
+  }
+  .panel::after{
+    content:"";
+    position:absolute;
+    bottom:0;left:0;right:0;
+    height:12px;
+    background:repeating-linear-gradient(90deg, var(--red) 0 14px, var(--paper) 14px 28px);
+  }
+  .panel-inner{ margin:16px 0; }
+
+  .pierrot-row{
+    display:flex;
+    justify-content:center;
+    gap:14px;
+    margin:6px 0 10px;
+  }
+  .pierrot-row svg{ width:54px; height:54px; }
+
+  .qr-wrap{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:8px;
+    margin:8px 0 6px;
+  }
+  .qr-frame{
+    padding:10px;
+    background:var(--paper);
+    border:3px dashed var(--red);
+    border-radius:14px;
+  }
+  .qr-frame img{
+    display:block;
+    width:170px;
+    height:170px;
+    image-rendering:pixelated;
+  }
+  .qr-caption{
+    font-size:1.05rem;
+    text-align:center;
+    color:var(--ink);
+  }
+  .url-pill{
+    font-family:monospace;
+    font-size:0.75rem;
+    background:var(--cream);
+    border:1px solid var(--gold);
+    border-radius:999px;
+    padding:6px 12px;
+    word-break:break-all;
+    text-align:center;
+    max-width:100%;
+  }
+
+  .divider{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    color:var(--gold);
+    font-family:'Black Han Sans',sans-serif;
+    font-size:0.85rem;
+    margin:14px 0;
+  }
+  .divider::before, .divider::after{
+    content:"";
+    flex:1;
+    height:2px;
+    background:repeating-linear-gradient(90deg, var(--gold) 0 6px, transparent 6px 12px);
+  }
+
+  button{
+    font-family:'Black Han Sans',sans-serif;
+    font-size:1.15rem;
+    border:none;
+    border-radius:16px;
+    padding:14px 20px;
+    width:100%;
+    cursor:pointer;
+    color:var(--paper);
+    background:var(--red);
+    box-shadow:0 5px 0 var(--red-dark);
+    transition:transform 0.05s ease;
+    letter-spacing:0.5px;
+  }
+  button:active{ transform:translateY(4px); box-shadow:0 1px 0 var(--red-dark); }
+  button.secondary{
+    background:var(--paper);
+    color:var(--red);
+    box-shadow:0 5px 0 var(--gold);
+    border:2px solid var(--red);
+    margin-top:10px;
+  }
+  button.secondary:active{ box-shadow:0 1px 0 var(--gold); }
+  button:disabled{ opacity:0.5; cursor:not-allowed; }
+
+  .camera-box{
+    position:relative;
+    width:100%;
+    aspect-ratio:3/4;
+    border-radius:18px;
+    overflow:hidden;
+    background:#111;
+    box-shadow:0 0 0 5px var(--gold), 0 8px 20px var(--shadow);
+  }
+  video{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    filter:saturate(1.15) contrast(1.05) sepia(0.08);
+  }
+  video.mirror{ transform:scaleX(-1); }
+
+  .countdown-num{
+    position:absolute;
+    inset:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-family:'Black Han Sans',sans-serif;
+    font-size:6rem;
+    color:var(--paper);
+    text-shadow:0 0 20px var(--red), 3px 3px 0 var(--red-dark);
+    pointer-events:none;
+    opacity:0;
+  }
+  .flash{
+    position:absolute;
+    inset:0;
+    background:white;
+    opacity:0;
+    pointer-events:none;
+  }
+  .shot-indicator{
+    position:absolute;
+    top:10px; left:0; right:0;
+    display:flex;
+    justify-content:center;
+    gap:8px;
+  }
+  .dot{
+    width:14px; height:14px;
+    border-radius:50%;
+    background:rgba(255,255,255,0.35);
+    border:2px solid var(--paper);
+  }
+  .dot.done{ background:var(--gold); }
+  .dot.active{ background:var(--red); }
+
+  .cam-controls{
+    display:flex;
+    gap:10px;
+    margin-top:14px;
+    width:100%;
+  }
+  .cam-controls button{ margin-top:0; }
+  .icon-btn{
+    background:var(--gold);
+    color:var(--ink);
+    box-shadow:0 5px 0 #b17f22;
+    flex:0 0 auto;
+    width:52px;
+    padding:0;
+    font-size:1.4rem;
+  }
+  .icon-btn:active{ box-shadow:0 1px 0 #b17f22; }
+
+  .thumbs{
+    display:flex;
+    gap:6px;
+    margin-top:12px;
+    justify-content:center;
+  }
+  .thumbs canvas{
+    width:60px;
+    height:80px;
+    border-radius:6px;
+    border:2px solid var(--gold);
+    object-fit:cover;
+  }
+
+  .result-img-wrap{
+    display:flex;
+    justify-content:center;
+  }
+  .result-img-wrap img{
+    max-width:100%;
+    border-radius:10px;
+    box-shadow:0 10px 24px var(--shadow);
+  }
+  .hint{
+    text-align:center;
+    font-size:1rem;
+    color:var(--ink);
+    background:var(--pink);
+    border-radius:12px;
+    padding:8px 12px;
+    margin:12px 0;
+  }
+  .status-msg{
+    text-align:center;
+    font-size:1rem;
+    padding:20px 10px;
+    color:var(--ink);
+  }
+  .footer-note{
+    text-align:center;
+    font-size:0.85rem;
+    color:var(--ink);
+    opacity:0.6;
+    margin-top:18px;
+  }
+  .screen{ width:100%; display:none; }
+  .screen.active{ display:block; }
+</style>
+
+<div class="bg-stripe"></div>
+<div class="stage">
+  <h1 class="title">화개장터 네컷</h1>
+  <p class="subtitle">경상도 전라도 사이~ 삐에로와 함께 찍는 인생네컷</p>
+  <div class="badge-row">
+    <span class="badge">🎪 화개장터 테마</span>
+    <span class="badge gold">🤡 삐에로</span>
+    <span class="badge green">📸 4컷</span>
+  </div>
+
+  <div class="panel">
+    <!-- HOME -->
+    <div id="screen-home" class="screen active">
+      <div class="panel-inner">
+        <div class="pierrot-row" id="pierrotRow"></div>
+
+        <div class="qr-wrap" id="qrWrap" style="display:none;">
+          <div class="qr-frame"><img id="qrImg" alt="QR"></div>
+          <div class="qr-caption">📱 핸드폰 카메라로 QR을 찍어서<br>내 폰 카메라로 바로 찍어보세요!</div>
+          <div class="url-pill" id="urlPill"></div>
+        </div>
+
+        <div class="divider">또는</div>
+
+        <button id="btnStart">🎬 이 기기 카메라로 바로 찍기</button>
+        <p class="footer-note">촬영한 사진은 서버로 전송되지 않고<br>이 화면 안에서만 만들어져요</p>
+      </div>
+    </div>
+
+    <!-- CAMERA -->
+    <div id="screen-camera" class="screen">
+      <div class="camera-box" id="cameraBox">
+        <video id="video" autoplay playsinline muted></video>
+        <div class="shot-indicator" id="shotIndicator"></div>
+        <div class="countdown-num" id="countdownNum"></div>
+        <div class="flash" id="flash"></div>
+      </div>
+      <div class="cam-controls">
+        <button class="icon-btn" id="btnFlip" title="카메라 전환">🔄</button>
+        <button id="btnCapture">📸 촬영 시작 (4컷)</button>
+      </div>
+      <div class="thumbs" id="thumbs"></div>
+      <button class="secondary" id="btnCancel">처음으로</button>
+    </div>
+
+    <!-- LOADING -->
+    <div id="screen-loading" class="screen">
+      <p class="status-msg">🎪 네컷 만드는 중... 잠시만요!</p>
+    </div>
+
+    <!-- ERROR -->
+    <div id="screen-error" class="screen">
+      <p class="status-msg" id="errorMsg">카메라를 열 수 없어요.</p>
+      <button class="secondary" id="btnBackFromError">처음으로</button>
+    </div>
+
+    <!-- RESULT -->
+    <div id="screen-result" class="screen">
+      <div class="result-img-wrap"><img id="resultImg" alt="화개장터 네컷 결과"></div>
+      <div class="hint">👆 사진을 <b>길게 눌러서</b> "이미지 저장"을 선택하세요</div>
+      <button id="btnRetake">🔁 다시 찍기</button>
+    </div>
+  </div>
+
+  <p class="footer-note">HWAGAE MARKET × PIERROT PHOTO BOOTH</p>
+</div>
+
+<script>
+(function(){
+  // ---------- Pierrot decorative SVG ----------
+  function pierrotSVG(hue){
+    return `<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+      <ellipse cx="50" cy="46" rx="30" ry="15" fill="${hue}"/>
+      <path d="M20 46 Q10 30 22 26 Q28 20 34 28 Q42 18 50 28 Q58 18 66 28 Q72 20 78 26 Q90 30 80 46 Z" fill="${hue}"/>
+      <circle cx="50" cy="55" r="20" fill="#fff"/>
+      <path d="M22 32 L38 44 L14 44 Z" fill="#c8352b"/>
+      <path d="M78 32 L86 44 L62 44 Z" fill="#c8352b"/>
+      <circle cx="40" cy="55" r="3.4" fill="#3a2a1e"/>
+      <circle cx="60" cy="55" r="3.4" fill="#3a2a1e"/>
+      <circle cx="50" cy="62" r="4.5" fill="#c8352b"/>
+      <path d="M40 68 Q50 74 60 68" stroke="#3a2a1e" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M28 74 Q50 88 72 74 L72 80 Q50 94 28 80 Z" fill="${hue}"/>
+    </svg>`;
+  }
+  document.getElementById('pierrotRow').innerHTML =
+    pierrotSVG('#e2a63b') + pierrotSVG('#c8352b') + pierrotSVG('#4c7a4a');
+
+  // ---------- Elements ----------
+  const screens = ['home','camera','loading','error','result'];
+  function show(name){
+    screens.forEach(s=>{
+      document.getElementById('screen-'+s).classList.toggle('active', s===name);
+    });
+  }
+
+  const video = document.getElementById('video');
+  const cameraBox = document.getElementById('cameraBox');
+  const btnStart = document.getElementById('btnStart');
+  const btnCapture = document.getElementById('btnCapture');
+  const btnFlip = document.getElementById('btnFlip');
+  const btnCancel = document.getElementById('btnCancel');
+  const btnBackFromError = document.getElementById('btnBackFromError');
+  const btnRetake = document.getElementById('btnRetake');
+  const countdownNum = document.getElementById('countdownNum');
+  const flashEl = document.getElementById('flash');
+  const shotIndicator = document.getElementById('shotIndicator');
+  const thumbsEl = document.getElementById('thumbs');
+  const resultImg = document.getElementById('resultImg');
+  const errorMsg = document.getElementById('errorMsg');
+
+  let stream = null;
+  let facingMode = 'user';
+  let shots = []; // canvas elements
+
+  function buildDots(){
+    shotIndicator.innerHTML = '';
+    for(let i=0;i<4;i++){
+      const d = document.createElement('div');
+      d.className = 'dot';
+      d.id = 'dot'+i;
+      shotIndicator.appendChild(d);
+    }
+  }
+
+  async function startStream(){
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({
+        video:{ facingMode: facingMode, width:{ideal:720}, height:{ideal:960} },
+        audio:false
+      });
+      video.srcObject = stream;
+      video.classList.toggle('mirror', facingMode === 'user');
+      return true;
+    }catch(e){
+      errorMsg.textContent = '카메라를 열 수 없어요. (권한을 확인하거나, 이 페이지를 폰 브라우저에서 직접 열어주세요)';
+      show('error');
+      return false;
+    }
+  }
+
+  btnStart.addEventListener('click', async ()=>{
+    shots = [];
+    thumbsEl.innerHTML = '';
+    buildDots();
+    show('camera');
+    await startStream();
+  });
+
+  btnBackFromError.addEventListener('click', ()=> show('home'));
+  btnCancel.addEventListener('click', ()=>{
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+    show('home');
+  });
+
+  btnFlip.addEventListener('click', async ()=>{
+    facingMode = facingMode === 'user' ? 'environment' : 'user';
+    await startStream();
+  });
+
+  function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
+
+  async function runCountdownAndShoot(index){
+    for(const n of [3,2,1]){
+      countdownNum.textContent = n;
+      countdownNum.style.opacity = 1;
+      await sleep(700);
+    }
+    countdownNum.style.opacity = 0;
+    // flash
+    flashEl.style.transition = 'none';
+    flashEl.style.opacity = 0.85;
+    requestAnimationFrame(()=>{
+      flashEl.style.transition = 'opacity 0.3s ease';
+      flashEl.style.opacity = 0;
+    });
+
+    const c = document.createElement('canvas');
+    const vw = video.videoWidth || 720, vh = video.videoHeight || 960;
+    // crop to 3:4 portrait from center
+    const targetRatio = 3/4;
+    let sw = vw, sh = vh, sx = 0, sy = 0;
+    if (vw/vh > targetRatio){
+      sw = vh * targetRatio; sx = (vw - sw)/2;
+    } else {
+      sh = vw / targetRatio; sy = (vh - sh)/2;
+    }
+    c.width = 480; c.height = 640;
+    const ctx = c.getContext('2d');
+    ctx.filter = 'saturate(1.15) contrast(1.05) sepia(0.08)';
+    if (facingMode === 'user'){
+      ctx.translate(c.width,0);
+      ctx.scale(-1,1);
+    }
+    ctx.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    shots.push(c);
+
+    const dot = document.getElementById('dot'+index);
+    dot.classList.remove('active');
+    dot.classList.add('done');
+
+    const t = document.createElement('canvas');
+    t.width = 60; t.height = 80;
+    t.getContext('2d').drawImage(c,0,0,60,80);
+    thumbsEl.appendChild(t);
+  }
+
+  btnCapture.addEventListener('click', async ()=>{
+    btnCapture.disabled = true;
+    btnFlip.disabled = true;
+    shots = [];
+    thumbsEl.innerHTML = '';
+    buildDots();
+    for(let i=0;i<4;i++){
+      document.getElementById('dot'+i).classList.add('active');
+      await runCountdownAndShoot(i);
+      await sleep(400);
+    }
+    if(stream){ stream.getTracks().forEach(t=>t.stop()); }
+    btnCapture.disabled = false;
+    btnFlip.disabled = false;
+    show('loading');
+    await sleep(200);
+    composeStrip();
+  });
+
+  // ---------- Compose final strip ----------
+  function loadFont(){
+    return Promise.all([
+      document.fonts.load('700 40px "Black Han Sans"'),
+      document.fonts.load('700 20px "Gaegu"')
+    ]).catch(()=>{});
+  }
+
+  function drawPierrotOnCanvas(ctx, x, y, size, hue){
+    // simple flat pierrot sticker drawn directly with canvas paths
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.scale(size/100, size/100);
+    ctx.fillStyle = hue;
+    ctx.beginPath();
+    ctx.ellipse(50,46,30,15,0,0,Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(20,46);
+    ctx.quadraticCurveTo(10,30,22,26);
+    ctx.quadraticCurveTo(28,20,34,28);
+    ctx.quadraticCurveTo(42,18,50,28);
+    ctx.quadraticCurveTo(58,18,66,28);
+    ctx.quadraticCurveTo(72,20,78,26);
+    ctx.quadraticCurveTo(90,30,80,46);
+    ctx.closePath();
+    ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(50,55,20,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#c8352b';
+    ctx.beginPath(); ctx.moveTo(22,32); ctx.lineTo(38,44); ctx.lineTo(14,44); ctx.closePath(); ctx.fill();
+    ctx.beginPath(); ctx.moveTo(78,32); ctx.lineTo(86,44); ctx.lineTo(62,44); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#3a2a1e';
+    ctx.beginPath(); ctx.arc(40,55,3.4,0,Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(60,55,3.4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#c8352b';
+    ctx.beginPath(); ctx.arc(50,62,4.5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawConfetti(ctx, w, h, seedOffset){
+    const colors = ['#c8352b','#e2a63b','#4c7a4a','#f6b8cf'];
+    let s = seedOffset;
+    function rand(){ s = (s*9301+49297) % 233280; return s/233280; }
+    for(let i=0;i<26;i++){
+      const x = rand()*w, y = rand()*h;
+      ctx.fillStyle = colors[Math.floor(rand()*colors.length)];
+      ctx.save();
+      ctx.translate(x,y);
+      ctx.rotate(rand()*Math.PI);
+      if (rand() > 0.5){
+        ctx.fillRect(-3,-3,6,6);
+      } else {
+        ctx.beginPath(); ctx.arc(0,0,3,0,Math.PI*2); ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  async function composeStrip(){
+    await loadFont();
+    const photoW = 480, photoH = 640, gap = 16, pad = 28;
+    const headerH = 130, footerH = 150;
+    const W = photoW + pad*2;
+    const H = headerH + 4*photoH + 3*gap + footerH;
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    const ctx = cv.getContext('2d');
+
+    // background paper
+    ctx.fillStyle = '#fffaf0';
+    ctx.fillRect(0,0,W,H);
+
+    // top striped border
+    const stripeH = 22;
+    for(let x=0; x<W; x+=28){
+      ctx.fillStyle = (Math.floor(x/28)%2===0) ? '#c8352b' : '#fffaf0';
+      ctx.fillRect(x,0,28,stripeH);
+    }
+    for(let x=0; x<W; x+=28){
+      ctx.fillStyle = (Math.floor(x/28)%2===0) ? '#c8352b' : '#fffaf0';
+      ctx.fillRect(x,H-stripeH,28,stripeH);
+    }
+
+    // title
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#c8352b';
+    ctx.font = '700 44px "Black Han Sans"';
+    ctx.save();
+    ctx.shadowColor = '#e2a63b';
+    ctx.shadowOffsetX = 3; ctx.shadowOffsetY = 3;
+    ctx.fillText('화개장터 네컷', W/2, headerH - 46);
+    ctx.restore();
+    ctx.fillStyle = '#3a2a1e';
+    ctx.font = '700 20px "Gaegu"';
+    ctx.fillText('경상도 전라도 사이~ 삐에로와 함께', W/2, headerH - 16);
+
+    drawPierrotOnCanvas(ctx, 56, headerH - 78, 60, '#e2a63b');
+    drawPierrotOnCanvas(ctx, W-56, headerH - 78, 60, '#4c7a4a');
+
+    // photos
+    let y = headerH;
+    shots.forEach((shotCanvas, i)=>{
+      ctx.drawImage(shotCanvas, pad, y, photoW, photoH);
+      ctx.strokeStyle = '#e2a63b';
+      ctx.lineWidth = 4;
+      ctx.strokeRect(pad, y, photoW, photoH);
+      y += photoH + gap;
+    });
+
+    // scattered confetti over whole card margins
+    drawConfetti(ctx, W, headerH, 7);
+    drawConfetti(ctx, W, footerH, 42);
+
+    // footer
+    const footerY = H - footerH;
+    drawPierrotOnCanvas(ctx, W/2, footerY + 46, 70, '#c8352b');
+    ctx.fillStyle = '#3a2a1e';
+    ctx.font = '700 22px "Gaegu"';
+    ctx.fillText('HWAGAE MARKET × PIERROT PHOTO BOOTH', W/2, footerY + 96);
+    const d = new Date();
+    const dateStr = d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+    ctx.font = '700 18px "Gaegu"';
+    ctx.fillStyle = '#9c241c';
+    ctx.fillText(dateStr, W/2, footerY + 122);
+
+    resultImg.src = cv.toDataURL('image/png');
+    show('result');
+  }
+
+  btnRetake.addEventListener('click', ()=>{
+    show('home');
+  });
+
+  // ---------- QR for this page's own share URL ----------
+  var SHARE_URL = "https://shinejihun1227.github.io/hwagae-photobooth/";
+  var QR_DATA_URI = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAUAAAAFAAQMAAAD3XjfpAAAABlBMVEX///8AAABVwtN+AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAB7ElEQVRoge2aTY6DMAyFXXXBskfgKBwNjtajcASWLFDd+C8hM6OuqpCRniVayXxZPfzi/BAhvhMcsdCdNTPtN34+LBEB8ALwqW/vvIwH8ZpHvmjeUlJfDgAvAZNaHLlxl98kYXoWHZ1ergD/CTiyVSENL5q2+AAAXg+KP4qEU6pA+qg1wM5AClmPVIXioQ5/clyADcAIm+JSzpoPAyMAdgzWEVOcjvz1FmBL0CRStc79Y5ri5pSYVzdNgD2D283yq8A75SokmfsSnI0UYFMwt4oSZYqTkVtdhgA7BVmX0lJwCu6efpiR1uUKsCVoanHsSQ36WFmGtisB7BtkzkYqVWhG6npXRgqwLUi+bLbmYyj+aCBnCQF2C2rHf5QuJS8B3EyLuwJsCk4cBycH5YT2jxq1PwLsEKxzsXElMavivh0C8AqQTxu+Ih8Vf4xTMoC9g4tLK56ph2HycCzOfK0AsDkoRXc6OInTFI4qZGaAHYMlxpji8p49+TkMwCtAjjAJJaGd/S0fQYc/AuwVfOrf3XtIgfay6NYPYPxxTwpgIzBf5Yg+Y5D9+lfpH7nMhQD7Bpk9R3lnuF6cAbwIPMoFRPHHJfak/tIaYE+gS2q3cc5LAIly7AKwNRhRLqsNbNdDH35xyqsQYKcg4hvxBvqVCfem343cAAAAAElFTkSuQmCC";
+  document.getElementById('urlPill').textContent = SHARE_URL;
+  document.getElementById('qrImg').src = QR_DATA_URI;
+  document.getElementById('qrWrap').style.display = 'flex';
+})();
+</script>
