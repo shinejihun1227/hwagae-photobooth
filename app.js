@@ -20,6 +20,8 @@
   const body = document.body;
   const stage = $("#captureStage");
   const themeScreen = $("#themeScreen");
+  const themePreview = $("#themePreview");
+  const themePreviewLabel = $("#themePreviewLabel");
   const video = $("#video");
   const fallback = $("#cameraFallback");
   const countdown = $("#countdown");
@@ -51,6 +53,7 @@
   let resultDataUrl = "";
   let demoMode = false;
   let busy = false;
+  let previewPoong = null;
 
   function setFlow(flow) {
     const mode = flow === "camera" ? "camera" : flow === "result" ? "result" : "home";
@@ -118,6 +121,7 @@
 
   function updateFrameSelection() {
     $$(".frame-option").forEach((button) => button.classList.toggle("selected", button.dataset.frame === selectedFrame));
+    drawThemePreview();
   }
 
   function updateFilterSelection() {
@@ -318,12 +322,55 @@
     ctx.restore();
   }
 
+  function drawThemePreview() {
+    if (!themePreview) return;
+    const width = themePreview.width;
+    const height = themePreview.height;
+    const header = 78;
+    const footer = 72;
+    const padding = 14;
+    const gap = 6;
+    const photoHeight = 103;
+    const photoWidth = width - padding * 2;
+    const ctx = themePreview.getContext("2d");
+    paintFrame(ctx, width, height, selectedFrame);
+    let y = header;
+    for (let index = 0; index < 4; index += 1) {
+      ctx.fillStyle = selectedFrame === "pierrot" ? "#d6a79e" : "#a93642";
+      ctx.fillRect(padding, y, photoWidth, photoHeight);
+      ctx.fillStyle = "rgba(255,255,255,.14)";
+      ctx.beginPath(); ctx.ellipse(width / 2, y + photoHeight * .56, 34, 43, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,255,255,.86)"; ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
+      if ((index === 0 || index === 3) && previewPoong) {
+        const stickerWidth = 62; const stickerHeight = 76;
+        const stickerX = index === 0 ? padding + photoWidth - stickerWidth - 8 : padding + 8;
+        const stickerY = index === 0 ? y + 7 : y + photoHeight - stickerHeight - 7;
+        drawThemePoongSticker(ctx, previewPoong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
+      }
+      y += photoHeight + gap;
+    }
+    const footerY = height - footer;
+    ctx.fillStyle = selectedFrame === "pierrot" ? "#faefd9" : "#8f2938";
+    ctx.fillRect(0, footerY, width, footer);
+    if (previewPoong) drawThemePoongSticker(ctx, previewPoong, selectedFrame, width / 2 - 31, footerY + 2, 62, 76);
+    drawText(ctx, "화개장터 × 삐에로", width / 2, height - 8, 9, selectedFrame === "pierrot" ? "#34203f" : "#fff6e4", "700 9px 'Noto Sans KR'");
+    themePreviewLabel.textContent = selectedFrame === "pierrot" ? "삐에로 테마" : "화개장터 테마";
+    themePreview.setAttribute("aria-label", `${themePreviewLabel.textContent} 프레임 미리보기`);
+  }
+
   function loadImage(source) {
     return new Promise((resolve) => {
       const image = new Image();
-      image.onload = () => resolve(image);
-      image.onerror = () => resolve(null);
+      let settled = false;
+      const finish = (value) => {
+        if (settled) return;
+        settled = true;
+        resolve(value);
+      };
+      image.onload = () => finish(image);
+      image.onerror = () => finish(null);
       image.src = source;
+      window.setTimeout(() => finish(null), 5000);
     });
   }
 
@@ -419,27 +466,34 @@
     const photoWidth = 500; const photoHeight = 667; const padding = 26; const gap = 15; const header = 145; const footer = 155;
     const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
     const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
-    const ctx = canvas.getContext("2d");
-    paintFrame(ctx, width, height, selectedFrame);
-    let y = header;
-    shots.forEach((shot, index) => {
-      ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
-      ctx.strokeStyle = selectedFrame === "noir" ? "#86d7d0" : "rgba(255,255,255,.86)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
-      if (index === 0 || index === 3) {
-        const stickerWidth = 124; const stickerHeight = 142;
-        const stickerX = index === 0 ? padding + photoWidth - stickerWidth - 16 : padding + 16;
-        const stickerY = index === 0 ? y + 16 : y + photoHeight - stickerHeight - 18;
-        drawThemePoongSticker(ctx, poong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
-      }
-      if (index === 1) { ctx.fillStyle = "#ff6a3d"; ctx.beginPath(); ctx.arc(width - padding - 17, y - 9, 28, 0, Math.PI * 2); ctx.fill(); drawText(ctx, "CAU", width - padding - 17, y - 5, 10, "#fff", "600 10px 'IBM Plex Mono'"); }
-      y += photoHeight + gap;
-    });
-    drawFrameFooter(ctx, width, height - footer, footer, selectedFrame, poong);
-    resultDataUrl = canvas.toDataURL("image/png");
-    resultImage.src = resultDataUrl;
-    resultFrameLabel.textContent = frameLabels[selectedFrame];
-    setMode("result");
-    stopStream();
+    try {
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("Canvas context unavailable");
+      paintFrame(ctx, width, height, selectedFrame);
+      let y = header;
+      shots.forEach((shot, index) => {
+        ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
+        ctx.strokeStyle = "rgba(255,255,255,.86)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
+        if (index === 0 || index === 3) {
+          const stickerWidth = 124; const stickerHeight = 142;
+          const stickerX = index === 0 ? padding + photoWidth - stickerWidth - 16 : padding + 16;
+          const stickerY = index === 0 ? y + 16 : y + photoHeight - stickerHeight - 18;
+          drawThemePoongSticker(ctx, poong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
+        }
+        if (index === 1) { ctx.fillStyle = "#ff6a3d"; ctx.beginPath(); ctx.arc(width - padding - 17, y - 9, 28, 0, Math.PI * 2); ctx.fill(); drawText(ctx, "CAU", width - padding - 17, y - 5, 10, "#fff", "600 10px 'IBM Plex Mono'"); }
+        y += photoHeight + gap;
+      });
+      drawFrameFooter(ctx, width, height - footer, footer, selectedFrame, poong);
+      resultDataUrl = canvas.toDataURL("image/png");
+      resultImage.src = resultDataUrl;
+      resultFrameLabel.textContent = frameLabels[selectedFrame];
+      setFlow("result");
+      stopStream();
+    } catch (error) {
+      console.error("Photo strip composition failed", error);
+      cameraStatus.textContent = "합성 실패 · 다시 촬영해 주세요";
+      showToast("사진 합성에 실패했어요. 다시 촬영해 주세요.");
+    }
   }
 
   async function captureSession() {
@@ -452,8 +506,8 @@
       await sleep(300);
     }
     cameraStatus.textContent = "네컷 완성 중...";
-    captureButton.disabled = false; backThemeButton.disabled = false; busy = false;
     await composeStrip();
+    captureButton.disabled = false; backThemeButton.disabled = false; busy = false;
   }
 
   async function saveResult() {
@@ -492,4 +546,5 @@
   $("#btnSave").addEventListener("click", saveResult);
 
   updateFrameSelection(); updateFilterSelection(); updatePose(); setFlow("home");
+  loadImage("poong.png").then((image) => { previewPoong = image; drawThemePreview(); });
 })();

@@ -152,7 +152,12 @@
                 <h3>오늘의 축제 무드를 골라주세요</h3>
                 <p>두 테마 모두 사진 옆에 푸앙이가 함께 등장해요.<br />화개장터는 따뜻하게, 삐에로는 유쾌하게 꾸며드릴게요.</p>
               </div>
-              <div class="control-panel" id="controlPanel">
+              <div class="theme-choice-layout">
+                <div class="theme-preview-panel">
+                  <div class="theme-preview-heading"><span>LIVE FRAME PREVIEW</span><strong id="themePreviewLabel">화개장터 테마</strong></div>
+                  <canvas id="themePreview" width="300" height="580" role="img" aria-label="화개장터 테마 프레임 미리보기"></canvas>
+                </div>
+                <div class="control-panel" id="controlPanel">
               <div class="control-group frame-group">
                 <div class="control-heading"><span>FRAME</span><small>마음에 드는 분위기를 골라요</small></div>
                 <div class="frame-list" id="frameList">
@@ -176,6 +181,7 @@
                 <button class="primary-action" id="btnStart" type="button"><span class="action-number">01</span><span id="startLabel">START BOOTH</span><b>↗</b></button>
               </div>
               <p class="action-note" id="actionNote">카메라 권한을 허용하면 바로 촬영할 수 있어요. 권한이 없어도 데모 촬영은 가능합니다.</p>
+                </div>
               </div>
             </div>
 
