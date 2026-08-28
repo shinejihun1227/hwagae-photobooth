@@ -245,16 +245,17 @@
       ctx.fillStyle = "#e9574b";
       for (let x = -height; x < width + height; x += 70) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 42, 0); ctx.lineTo(x - height + 42, 142); ctx.lineTo(x - height, 142); ctx.closePath(); ctx.fill(); }
       drawConfetti(ctx, width, 145, 4);
+      drawLantern(ctx, width * .12, 80, 13, "#f8b94f"); drawLantern(ctx, width * .88, 80, 13, "#f8b94f");
       ctx.fillStyle = "#f8d36b"; for (let i = 0; i < 30; i += 1) { ctx.beginPath(); ctx.arc((i * 79) % width, 95 + ((i * 37) % 45), 4, 0, Math.PI * 2); ctx.fill(); }
       drawText(ctx, "화개장터", width / 2, 85, 42, "#302247", "400 42px 'Gugi'");
-      drawText(ctx, "PIERROT CIRCUS NIGHT", width / 2, 116, 15, "#9f3a39", "600 15px 'IBM Plex Mono'");
+      drawText(ctx, "HUAGAE MARKET × PIERROT", width / 2, 116, 14, "#9f3a39", "600 14px 'IBM Plex Mono'");
       return;
     }
     if (frame === "poong") {
-      const gradient = ctx.createLinearGradient(0, 0, 0, height); gradient.addColorStop(0, "#1d5a91"); gradient.addColorStop(.55, "#65c8c4"); gradient.addColorStop(1, "#f8d36b"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
-      for (let i = 0; i < 8; i += 1) { ctx.strokeStyle = `rgba(255,255,255,${.1 + i * .015})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(width * .5, 100, 95 + i * 40, Math.PI, Math.PI * 2); ctx.stroke(); }
-      drawText(ctx, "푸앙이랑", width / 2, 66, 32, "#f8f4ec", "400 32px 'Gugi'");
-      drawText(ctx, "CAU FRIENDS / FALL 2026", width / 2, 100, 14, "#eafcf8", "600 14px 'IBM Plex Mono'");
+      const gradient = ctx.createLinearGradient(0, 0, width, height); gradient.addColorStop(0, "#8f2938"); gradient.addColorStop(.52, "#db543a"); gradient.addColorStop(1, "#ffd36a"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
+      for (let i = 0; i < 8; i += 1) { ctx.strokeStyle = `rgba(255,244,223,${.1 + i * .015})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(width * .5, 100, 95 + i * 40, Math.PI, Math.PI * 2); ctx.stroke(); }
+      drawText(ctx, "푸앙이랑", width / 2, 66, 32, "#fff4df", "400 32px 'Gugi'");
+      drawText(ctx, "HUAGAE × PIERROT / CAU 2026", width / 2, 100, 13, "#fff0cf", "600 13px 'IBM Plex Mono'");
       return;
     }
     if (frame === "noir") {
@@ -264,17 +265,17 @@
       drawText(ctx, "NOIR FILM / CAU 2026", width / 2, 109, 14, "#86d7d0", "600 14px 'IBM Plex Mono'");
       return;
     }
-    const gradient = ctx.createLinearGradient(0, 0, 0, height); gradient.addColorStop(0, "#261633"); gradient.addColorStop(.33, "#7a3551"); gradient.addColorStop(.7, "#d56747"); gradient.addColorStop(1, "#f8d36b"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
+    const gradient = ctx.createLinearGradient(0, 0, 0, height); gradient.addColorStop(0, "#6e1f31"); gradient.addColorStop(.33, "#b9323b"); gradient.addColorStop(.7, "#ed6945"); gradient.addColorStop(1, "#ffd36a"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
     drawLantern(ctx, width * .12, 57, 17, "#ffb45f"); drawLantern(ctx, width * .88, 67, 12, "#f8d36b"); drawConfetti(ctx, width, 130, 7);
     drawText(ctx, "화개장터", width / 2, 79, 44, "#fff6e4", "400 44px 'Gugi'");
-    drawText(ctx, "2026 중앙대학교 가을축제", width / 2, 111, 15, "#ffe5bd", "600 15px 'Noto Sans KR'");
+    drawText(ctx, "HUAGAE MARKET × PIERROT", width / 2, 111, 14, "#ffe5bd", "600 14px 'IBM Plex Mono'");
   }
 
   function drawFrameFooter(ctx, width, y, height, frame, poong) {
     if (frame === "pierrot") { ctx.fillStyle = "#faefd9"; ctx.fillRect(0, y, width, height); ctx.fillStyle = "#e9574b"; for (let x = -height; x < width + height; x += 70) { ctx.beginPath(); ctx.moveTo(x, y + height); ctx.lineTo(x + 42, y + height); ctx.lineTo(x - height + 42, y + height - 48); ctx.lineTo(x - height, y + height - 48); ctx.closePath(); ctx.fill(); } }
     else if (frame === "noir") { ctx.fillStyle = "#111328"; ctx.fillRect(0, y, width, height); }
-    else if (frame === "poong") { ctx.fillStyle = "#2b7ba4"; ctx.fillRect(0, y, width, height); }
-    else { ctx.fillStyle = "rgba(38,20,44,.7)"; ctx.fillRect(0, y, width, height); }
+    else if (frame === "poong") { ctx.fillStyle = "#b8373e"; ctx.fillRect(0, y, width, height); }
+    else { ctx.fillStyle = "rgba(113,27,40,.88)"; ctx.fillRect(0, y, width, height); }
     if (poong && (frame === "market" || frame === "poong")) drawPoong(ctx, poong, width / 2, y + 9, 62, 84);
     drawText(ctx, frame === "poong" ? "푸앙이와 함께한 가을밤" : "HWAGAE MARKET × PIERROT", width / 2, y + 107, 17, frame === "pierrot" ? "#34203f" : "#fff6e4", "700 17px 'Noto Sans KR'");
     const date = new Date();
