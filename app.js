@@ -239,6 +239,59 @@
     ctx.save(); ctx.shadowColor = "rgba(0,0,0,.3)"; ctx.shadowBlur = 12; ctx.drawImage(image, x - width / 2, y, width, height); ctx.restore();
   }
 
+  function loadImage(source) {
+    return new Promise((resolve) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => resolve(null);
+      image.src = source;
+    });
+  }
+
+  function drawContain(ctx, image, x, y, width, height) {
+    if (!image || !image.naturalWidth) return;
+    const scale = Math.min(width / image.naturalWidth, height / image.naturalHeight);
+    const drawWidth = image.naturalWidth * scale;
+    const drawHeight = image.naturalHeight * scale;
+    ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  }
+
+  function drawPoongCompanion(ctx, image, index, x, y, width = 136, height = 164) {
+    if (!image || !image.naturalWidth) return;
+    const labels = ["HAPPY POONG", "FESTIVAL MESSAGE", "MARKET LOOK", "CUTE POONG"];
+    const rotations = [-.045, .04, -.035, .05];
+    const imageX = 7;
+    const imageY = 7;
+    const imageWidth = width - 14;
+    const imageHeight = height - 30;
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+    ctx.rotate(rotations[index] || 0);
+    ctx.shadowColor = "rgba(38, 8, 16, .34)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 6;
+    ctx.fillStyle = "#fff5dd";
+    ctx.fillRect(-width / 2, -height / 2, width, height);
+    ctx.shadowColor = "transparent";
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-width / 2 + imageX, -height / 2 + imageY, imageWidth, imageHeight);
+    ctx.clip();
+    drawContain(ctx, image, -width / 2 + imageX, -height / 2 + imageY, imageWidth, imageHeight);
+    if (index === 1) {
+      const messageTop = -height / 2 + imageY + imageHeight * .57;
+      ctx.fillStyle = "rgba(255, 243, 210, .96)";
+      ctx.fillRect(-width / 2 + imageX + 3, messageTop, imageWidth - 6, imageHeight * .28);
+      drawText(ctx, "화개장터 × 삐에로", 0, messageTop + imageHeight * .11, 8, "#9f3038", "700 8px 'Noto Sans KR'");
+      drawText(ctx, "중앙대 가을축제", 0, messageTop + imageHeight * .2, 8, "#9f3038", "700 8px 'Noto Sans KR'");
+      drawText(ctx, "에서 만나요!", 0, messageTop + imageHeight * .29, 7, "#9f3038", "600 7px 'Noto Sans KR'");
+    }
+    ctx.restore();
+    ctx.fillStyle = "#fff5dd";
+    drawText(ctx, labels[index] || "POONG FRIEND", 0, height / 2 - 9, 8, "#762637", "700 8px 'IBM Plex Mono'");
+    ctx.restore();
+  }
+
   function paintFrame(ctx, width, height, frame) {
     if (frame === "pierrot") {
       ctx.fillStyle = "#faefd9"; ctx.fillRect(0, 0, width, height);
@@ -255,7 +308,7 @@
       const gradient = ctx.createLinearGradient(0, 0, width, height); gradient.addColorStop(0, "#8f2938"); gradient.addColorStop(.52, "#db543a"); gradient.addColorStop(1, "#ffd36a"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
       for (let i = 0; i < 8; i += 1) { ctx.strokeStyle = `rgba(255,244,223,${.1 + i * .015})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(width * .5, 100, 95 + i * 40, Math.PI, Math.PI * 2); ctx.stroke(); }
       drawText(ctx, "푸앙이랑", width / 2, 66, 32, "#fff4df", "400 32px 'Gugi'");
-      drawText(ctx, "HUAGAE × PIERROT / CAU 2026", width / 2, 100, 13, "#fff0cf", "600 13px 'IBM Plex Mono'");
+      drawText(ctx, "4 EXPRESSIONS / HUAGAE × PIERROT", width / 2, 100, 13, "#fff0cf", "600 13px 'IBM Plex Mono'");
       return;
     }
     if (frame === "noir") {
@@ -283,16 +336,33 @@
   }
 
   async function composeStrip() {
-    const poong = new Image();
-    poong.src = "poong.png";
-    await new Promise((resolve) => { poong.onload = resolve; poong.onerror = resolve; });
+    const poongAssets = await Promise.all([
+      loadImage("poong.png"),
+      loadImage("poong-expression-1.png"),
+      loadImage("poong-expression-2.png"),
+      loadImage("poong-expression-3.png"),
+      loadImage("poong-expression-4.png"),
+    ]);
+    const poong = poongAssets[0];
+    const poongCompanions = poongAssets.slice(1);
     const photoWidth = 500; const photoHeight = 667; const padding = 26; const gap = 15; const header = 145; const footer = 155;
     const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
     const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
     const ctx = canvas.getContext("2d");
     paintFrame(ctx, width, height, selectedFrame);
     let y = header;
-    shots.forEach((shot, index) => { ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore(); ctx.strokeStyle = selectedFrame === "noir" ? "#86d7d0" : "rgba(255,255,255,.86)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight); if (index === 1 && selectedFrame !== "noir") { ctx.fillStyle = "#ff6a3d"; ctx.beginPath(); ctx.arc(width - padding - 17, y - 9, 28, 0, Math.PI * 2); ctx.fill(); drawText(ctx, "CAU", width - padding - 17, y - 5, 10, "#fff", "600 10px 'IBM Plex Mono'"); } y += photoHeight + gap; });
+    shots.forEach((shot, index) => {
+      ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
+      ctx.strokeStyle = selectedFrame === "noir" ? "#86d7d0" : "rgba(255,255,255,.86)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
+      if (selectedFrame === "poong") {
+        const stickerWidth = 136; const stickerHeight = 164;
+        const stickerX = index % 2 === 0 ? padding + photoWidth - stickerWidth - 16 : padding + 16;
+        const stickerY = index % 2 === 0 ? y + 16 : y + photoHeight - stickerHeight - 18;
+        drawPoongCompanion(ctx, poongCompanions[index], index, stickerX, stickerY, stickerWidth, stickerHeight);
+      }
+      if (index === 1 && selectedFrame !== "noir") { ctx.fillStyle = "#ff6a3d"; ctx.beginPath(); ctx.arc(width - padding - 17, y - 9, 28, 0, Math.PI * 2); ctx.fill(); drawText(ctx, "CAU", width - padding - 17, y - 5, 10, "#fff", "600 10px 'IBM Plex Mono'"); }
+      y += photoHeight + gap;
+    });
     drawFrameFooter(ctx, width, height - footer, footer, selectedFrame, poong);
     resultDataUrl = canvas.toDataURL("image/png");
     resultImage.src = resultDataUrl;
