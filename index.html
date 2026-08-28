@@ -128,6 +128,14 @@
     font-size:0.9rem;
     filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35));
   }
+  .mascot-hat{
+    position:absolute;
+    top:-15px; left:50%;
+    width:62%;
+    transform:translateX(-50%) rotate(-6deg);
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,0.35));
+    pointer-events:none;
+  }
 
   .card{
     flex:1;
@@ -151,23 +159,6 @@
     animation:shine 6s linear infinite;
   }
   @keyframes shine{ to{ background-position:200% 0; } }
-
-  .pill-row{
-    display:flex;
-    justify-content:center;
-    gap:8px;
-    flex-wrap:wrap;
-    margin-bottom:16px;
-  }
-  .pill{
-    font-size:0.78rem;
-    font-weight:600;
-    color:var(--ink);
-    background:#fff;
-    border:1px solid var(--line);
-    padding:6px 12px;
-    border-radius:999px;
-  }
 
   .screen{ display:none; flex:1; flex-direction:column; }
   .screen.active{ display:flex; }
@@ -385,6 +376,19 @@
     <div class="mascot-wrap">
       <div class="mascot-frame">
         <img src="image.png" alt="푸앙이" class="mascot-photo">
+        <svg class="mascot-hat" viewBox="0 0 120 70" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="strawG" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" stop-color="#f6dfa0"/>
+              <stop offset="1" stop-color="#d9a441"/>
+            </linearGradient>
+          </defs>
+          <ellipse cx="60" cy="53" rx="56" ry="13" fill="url(#strawG)" stroke="#8a5a24" stroke-width="2"/>
+          <path d="M32,52 Q32,14 60,7 Q88,14 88,52 Z" fill="url(#strawG)" stroke="#8a5a24" stroke-width="2"/>
+          <path d="M34,44 Q60,55 86,44 L86,50 Q60,61 34,50 Z" fill="#e2472a" stroke="#b6321a" stroke-width="1"/>
+          <circle cx="30" cy="50" r="3.5" fill="#e2472a"/>
+          <circle cx="90" cy="50" r="3.5" fill="#e2472a"/>
+        </svg>
         <span class="mascot-ribbon">화개장터×삐에로</span>
         <span class="mascot-lantern-deco">🏮</span>
         <span class="mascot-confetti">🎪</span>
@@ -395,12 +399,6 @@
   </div>
 
   <div class="card">
-    <div class="pill-row">
-      <span class="pill">🎪 화개장터</span>
-      <span class="pill">🤡 삐에로</span>
-      <span class="pill">📸 4컷</span>
-    </div>
-
     <!-- HOME -->
     <div id="screen-home" class="screen active">
       <div class="qr-block">
@@ -771,7 +769,10 @@
       paintFooter(ctx,w,footerY,footerH,mascotImg){
         drawConfetti(ctx, w, footerH, 31);
         ctx.textAlign = 'center';
-        drawMascotImg(ctx, mascotImg, w/2, footerY+4, 64);
+        {
+          const d = drawMascotImg(ctx, mascotImg, w/2, footerY+4, 64);
+          if (d) drawStrawHat(ctx, w/2, footerY+4 + d.h*0.10, d.w*0.8);
+        }
         ctx.font = '700 19px "Pretendard"'; ctx.fillStyle = '#fff6e6';
         ctx.fillText('HWAGAE MARKET × PIERROT', w/2, footerY+82);
         ctx.font = '500 14px "Pretendard"'; ctx.fillStyle = '#ffe9cf';
@@ -804,7 +805,10 @@
         drawPolkaDots(ctx,0,footerY,w,footerH*0.55,'#f2b53c',22,29);
         drawStripeBand(ctx,0,footerY+footerH*0.72,w,footerH*0.28,'#fbf1e0','#e2472a',26);
         ctx.textAlign = 'center';
-        drawMascotImg(ctx, mascotImg, w/2, footerY+2, 60);
+        {
+          const d = drawMascotImg(ctx, mascotImg, w/2, footerY+2, 60);
+          if (d) drawStrawHat(ctx, w/2, footerY+2 + d.h*0.10, d.w*0.8);
+        }
         ctx.font = '700 18px "Pretendard"'; ctx.fillStyle = '#341a12';
         ctx.fillText('HWAGAE × PIERROT', w/2, footerY+76);
         ctx.font = '500 13px "Pretendard"'; ctx.fillStyle = '#7a5a4a';
@@ -830,7 +834,10 @@
         ctx.strokeStyle = 'rgba(52,26,18,0.15)'; ctx.lineWidth = 1;
         ctx.beginPath(); ctx.moveTo(w*0.28, footerY+2); ctx.lineTo(w*0.72, footerY+2); ctx.stroke();
         ctx.textAlign = 'center';
-        drawMascotImg(ctx, mascotImg, w/2, footerY+10, 50);
+        {
+          const d = drawMascotImg(ctx, mascotImg, w/2, footerY+10, 50);
+          if (d) drawStrawHat(ctx, w/2, footerY+10 + d.h*0.10, d.w*0.8);
+        }
         ctx.font = '600 16px "Pretendard"'; ctx.fillStyle = '#341a12';
         ctx.fillText('HWAGAE MARKET', w/2, footerY+76);
         ctx.font = '500 13px "Pretendard"'; ctx.fillStyle = '#a08770';
@@ -861,7 +868,10 @@
       paintFooter(ctx,w,footerY,footerH,mascotImg){
         drawNeonDots(ctx,20,footerY+footerH-22,w-40,10,['#00e8ff','#ff4fd8','#ffd93c'],9);
         ctx.textAlign = 'center';
-        drawMascotImg(ctx, mascotImg, w/2, footerY+2, 60);
+        {
+          const d = drawMascotImg(ctx, mascotImg, w/2, footerY+2, 60);
+          if (d) drawStrawHat(ctx, w/2, footerY+2 + d.h*0.10, d.w*0.8);
+        }
         ctx.font = '700 18px "Pretendard"'; ctx.fillStyle = '#fff';
         ctx.fillText('HWAGAE MARKET', w/2, footerY+76);
         ctx.font = '500 13px "Pretendard"'; ctx.fillStyle = '#8fd8ff';
@@ -936,6 +946,66 @@
     return { w, h };
   }
 
+  // 화개장터풍 초립(짚 모자) — headTopY는 모자가 얹힐 머리 꼭대기 위치, w는 모자 너비(px)
+  function drawStrawHat(ctx, cx, headTopY, w){
+    const s = w/120;
+    ctx.save();
+    ctx.translate(cx, headTopY);
+    ctx.rotate(-6*Math.PI/180);
+    ctx.scale(s,s);
+    ctx.translate(-60,-53);
+    const g = ctx.createLinearGradient(0,7,0,53);
+    g.addColorStop(0,'#f6dfa0'); g.addColorStop(1,'#d9a441');
+    ctx.beginPath();
+    ctx.ellipse(60,53,56,13,0,0,Math.PI*2);
+    ctx.fillStyle = g; ctx.fill();
+    ctx.strokeStyle = '#8a5a24'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(32,52);
+    ctx.quadraticCurveTo(32,14,60,7);
+    ctx.quadraticCurveTo(88,14,88,52);
+    ctx.closePath();
+    ctx.fillStyle = g; ctx.fill(); ctx.stroke();
+    ctx.beginPath();
+    ctx.moveTo(34,44);
+    ctx.quadraticCurveTo(60,55,86,44);
+    ctx.lineTo(86,50);
+    ctx.quadraticCurveTo(60,61,34,50);
+    ctx.closePath();
+    ctx.fillStyle = '#e2472a'; ctx.strokeStyle = '#b6321a'; ctx.lineWidth = 1;
+    ctx.fill(); ctx.stroke();
+    ctx.beginPath(); ctx.arc(30,50,3.5,0,Math.PI*2); ctx.fillStyle = '#e2472a'; ctx.fill();
+    ctx.beginPath(); ctx.arc(90,50,3.5,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  // 마스코트+모자를 동그란 스티커(도장)로 — 네컷 사진 경계에 살짝 겹쳐 붙인다
+  function drawMascotSticker(ctx, img, cx, cy, d, ringColor){
+    if (!img) return;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(-8*Math.PI/180);
+
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 10; ctx.shadowOffsetY = 3;
+    ctx.beginPath(); ctx.arc(0,0,d/2,0,Math.PI*2);
+    ctx.fillStyle = '#fff'; ctx.fill();
+    ctx.restore();
+
+    ctx.save();
+    ctx.beginPath(); ctx.arc(0,0,d/2-3,0,Math.PI*2); ctx.clip();
+    const ratio = (img.naturalWidth && img.naturalHeight) ? (img.naturalWidth/img.naturalHeight) : (208/283);
+    const ih = d*1.05, iw = ih*ratio;
+    ctx.drawImage(img, -iw/2, -d*0.42, iw, ih);
+    ctx.restore();
+
+    ctx.beginPath(); ctx.arc(0,0,d/2-1.5,0,Math.PI*2);
+    ctx.strokeStyle = ringColor; ctx.lineWidth = 3; ctx.stroke();
+
+    drawStrawHat(ctx, 0, -d*0.30, d*0.62);
+    ctx.restore();
+  }
+
   async function composeStrip(){
     await loadFont();
     const mascotImg = await loadMascotImage();
@@ -963,6 +1033,14 @@
       ctx.strokeRect(pad, y, photoW, photoH);
       y += photoH + gap;
     });
+
+    // 첫 번째·두 번째 사진 경계에 푸앙이 스티커(도장)를 살짝 겹쳐 붙인다
+    if (mascotImg){
+      const stickerD = 62;
+      const stickerCx = pad + photoW - stickerD*0.32;
+      const stickerCy = headerH + photoH + gap/2;
+      drawMascotSticker(ctx, mascotImg, stickerCx, stickerCy, stickerD, theme.photoBorder);
+    }
 
     const footerY = H - footerH;
     theme.paintFooter(ctx, W, footerY, footerH, mascotImg);
