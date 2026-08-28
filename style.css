@@ -63,10 +63,11 @@ h1 { margin: 25px 0 16px; font-family: var(--display); font-size: clamp(54px, 7v
 .intro-copy { margin: 0; color: var(--muted); font-size: 17px; line-height: 1.75; letter-spacing: -.03em; }
 .intro-copy b { color: var(--ink); font-weight: 800; }
 
-.poong-scene { position: relative; height: 280px; margin: 38px 0 34px; overflow: hidden; border-bottom: 1px solid rgba(255,255,255,.18); background: radial-gradient(circle at 47% 42%, rgba(255,208,93,.22), transparent 35%), linear-gradient(140deg, rgba(244,81,44,.3), rgba(113,27,40,.18) 52%, rgba(255,208,93,.11)); }
-.scene-sun { position: absolute; width: 158px; height: 158px; left: 50%; top: 19px; transform: translateX(-50%); border-radius: 50%; border: 1px solid rgba(248,211,107,.28); box-shadow: 0 0 0 14px rgba(248,211,107,.035), 0 0 0 36px rgba(248,211,107,.025); }
-.poong { position: absolute; z-index: 2; width: 172px; height: 234px; left: 50%; top: 18px; object-fit: contain; transform: translateX(-50%) rotate(-4deg); filter: drop-shadow(0 20px 16px rgba(0,0,0,.35)); }
-.poong-rings { position: absolute; left: 50%; top: 60px; transform: translateX(-50%); border: 1px dashed rgba(255,255,255,.16); border-radius: 50%; }
+.poong-scene { position: relative; height: 280px; margin: 38px 0 34px; overflow: hidden; border: 1px solid rgba(255,222,157,.32); border-bottom-width: 3px; background: #8a3c38 url("market-scene.png") center 54% / cover no-repeat; box-shadow: 0 19px 34px rgba(18,5,11,.3); }
+.poong-scene::before { content: ""; position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg, rgba(91,20,29,.05), rgba(87,18,27,.5)), linear-gradient(90deg, rgba(113,26,36,.42), rgba(245,181,79,.06) 45%, rgba(113,26,36,.27)); pointer-events: none; }
+.scene-sun { position: absolute; z-index: 2; width: 158px; height: 158px; left: 50%; top: 19px; transform: translateX(-50%); border-radius: 50%; border: 1px solid rgba(248,211,107,.28); box-shadow: 0 0 0 14px rgba(248,211,107,.035), 0 0 0 36px rgba(248,211,107,.025); }
+.poong { position: absolute; z-index: 4; width: 172px; height: 234px; left: 50%; top: 18px; object-fit: contain; transform: translateX(-50%) rotate(-4deg); filter: drop-shadow(0 20px 16px rgba(0,0,0,.35)); }
+.poong-rings { position: absolute; z-index: 3; left: 50%; top: 60px; transform: translateX(-50%); border: 1px dashed rgba(255,255,255,.16); border-radius: 50%; }
 .poong-ring-one { width: 224px; height: 224px; animation: spin 24s linear infinite; }
 .poong-ring-two { width: 272px; height: 160px; top: 92px; transform: translateX(-50%) rotate(-18deg); border-color: rgba(255,106,61,.25); }
 @keyframes spin { to { transform: translateX(-50%) rotate(360deg); } }
@@ -76,7 +77,7 @@ h1 { margin: 25px 0 16px; font-family: var(--display); font-size: clamp(54px, 7v
 .scene-label-right { right: 0; text-align: left; }
 .festival-sticker { position: absolute; z-index: 3; display: grid; gap: 3px; padding: 8px 10px; border: 1px solid; border-radius: 4px; text-align: center; font: 400 16px/1 var(--display); box-shadow: 0 7px 14px rgba(35,10,15,.24); }
 .festival-sticker small { font: 600 7px/1 var(--mono); letter-spacing: .04em; }
-.market-sticker { top: 32px; left: 6%; transform: rotate(-7deg); border-color: rgba(255,208,93,.75); color: #fff4df; background: #c93631; }
+.market-sticker { top: 32px; left: 6%; transform: rotate(-7deg); border-color: rgba(255,208,93,.75); color: #fff4df; background: #c93631; box-shadow: 0 7px 14px rgba(35,10,15,.24), inset 0 -5px 0 rgba(106,28,31,.18); }
 .pierrot-sticker { top: 158px; right: 6%; transform: rotate(7deg); border-color: rgba(72,20,30,.28); color: #541d2a; background: var(--yellow); }
 .market-sign { position: absolute; z-index: 3; top: 18px; right: 5%; padding: 6px 9px; transform: rotate(5deg); border: 1px solid rgba(255,208,93,.52); color: var(--yellow); font: 400 11px/1.25 var(--display); text-align: center; }
 .market-sign b { font: 600 7px var(--mono); letter-spacing: .08em; }
@@ -195,8 +196,10 @@ h1 { margin: 25px 0 16px; font-family: var(--display); font-size: clamp(54px, 7v
 .frame-option.selected, .filter-option.selected { border-color: var(--coral); background: rgba(255,106,61,.1); color: var(--ink); box-shadow: inset 0 0 0 1px rgba(255,106,61,.12); }
 .frame-swatch { display: grid; grid-template-columns: repeat(2, 1fr); gap: 3px; height: 55px; margin-bottom: 7px; padding: 5px; border-radius: 5px; overflow: hidden; }
 .frame-swatch i { border: 2px solid rgba(255,255,255,.7); border-radius: 2px; }
-.swatch-market { background: linear-gradient(145deg, #8e2e3b, #f3b84e); }
-.swatch-pierrot { background: repeating-linear-gradient(125deg, #ffcd61 0 9px, #d9463f 9px 15px); }
+.swatch-market { background: linear-gradient(145deg, rgba(117,30,37,.78), rgba(243,184,78,.38)), url("market-scene.png") center / cover; }
+.swatch-market::before { content: ""; display: block; grid-column: 1 / -1; height: 8px; margin: -5px -5px 1px; background: repeating-linear-gradient(90deg, #c93631 0 15px, #ffd05d 15px 28px); }
+.swatch-pierrot { background: linear-gradient(180deg, rgba(41,20,54,.1), rgba(41,20,54,.5)), repeating-linear-gradient(125deg, #ffcd61 0 9px, #d9463f 9px 15px); }
+.swatch-pierrot::before { content: "✦"; display: block; grid-column: 1 / -1; color: #fff4df; font-size: 15px; line-height: 1; text-align: center; text-shadow: 15px 7px 0 #fff4df, -15px 10px 0 #fff4df; }
 .swatch-poong { background: linear-gradient(145deg, #c63b39, #ffd467); }
 .swatch-noir { background: linear-gradient(145deg, #141629, #7a55ae); }
 .frame-option strong, .frame-option small { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }

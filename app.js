@@ -256,6 +256,83 @@
     ctx.shadowBlur = 0; ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y - radius - 14); ctx.lineTo(x, y - radius); ctx.stroke(); ctx.restore();
   }
 
+  function drawMarketRoof(ctx, x, y, width, height) {
+    ctx.save();
+    ctx.fillStyle = "#241921";
+    ctx.beginPath();
+    ctx.moveTo(x - width / 2, y + height);
+    ctx.quadraticCurveTo(x - width * .24, y + height * .45, x, y);
+    ctx.quadraticCurveTo(x + width * .24, y + height * .45, x + width / 2, y + height);
+    ctx.closePath();
+    ctx.fill();
+    ctx.strokeStyle = "#735049";
+    ctx.lineWidth = Math.max(1, height * .07);
+    for (let tile = -4; tile <= 4; tile += 1) {
+      ctx.beginPath();
+      ctx.moveTo(x + tile * width * .09, y + height * .18);
+      ctx.lineTo(x + tile * width * .13, y + height * .82);
+      ctx.stroke();
+    }
+    ctx.fillStyle = "#b54a3c";
+    ctx.fillRect(x - width / 2, y + height - Math.max(3, height * .1), width, Math.max(3, height * .1));
+    ctx.restore();
+  }
+
+  function drawMarketAwning(ctx, x, y, width, height) {
+    ctx.save();
+    ctx.fillStyle = "#c93631";
+    ctx.fillRect(x, y, width, height);
+    for (let stripe = x; stripe < x + width; stripe += height * 1.55) {
+      ctx.fillStyle = "#ffd05d";
+      ctx.fillRect(stripe, y, height * .72, height);
+      ctx.beginPath();
+      ctx.arc(stripe + height * .36, y + height, height * .36, 0, Math.PI);
+      ctx.fill();
+    }
+    ctx.fillStyle = "rgba(76,22,28,.32)";
+    ctx.fillRect(x, y + height - 2, width, 2);
+    ctx.restore();
+  }
+
+  function drawPierrotCurtains(ctx, width, height, compact) {
+    const curtainHeight = compact ? 78 : 145;
+    ctx.fillStyle = "#24172e";
+    ctx.fillRect(0, 0, width, curtainHeight);
+    ctx.fillStyle = "#842238";
+    ctx.beginPath();
+    ctx.moveTo(0, 0); ctx.lineTo(width * .27, 0); ctx.quadraticCurveTo(width * .2, curtainHeight * .54, width * .31, curtainHeight); ctx.lineTo(0, curtainHeight); ctx.closePath(); ctx.fill();
+    ctx.beginPath();
+    ctx.moveTo(width, 0); ctx.lineTo(width * .73, 0); ctx.quadraticCurveTo(width * .8, curtainHeight * .54, width * .69, curtainHeight); ctx.lineTo(width, curtainHeight); ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = "rgba(255,205,97,.28)";
+    ctx.lineWidth = compact ? 2 : 4;
+    for (const side of [1, -1]) {
+      for (let stripe = 0; stripe < 3; stripe += 1) {
+        const startX = side === 1 ? width * (.04 + stripe * .075) : width * (.96 - stripe * .075);
+        ctx.beginPath();
+        ctx.moveTo(startX, 0);
+        ctx.quadraticCurveTo(startX + side * width * .01, curtainHeight * .55, startX + side * width * .05, curtainHeight);
+        ctx.stroke();
+      }
+    }
+    ctx.fillStyle = "rgba(255,222,130,.15)";
+    ctx.beginPath(); ctx.moveTo(width * .1, curtainHeight); ctx.lineTo(width * .38, curtainHeight); ctx.lineTo(width * .5, compact ? 35 : 73); ctx.lineTo(width * .62, curtainHeight); ctx.lineTo(width * .9, curtainHeight); ctx.closePath(); ctx.fill();
+  }
+
+  function drawMarquee(ctx, x, y, width, height, compact) {
+    ctx.save();
+    ctx.fillStyle = "#3a2044";
+    ctx.fillRect(x, y, width, height);
+    ctx.strokeStyle = "#ffd05d";
+    ctx.lineWidth = compact ? 1 : 3;
+    ctx.strokeRect(x, y, width, height);
+    const bulbRadius = compact ? 1.7 : 3.5;
+    for (let bulbX = x + 12; bulbX < x + width - 8; bulbX += compact ? 13 : 26) {
+      drawLantern(ctx, bulbX, y + 7, bulbRadius, "#ffd05d");
+      drawLantern(ctx, bulbX, y + height - 7, bulbRadius, "#ffd05d");
+    }
+    ctx.restore();
+  }
+
   function drawPoong(ctx, image, x, y, width, height) {
     if (!image.complete || !image.naturalWidth) return;
     ctx.save(); ctx.shadowColor = "rgba(0,0,0,.3)"; ctx.shadowBlur = 12; ctx.drawImage(image, x - width / 2, y, width, height); ctx.restore();
@@ -334,12 +411,10 @@
     const photoWidth = width - padding * 2;
     const ctx = themePreview.getContext("2d");
     paintFrame(ctx, width, height, selectedFrame);
+    drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
     let y = header;
     for (let index = 0; index < 4; index += 1) {
-      ctx.fillStyle = selectedFrame === "pierrot" ? "#d6a79e" : "#a93642";
-      ctx.fillRect(padding, y, photoWidth, photoHeight);
-      ctx.fillStyle = "rgba(255,255,255,.14)";
-      ctx.beginPath(); ctx.ellipse(width / 2, y + photoHeight * .56, 34, 43, 0, 0, Math.PI * 2); ctx.fill();
+      drawPreviewPhoto(ctx, padding, y, photoWidth, photoHeight, selectedFrame, index);
       ctx.strokeStyle = "rgba(255,255,255,.86)"; ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
       if ((index === 0 || index === 3) && previewPoong) {
         const stickerWidth = 62; const stickerHeight = 76;
@@ -418,47 +493,97 @@
     ctx.restore();
   }
 
-  function paintFrame(ctx, width, height, frame) {
+  function drawFrameRails(ctx, width, height, frame, padding, header, footer) {
+    const railHeight = height - header - footer;
+    if (railHeight <= 0) return;
+    ctx.save();
     if (frame === "pierrot") {
-      ctx.fillStyle = "#faefd9"; ctx.fillRect(0, 0, width, height);
-      ctx.fillStyle = "#e9574b";
-      for (let x = -height; x < width + height; x += 70) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x + 42, 0); ctx.lineTo(x - height + 42, 142); ctx.lineTo(x - height, 142); ctx.closePath(); ctx.fill(); }
-      drawConfetti(ctx, width, 145, 4);
-      drawLantern(ctx, width * .12, 80, 13, "#f8b94f"); drawLantern(ctx, width * .88, 80, 13, "#f8b94f");
-      ctx.fillStyle = "#f8d36b"; for (let i = 0; i < 30; i += 1) { ctx.beginPath(); ctx.arc((i * 79) % width, 95 + ((i * 37) % 45), 4, 0, Math.PI * 2); ctx.fill(); }
-      drawText(ctx, "화개장터", width / 2, 85, 42, "#302247", "400 42px 'Gugi'");
-      drawText(ctx, "HUAGAE MARKET × PIERROT", width / 2, 116, 14, "#9f3a39", "600 14px 'IBM Plex Mono'");
+      ctx.fillStyle = "#542447";
+      ctx.fillRect(0, header, padding, railHeight);
+      ctx.fillRect(width - padding, header, padding, railHeight);
+      ctx.fillStyle = "#ffd05d";
+      for (let y = header + 18; y < height - footer; y += 48) {
+        ctx.beginPath(); ctx.arc(padding / 2, y, 3, 0, Math.PI * 2); ctx.arc(width - padding / 2, y, 3, 0, Math.PI * 2); ctx.fill();
+      }
+    } else {
+      ctx.fillStyle = "#9d3736";
+      ctx.fillRect(0, header, padding, railHeight);
+      ctx.fillRect(width - padding, header, padding, railHeight);
+      ctx.strokeStyle = "rgba(255,208,93,.7)";
+      ctx.lineWidth = Math.max(1, padding * .08);
+      for (let y = header + 12; y < height - footer; y += 42) {
+        ctx.beginPath(); ctx.moveTo(padding * .35, y); ctx.lineTo(padding * .65, y + 16); ctx.moveTo(width - padding * .35, y); ctx.lineTo(width - padding * .65, y + 16); ctx.stroke();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawPreviewPhoto(ctx, x, y, width, height, frame, index) {
+    ctx.save();
+    if (frame === "pierrot") {
+      const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+      gradient.addColorStop(0, "#3b234d"); gradient.addColorStop(.55, "#17152e"); gradient.addColorStop(1, "#7b2d43");
+      ctx.fillStyle = gradient; ctx.fillRect(x, y, width, height);
+      ctx.fillStyle = "rgba(255,226,150,.2)";
+      ctx.beginPath(); ctx.moveTo(x + width * .5, y); ctx.lineTo(x + width * .73, y + height); ctx.lineTo(x + width * .27, y + height); ctx.closePath(); ctx.fill();
+      ctx.fillStyle = "#efb94f";
+      for (let dot = 0; dot < 5; dot += 1) { ctx.beginPath(); ctx.arc(x + 17 + dot * 34, y + 16 + (index % 2) * 5, 3, 0, Math.PI * 2); ctx.fill(); }
+      drawText(ctx, `${String(index + 1).padStart(2, "0")}  CIRCUS CLUB`, x + 10, y + height - 10, 7, "rgba(255,246,219,.75)", "600 7px 'IBM Plex Mono'", "left");
+    } else {
+      const gradient = ctx.createLinearGradient(x, y, x, y + height);
+      gradient.addColorStop(0, "#f5d99b"); gradient.addColorStop(.46, "#d17a54"); gradient.addColorStop(1, "#3f7f78");
+      ctx.fillStyle = gradient; ctx.fillRect(x, y, width, height);
+      ctx.fillStyle = "rgba(255,239,183,.55)"; ctx.fillRect(x, y + height * .57, width, height * .43);
+      drawMarketRoof(ctx, x + width * .5, y + 12, width * .48, 18);
+      drawLantern(ctx, x + 18, y + 28, 5, "#ffe092"); drawLantern(ctx, x + width - 18, y + 31, 4, "#ffd05d");
+      ctx.fillStyle = "rgba(88,38,31,.45)";
+      for (let fruit = 0; fruit < 12; fruit += 1) { ctx.beginPath(); ctx.arc(x + 16 + (fruit * 19) % Math.max(20, width - 24), y + height - 18 - (fruit % 3) * 5, 3 + fruit % 2, 0, Math.PI * 2); ctx.fill(); }
+      drawText(ctx, `${String(index + 1).padStart(2, "0")}  MARKET MEMORY`, x + 10, y + height - 10, 7, "rgba(95,38,35,.72)", "600 7px 'IBM Plex Mono'", "left");
+    }
+    ctx.restore();
+  }
+
+  function paintFrame(ctx, width, height, frame) {
+    const compact = height < 1000;
+    const header = compact ? 78 : 145;
+    if (frame === "pierrot") {
+      drawPierrotCurtains(ctx, width, height, compact);
+      drawMarquee(ctx, width * .2, compact ? 8 : 16, width * .6, compact ? 28 : 52, compact);
+      drawText(ctx, "PIERROT", width / 2, compact ? 29 : 50, compact ? 14 : 25, "#fff4df", "400 25px 'Gugi'");
+      drawText(ctx, "CIRCUS THEATRE", width / 2, compact ? 69 : 127, compact ? 7 : 13, "#ffd05d", "600 7px 'IBM Plex Mono'");
+      ctx.fillStyle = "#faefd9"; ctx.fillRect(0, header, width, height - header);
       return;
     }
-    if (frame === "poong") {
-      const gradient = ctx.createLinearGradient(0, 0, width, height); gradient.addColorStop(0, "#8f2938"); gradient.addColorStop(.52, "#db543a"); gradient.addColorStop(1, "#ffd36a"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
-      for (let i = 0; i < 8; i += 1) { ctx.strokeStyle = `rgba(255,244,223,${.1 + i * .015})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(width * .5, 100, 95 + i * 40, Math.PI, Math.PI * 2); ctx.stroke(); }
-      drawText(ctx, "푸앙이랑", width / 2, 66, 32, "#fff4df", "400 32px 'Gugi'");
-      drawText(ctx, "MARKET POONG / CAU 2026", width / 2, 100, 13, "#fff0cf", "600 13px 'IBM Plex Mono'");
-      return;
-    }
-    if (frame === "noir") {
-      const gradient = ctx.createLinearGradient(0, 0, width, height); gradient.addColorStop(0, "#111328"); gradient.addColorStop(.5, "#39285f"); gradient.addColorStop(1, "#10111e"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
-      drawConfetti(ctx, width, 135, 16);
-      drawText(ctx, "화개장터", width / 2, 78, 43, "#f8f4ec", "400 43px 'Gugi'");
-      drawText(ctx, "NOIR FILM / CAU 2026", width / 2, 109, 14, "#86d7d0", "600 14px 'IBM Plex Mono'");
-      return;
-    }
-    const gradient = ctx.createLinearGradient(0, 0, 0, height); gradient.addColorStop(0, "#6e1f31"); gradient.addColorStop(.33, "#b9323b"); gradient.addColorStop(.7, "#ed6945"); gradient.addColorStop(1, "#ffd36a"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
-    drawLantern(ctx, width * .12, 57, 17, "#ffb45f"); drawLantern(ctx, width * .88, 67, 12, "#f8d36b"); drawConfetti(ctx, width, 130, 7);
-    drawText(ctx, "화개장터", width / 2, 79, 44, "#fff6e4", "400 44px 'Gugi'");
-    drawText(ctx, "HUAGAE MARKET × PIERROT", width / 2, 111, 14, "#ffe5bd", "600 14px 'IBM Plex Mono'");
+    ctx.fillStyle = "#f7e5bd"; ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "#a93635"; ctx.fillRect(0, 0, width, header);
+    drawMarketRoof(ctx, width / 2, compact ? 3 : 7, width * .5, compact ? 25 : 49);
+    drawLantern(ctx, width * .13, compact ? 28 : 58, compact ? 8 : 17, "#ffd77a");
+    drawLantern(ctx, width * .87, compact ? 31 : 68, compact ? 7 : 14, "#ffe3a2");
+    drawText(ctx, "화개장터", width / 2, compact ? 43 : 83, compact ? 25 : 43, "#fff4dc", "400 43px 'Gugi'");
+    drawMarketAwning(ctx, 0, compact ? 57 : 103, width, compact ? 15 : 28);
+    drawText(ctx, "가을 장터 · 물길 따라 기억하기", width / 2, compact ? 75 : 137, compact ? 7 : 12, "#fff1ca", "600 12px 'IBM Plex Mono'");
   }
 
   function drawFrameFooter(ctx, width, y, height, frame, poong) {
-    if (frame === "pierrot") { ctx.fillStyle = "#faefd9"; ctx.fillRect(0, y, width, height); ctx.fillStyle = "#e9574b"; for (let x = -height; x < width + height; x += 70) { ctx.beginPath(); ctx.moveTo(x, y + height); ctx.lineTo(x + 42, y + height); ctx.lineTo(x - height + 42, y + height - 48); ctx.lineTo(x - height, y + height - 48); ctx.closePath(); ctx.fill(); } }
-    else if (frame === "noir") { ctx.fillStyle = "#111328"; ctx.fillRect(0, y, width, height); }
-    else if (frame === "poong") { ctx.fillStyle = "#b8373e"; ctx.fillRect(0, y, width, height); }
-    else { ctx.fillStyle = "rgba(113,27,40,.88)"; ctx.fillRect(0, y, width, height); }
+    if (frame === "pierrot") {
+      ctx.fillStyle = "#3a2044"; ctx.fillRect(0, y, width, height);
+      ctx.fillStyle = "#e9574b";
+      for (let x = -height; x < width + height; x += 74) {
+        ctx.beginPath(); ctx.moveTo(x, y + height); ctx.lineTo(x + 34, y + height); ctx.lineTo(x - height + 34, y + height - 46); ctx.lineTo(x - height, y + height - 46); ctx.closePath(); ctx.fill();
+      }
+      ctx.strokeStyle = "#ffd05d"; ctx.lineWidth = 2; ctx.strokeRect(18, y + 18, width - 36, height - 36);
+      for (let x = 35; x < width - 20; x += 34) drawLantern(ctx, x, y + 26, 3, "#ffd05d");
+    } else {
+      ctx.fillStyle = "#9b3735"; ctx.fillRect(0, y, width, height);
+      drawMarketAwning(ctx, 0, y, width, 28);
+      ctx.fillStyle = "rgba(255,238,187,.16)";
+      for (let plank = y + 40; plank < y + height; plank += 21) { ctx.fillRect(0, plank, width, 1); }
+      drawLantern(ctx, width * .12, y + height * .5, 9, "#ffd77a"); drawLantern(ctx, width * .88, y + height * .5, 8, "#ffe3a2");
+    }
     if (poong && (frame === "market" || frame === "pierrot")) drawThemePoongSticker(ctx, poong, frame, width / 2 - 41, y + 1, 82, 101);
-    drawText(ctx, frame === "poong" ? "푸앙이와 함께한 가을밤" : "HWAGAE MARKET × PIERROT", width / 2, y + 107, 17, frame === "pierrot" ? "#34203f" : "#fff6e4", "700 17px 'Noto Sans KR'");
+    drawText(ctx, frame === "pierrot" ? "삐에로 극장에서 만나요" : "화개장터에서 만난 가을밤", width / 2, y + 107, 17, "#fff6e4", "700 17px 'Noto Sans KR'");
     const date = new Date();
-    drawText(ctx, `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}  /  중앙대학교`, width / 2, y + 133, 12, frame === "pierrot" ? "#8c5b55" : "#ffe0bd", "500 12px 'IBM Plex Mono'");
+    drawText(ctx, frame === "pierrot" ? "CIRCUS CLUB  ·  CAU FALL FESTIVAL" : "MARKET NIGHT  ·  CAU FALL FESTIVAL", width / 2, y + 133, 12, "#ffe0bd", "500 12px 'IBM Plex Mono'");
   }
 
   async function composeStrip() {
@@ -470,6 +595,7 @@
       const ctx = canvas.getContext("2d");
       if (!ctx) throw new Error("Canvas context unavailable");
       paintFrame(ctx, width, height, selectedFrame);
+      drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
       let y = header;
       shots.forEach((shot, index) => {
         ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
