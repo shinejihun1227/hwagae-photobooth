@@ -58,6 +58,7 @@
   let busy = false;
   let previewPoong = null;
   let themedPoong = { market: null, pierrot: null };
+  let themedExpressions = { market: null, pierrot: null };
   let expressionPoong = [];
   const expressionModes = ["pink", "dark", "black", "pink"];
   const poongArtworkCache = new WeakMap();
@@ -255,6 +256,16 @@
     ctx.shadowBlur = 0; ctx.strokeStyle = "rgba(255,255,255,.6)"; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, y - radius - 14); ctx.lineTo(x, y - radius); ctx.stroke(); ctx.restore();
   }
 
+  function drawCauSeal(ctx, x, y, radius, color = "#fff0d1") {
+    ctx.save();
+    ctx.strokeStyle = color;
+    ctx.lineWidth = Math.max(1, radius * .08);
+    ctx.globalAlpha = .92;
+    ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.stroke();
+    drawText(ctx, "CAU", x, y + radius * .28, Math.max(5, radius * .46), color, `700 ${Math.max(5, radius * .46)}px 'IBM Plex Mono'`);
+    ctx.restore();
+  }
+
   function drawMarketRoof(ctx, x, y, width, height) {
     ctx.save();
     ctx.fillStyle = "#241921";
@@ -348,23 +359,15 @@
     ctx.restore();
   }
 
-  function drawExpressionBadge(ctx, image, theme, index, x, y, width, height) {
+  function drawExpressionBadge(ctx, image, theme, index, x, y, width, height, spriteSheet = false) {
     if (!image || !image.naturalWidth) return;
-    const artwork = getPoongArtwork(image, expressionModes[index] || "neutral");
-    const radius = Math.max(7, width * .12);
+    const artwork = spriteSheet ? getPoongArtwork(image, "neutral") : getPoongArtwork(image, expressionModes[index] || "neutral");
     ctx.save();
     ctx.shadowColor = theme === "market" ? "rgba(18, 53, 63, .3)" : "rgba(18, 7, 25, .34)";
     ctx.shadowBlur = Math.max(5, width * .06);
     ctx.shadowOffsetY = Math.max(2, height * .025);
-    roundedRect(ctx, x, y, width, height, radius);
-    ctx.clip();
-    drawContain(ctx, artwork, x, y, width, height);
-    ctx.restore();
-    ctx.save();
-    ctx.strokeStyle = theme === "market" ? "rgba(255, 230, 167, .88)" : "rgba(255, 221, 154, .9)";
-    ctx.lineWidth = Math.max(1.5, width * .025);
-    roundedRect(ctx, x, y, width, height, radius);
-    ctx.stroke();
+    if (spriteSheet) drawSpriteContain(ctx, artwork, index, x, y, width, height);
+    else drawContain(ctx, artwork, x, y, width, height);
     ctx.restore();
   }
 
@@ -397,19 +400,20 @@
     paintFrame(ctx, width, height, selectedFrame);
     drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
     const poong = themedPoong[selectedFrame] || previewPoong;
+    const expressionSheet = themedExpressions[selectedFrame];
     let y = header;
     for (let index = 0; index < 4; index += 1) {
       drawPreviewPhoto(ctx, padding, y, photoWidth, photoHeight, selectedFrame, index);
       ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.82)" : "rgba(255,248,218,.9)";
       ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
-      const expression = expressionPoong[index] || poong;
+      const expression = expressionSheet || expressionPoong[index] || poong;
       if (expression) {
-        const badgeWidth = 78; const badgeHeight = 88;
+        const badgeSize = expressionSheet ? Math.min(104, photoHeight - 4, photoWidth * .44) : 78;
+        const badgeWidth = badgeSize; const badgeHeight = expressionSheet ? badgeSize : 88;
         const onRight = index % 2 === 0;
-        const onTop = index === 0 || index === 2;
-        const badgeX = onRight ? padding + photoWidth - badgeWidth + 20 : padding - 26;
-        const badgeY = onTop ? y + 4 : y + photoHeight - badgeHeight + 3;
-        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight);
+        const badgeX = onRight ? padding + photoWidth - badgeWidth - 4 : padding + 4;
+        const badgeY = index % 2 === 0 ? y + 2 : y + photoHeight - badgeHeight - 2;
+        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet));
       }
       y += photoHeight + gap;
     }
@@ -443,6 +447,20 @@
     const drawWidth = sourceWidth * scale;
     const drawHeight = sourceHeight * scale;
     ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+  }
+
+  function drawSpriteContain(ctx, image, index, x, y, width, height) {
+    const sourceWidth = image?.naturalWidth || image?.width;
+    const sourceHeight = image?.naturalHeight || image?.height;
+    if (!image || !sourceWidth || !sourceHeight) return;
+    const cellWidth = sourceWidth / 2;
+    const cellHeight = sourceHeight / 2;
+    const sourceX = (index % 2) * cellWidth;
+    const sourceY = Math.floor(index / 2) * cellHeight;
+    const scale = Math.min(width / cellWidth, height / cellHeight);
+    const drawWidth = cellWidth * scale;
+    const drawHeight = cellHeight * scale;
+    ctx.drawImage(image, sourceX, sourceY, cellWidth, cellHeight, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
   }
 
   function getPoongArtwork(image, mode = "neutral") {
@@ -585,6 +603,7 @@
     if (frame === "pierrot") {
       drawPierrotCurtains(ctx, width, height, compact);
       drawMarquee(ctx, width * .2, compact ? 8 : 16, width * .6, compact ? 28 : 52, compact);
+      drawCauSeal(ctx, width * .11, compact ? 35 : 72, compact ? 11 : 21, "#fff0d1");
       drawText(ctx, "PIERROT", width / 2, compact ? 29 : 50, compact ? 14 : 25, "#fff4df", "400 25px 'Gugi'");
       drawText(ctx, "CIRCUS THEATRE", width / 2, compact ? 69 : 127, compact ? 7 : 13, "#ffd05d", "600 7px 'IBM Plex Mono'");
       ctx.fillStyle = "#faefd9"; ctx.fillRect(0, header, width, height - header);
@@ -593,7 +612,7 @@
     ctx.fillStyle = "#f7e5bd"; ctx.fillRect(0, 0, width, height);
     ctx.fillStyle = "#a93635"; ctx.fillRect(0, 0, width, header);
     drawMarketRoof(ctx, width / 2, compact ? 3 : 7, width * .5, compact ? 25 : 49);
-    drawLantern(ctx, width * .13, compact ? 28 : 58, compact ? 8 : 17, "#ffd77a");
+    drawCauSeal(ctx, width * .13, compact ? 29 : 58, compact ? 10 : 20, "#fff0d1");
     drawLantern(ctx, width * .87, compact ? 31 : 68, compact ? 7 : 14, "#ffe3a2");
     drawText(ctx, "화개장터", width / 2, compact ? 43 : 83, compact ? 25 : 43, "#fff4dc", "400 43px 'Gugi'");
     drawMarketAwning(ctx, 0, compact ? 57 : 103, width, compact ? 15 : 28);
@@ -627,6 +646,7 @@
       for (let plank = y + (compact ? 27 : 40); plank < y + height; plank += compact ? 14 : 21) { ctx.fillRect(0, plank, width, 1); }
       drawLantern(ctx, width * .1, y + height * .56, compact ? 4 : 9, "#ffd77a"); drawLantern(ctx, width * .88, y + height * .5, compact ? 4 : 8, "#ffe3a2");
     }
+    drawCauSeal(ctx, compact ? width * .12 : width * .13, y + height * .55, compact ? 8 : 17, "#fff0d1");
     if (poong && (frame === "market" || frame === "pierrot")) drawThemePoongSticker(ctx, poong, frame, mascotX, mascotY, mascotWidth, mascotHeight);
     drawText(ctx, frame === "pierrot" ? (compact ? "극장 불빛 아래 한 컷" : "삐에로 극장에서 만나요") : (compact ? "가을 장터에서 한 컷" : "화개장터에서 만난 가을밤"), textX, titleY, compact ? 9 : 20, "#fff6e4", `700 ${compact ? 9 : 20}px 'Noto Sans KR'`);
     drawText(ctx, frame === "pierrot" ? "CIRCUS CLUB  ·  CAU" : "MARKET NIGHT  ·  CAU", textX, metaY, compact ? 6 : 12, "#ffe0bd", `500 ${compact ? 6 : 12}px 'IBM Plex Mono'`);
@@ -643,17 +663,17 @@
       paintFrame(ctx, width, height, selectedFrame);
       drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
       let y = header;
+      const expressionSheet = themedExpressions[selectedFrame];
       shots.forEach((shot, index) => {
         ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
         ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.82)" : "rgba(255,248,218,.9)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
-        const expression = expressionPoong[index] || poong;
+        const expression = expressionSheet || expressionPoong[index] || poong;
         if (expression) {
-          const stickerWidth = 178; const stickerHeight = 208;
+          const stickerWidth = expressionSheet ? 238 : 178; const stickerHeight = expressionSheet ? 270 : 208;
           const onRight = index % 2 === 0;
-          const onTop = index === 0 || index === 2;
-          const stickerX = onRight ? padding + photoWidth - stickerWidth + 54 : padding - 54;
-          const stickerY = onTop ? y + 24 : y + photoHeight - stickerHeight - 20;
-          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight);
+          const stickerX = onRight ? padding + photoWidth - stickerWidth - 18 : padding + 18;
+          const stickerY = index % 2 === 0 ? y + 22 : y + photoHeight - stickerHeight - 22;
+          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet));
         }
         y += photoHeight + gap;
       });
@@ -723,13 +743,16 @@
   Promise.all([
     loadImage("poong-market.png"),
     loadImage("poong-pierrot.png"),
+    loadImage("poong-market-expressions.png"),
+    loadImage("poong-pierrot-expressions.png"),
     loadImage("poong.png"),
     loadImage("poong-expression-1.png"),
     loadImage("poong-expression-2.png"),
     loadImage("poong-expression-3.png"),
     loadImage("poong-expression-4.png"),
-  ]).then(([market, pierrot, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour]) => {
+  ]).then(([market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour]) => {
     themedPoong = { market, pierrot };
+    themedExpressions = { market: marketExpressions, pierrot: pierrotExpressions };
     expressionPoong = [expressionOne, expressionTwo, expressionThree, expressionFour];
     previewPoong = market || pierrot || fallbackPoong;
     drawThemePreview();
