@@ -340,3 +340,117 @@ h1 { margin: 25px 0 16px; font-family: var(--display); font-size: clamp(54px, 7v
   .booth-footer { left: 16px; right: 16px; font-size: 7px; }
   .booth-footer span:last-child { display: none; }
 }
+
+/* Final visual pass: calm, camera-first photobooth styling. */
+body { color: var(--ink); background: var(--canvas); }
+.ambient { opacity: .26; filter: blur(8px); }
+.ambient-one { background: radial-gradient(circle, rgba(201,74,62,.17), transparent 68%); }
+.ambient-two { background: radial-gradient(circle, rgba(220,166,77,.15), transparent 67%); }
+.grain { opacity: .035; mix-blend-mode: multiply; }
+.site-shell { width: min(1120px, calc(100% - 48px)); }
+.topbar { min-height: 84px; border-bottom-color: #d9d0c3; }
+.event-brand { color: var(--ink); }
+.event-monogram { width: 42px; height: 42px; border-color: #a9c4da; color: #fff; background: var(--lilac); box-shadow: 0 0 0 4px rgba(23,72,117,.1); }
+.event-brand-copy strong { color: var(--ink); }
+.event-brand-copy small { color: #7d8182; }
+.live-dot { color: #707a7d; }
+.round-button { border-color: #d0c8bb; color: var(--lilac); background: rgba(255,255,255,.35); }
+body[data-flow="home"] .studio-layout { grid-template-columns: minmax(0, 960px); }
+body:not([data-flow="home"]) .studio-layout { grid-template-columns: minmax(0, 940px); padding-top: 34px; }
+.intro-panel { min-height: 0; padding: 56px 0 42px; }
+.intro-kicker { color: var(--orange); font-size: 9px; letter-spacing: .15em; }
+.intro-kicker span { background: var(--orange); }
+.cau-festival-lockup { margin-top: 18px; border-color: #a9c4da; border-left-color: var(--lilac); background: linear-gradient(100deg, #174875, #255a86); }
+h1 { margin: 21px 0 14px; color: var(--ink); font-size: clamp(49px, 7vw, 88px); line-height: .92; }
+.title-market { color: var(--ink); }
+.title-x { color: var(--orange); }
+.title-pierrot { color: #c03938; }
+.intro-copy { color: #65707a; font-size: 15px; line-height: 1.65; }
+.intro-copy b { color: var(--ink); }
+.poong-scene { height: 360px; margin: 30px 0 28px; border: 1px solid #d4bfa8; border-bottom-width: 4px; border-radius: 22px; background-color: #c58b6e; box-shadow: 0 18px 36px rgba(40,33,26,.15); }
+.poong-scene::before { background: linear-gradient(180deg, rgba(255,245,218,.05), rgba(75,37,35,.42)), linear-gradient(90deg, rgba(23,72,117,.18), rgba(232,182,83,.02) 50%, rgba(190,57,54,.2)); }
+.festival-sticker, .market-sign, .scene-label, .poong-rings { display: none; }
+.poong-character-label { border-color: rgba(255,255,255,.7); background: rgba(23,72,117,.9); }
+.cau-campus-plaque { border-color: #a9c4da; background: rgba(23,72,117,.96); }
+.intro-meta { border-top-color: #d9d0c3; border-bottom-color: #d9d0c3; }
+.intro-meta span { color: #8d8376; }
+.intro-meta strong { color: var(--ink); }
+.intro-note { border-color: #ded4c7; background: rgba(255,255,255,.42); }
+.note-icon { color: var(--orange); }
+.intro-note p { color: #6d756f; }
+.home-start { width: min(100%, 320px); margin-top: 22px; }
+.home-qr { margin-top: 15px; }
+.home-qr p span, .home-callout p span { color: var(--lilac); }
+.home-qr p strong, .home-callout p strong { color: var(--ink); }
+.home-qr p small, .home-callout p small { color: #8f918c; }
+.qr-card { border: 1px solid #d4ccbf; box-shadow: 0 9px 18px rgba(33,39,49,.12); }
+.booth-card { min-height: 0; padding: 28px 30px 23px; border-color: #ded4c7; border-radius: 24px; background: var(--panel); box-shadow: 0 24px 60px rgba(60,47,32,.14), inset 0 1px 0 rgba(255,255,255,.9); }
+.booth-card::before { display: none; }
+.booth-topline { margin-bottom: 22px; }
+.booth-eyebrow { color: var(--lilac); }
+.booth-topline h2 { color: var(--ink); font-size: 22px; }
+.stepper { color: #b0aaa0; }
+.step { border-color: #d7cec1; }
+.step.active { border-color: var(--orange); color: var(--orange); background: rgba(201,74,62,.08); }
+.step-line { background: #d7cec1; }
+.capture-stage { border-color: #d9cfc2; background: #17263a; }
+.theme-intro { border-color: #e2d8ca; background: linear-gradient(135deg, #f4eee4, #fbf8f1); }
+.theme-step { color: var(--lilac); }
+.theme-intro h3 { color: var(--ink); }
+.theme-intro p { color: #69736e; }
+.theme-choice-layout { gap: 20px; }
+.theme-preview-panel { border-color: #e0d6c8; background: #f7f1e7; }
+.theme-preview-heading span { color: var(--lilac); }
+.theme-preview-heading strong { color: var(--ink); }
+#themePreview { border-color: #fff; box-shadow: 0 15px 28px rgba(41,33,24,.2); }
+.control-heading span { color: var(--orange); }
+.control-heading small { color: #8c918d; }
+.frame-option, .filter-option { border-color: #ded5c9; color: #65717a; background: #fffdf8; }
+.frame-option:hover, .filter-option:hover { border-color: #b8a999; color: var(--ink); }
+.frame-option.selected, .filter-option.selected { border-color: var(--orange); background: #fff8ef; color: var(--ink); box-shadow: inset 0 0 0 1px rgba(201,74,62,.12); }
+.frame-option small { color: #99958c; }
+.swatch-market { background: linear-gradient(145deg, rgba(117,30,37,.5), rgba(243,184,78,.2)), url("market-scene.png") center / cover; }
+.swatch-pierrot { background: linear-gradient(180deg, rgba(41,20,54,.1), rgba(41,20,54,.5)), repeating-linear-gradient(125deg, #f7c55e 0 9px, #cc4a43 9px 15px); }
+.filter-option span { color: #9a958d; }
+.booth-actions, .result-actions, .camera-actions { margin-top: 18px; }
+.secondary-action { border-color: #d6cdc0; color: #69737a; background: #faf6ef; }
+.secondary-action:hover { color: var(--ink); background: #f2ece2; }
+.primary-action { border-color: var(--orange); color: #fff; background: var(--orange); box-shadow: 0 9px 22px rgba(189,57,54,.18); }
+.primary-action:hover { background: #a92f32; box-shadow: 0 14px 25px rgba(189,57,54,.24); }
+.primary-action .action-number { opacity: .7; }
+.action-note { color: #929087; }
+.booth-footer { color: #99938b; }
+.camera-window { background: #111d30; }
+.camera-fallback { background: radial-gradient(circle at center, rgba(220,166,77,.2), transparent 28%), linear-gradient(145deg, #203c5d, #151d2d); }
+.camera-fallback strong { color: #fffaf1; }
+.camera-fallback small, .camera-top-row, .camera-bottom-row { color: rgba(255,255,255,.66); }
+.result-window { background: #f0ebe2; }
+.result-header { color: #6e716e; }
+.result-header .window-badge { color: var(--ink); background: rgba(255,255,255,.58); border-color: #d8cfc2; }
+.result-footer { color: #6e716e; }
+.result-footer strong { color: var(--orange); }
+
+@media (max-width: 1040px) {
+  .site-shell { width: min(760px, calc(100% - 40px)); }
+  .intro-panel { padding-top: 38px; }
+}
+
+@media (max-width: 650px) {
+  .site-shell { width: calc(100% - 24px); }
+  .topbar { min-height: 70px; }
+  .intro-panel { padding: 30px 0 28px; }
+  h1 { margin-top: 17px; font-size: clamp(48px, 16.5vw, 76px); }
+  .intro-copy { font-size: 14px; }
+  .poong-scene { height: 246px; margin-top: 24px; border-radius: 16px; }
+  .cau-festival-lockup { max-width: 100%; }
+  .cau-festival-copy small, .cau-festival-year { letter-spacing: .04em; }
+  .cau-campus-plaque { bottom: 10px; }
+  .booth-card { padding: 21px 15px 60px; border-radius: 20px; }
+  .booth-topline h2 { font-size: 18px; }
+  .theme-intro { padding: 16px 14px; }
+  .theme-choice-layout { gap: 9px; }
+  .theme-preview-panel { padding: 8px; }
+  .control-panel { padding-top: 14px; }
+  .frame-option, .filter-option { background: #fffdf8; }
+  .booth-footer { left: 15px; right: 15px; }
+}
