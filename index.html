@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#15132c" />
+    <meta name="description" content="중앙대학교 2026 가을축제 화개장터×삐에로, 푸앙이와 함께 만드는 온라인 인생네컷 포토부스" />
+    <meta property="og:title" content="화개장터 × 삐에로 | CAU Fall Festival 2026" />
+    <meta property="og:description" content="푸앙이와 함께 중앙대 가을밤을 네컷으로 남겨보세요." />
+    <title>화개장터 × 삐에로 | 중앙대학교 2026 가을축제</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gugi&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="ambient ambient-one" aria-hidden="true"></div>
+    <div class="ambient ambient-two" aria-hidden="true"></div>
+    <div class="grain" aria-hidden="true"></div>
+
+    <div class="site-shell">
+      <header class="topbar">
+        <a class="event-brand" href="#top" aria-label="중앙대학교 2026 가을축제 홈">
+          <span class="event-monogram">CAU</span>
+          <span class="event-brand-copy">
+            <strong>중앙대학교</strong>
+            <small>2026 FALL FESTIVAL</small>
+          </span>
+        </a>
+        <div class="topbar-right">
+          <span class="live-dot"><i></i>PHOTO BOOTH LIVE</span>
+          <button class="round-button" id="btnTopReset" type="button" aria-label="처음 화면으로 돌아가기">↺</button>
+        </div>
+      </header>
+
+      <main id="top" class="studio-layout">
+        <section class="intro-panel" aria-labelledby="festival-title">
+          <div class="intro-kicker"><span></span> HUAGAE MARKET / 01</div>
+          <h1 id="festival-title">
+            <span class="title-market">화개장터</span>
+            <span class="title-x">×</span>
+            <span class="title-pierrot">삐에로</span>
+          </h1>
+          <p class="intro-copy">가을밤의 웃음, 오늘의 우리를<br /><b>네컷 한 장</b>에 꽉 눌러 담아요.</p>
+
+          <div class="poong-scene" aria-label="화개장터 모자를 쓴 푸앙이">
+            <div class="scene-label scene-label-left">CAMPUS<br /><b>MEMORY</b></div>
+            <div class="scene-sun"></div>
+            <div class="market-sign">밤마실<br /><b>PHOTO CLUB</b></div>
+            <div class="poong-rings poong-ring-one"></div>
+            <div class="poong-rings poong-ring-two"></div>
+            <img class="poong" src="poong.png" alt="중앙대학교 마스코트 푸앙이" />
+            <div class="poong-sticker">CAU<br /><strong>푸앙이</strong></div>
+            <div class="scene-label scene-label-right">FALL<br /><b>2026</b></div>
+          </div>
+
+          <div class="intro-meta">
+            <div><span>PLACE</span><strong>중앙대학교 서울캠퍼스</strong></div>
+            <div><span>MOOD</span><strong>Autumn market · Pierrot circus</strong></div>
+          </div>
+
+          <div class="intro-note">
+            <span class="note-icon">✦</span>
+            <p>사진은 브라우저 안에서만 처리돼요.<br />우리끼리만 간직하는 축제의 한 장면.</p>
+          </div>
+        </section>
+
+        <section class="booth-card" aria-labelledby="booth-title">
+          <div class="booth-topline">
+            <div>
+              <div class="booth-eyebrow">THE MEMORY MACHINE</div>
+              <h2 id="booth-title">오늘의 네컷 만들기</h2>
+            </div>
+            <div class="stepper" aria-label="촬영 단계">
+              <span class="step active" data-step="1">01</span>
+              <span class="step-line"></span>
+              <span class="step" data-step="2">02</span>
+              <span class="step-line"></span>
+              <span class="step" data-step="3">03</span>
+            </div>
+          </div>
+
+          <div class="booth-content">
+            <div class="capture-stage" id="captureStage" data-mode="home">
+              <div class="mode-screen home-screen" data-screen="home">
+                <div class="preview-window preview-window-home">
+                  <div class="preview-top-row"><span class="window-badge">HUAGAE CAM</span><span>READY / 4 CUTS</span></div>
+                  <div class="sample-collage" aria-hidden="true">
+                    <div class="sample-photo sample-photo-one"><span>SMILE</span></div>
+                    <div class="sample-photo sample-photo-two"><span>VIBE</span></div>
+                    <div class="sample-photo sample-photo-three"><span>CHEESE</span></div>
+                    <div class="sample-photo sample-photo-four"><span>LOVE</span></div>
+                    <div class="sample-stamp">AUTUMN<br /><b>’26</b></div>
+                  </div>
+                  <div class="preview-copy">
+                    <span>PRESS START TO ENTER</span>
+                    <strong>카메라를 켜고<br />우리의 포즈를 시작해요.</strong>
+                  </div>
+                </div>
+                <div class="home-callout"><span>01</span><p>프레임과 필터를 먼저 고른 다음<br />4초 간격으로 네 장을 촬영해요.</p></div>
+              </div>
+
+              <div class="mode-screen camera-screen" data-screen="camera">
+                <div class="preview-window camera-window">
+                  <video id="video" autoplay playsinline muted aria-label="촬영 카메라 미리보기"></video>
+                  <div class="camera-fallback" id="cameraFallback">
+                    <span class="fallback-orbit"></span>
+                    <span class="fallback-eyebrow">CAMERA PREVIEW</span>
+                    <strong>여기서<br />표정 준비!</strong>
+                    <small>카메라 권한을 허용하면<br />실시간 화면이 나타나요.</small>
+                  </div>
+                  <div class="camera-overlay"></div>
+                  <div class="camera-top-row"><span class="window-badge"><i></i> LIVE VIEW</span><span id="shotCount">0 / 4</span></div>
+                  <div class="countdown" id="countdown" aria-live="assertive"></div>
+                  <div class="flash" id="flash"></div>
+                  <div class="camera-bottom-row"><span id="cameraStatus">필터를 고르고 시작 버튼을 눌러주세요</span><span class="battery"><i></i><i></i><i></i></span></div>
+                </div>
+                <div class="shot-dots" id="shotDots" aria-label="촬영 진행 상태"><i></i><i></i><i></i><i></i></div>
+                <div class="pose-hint"><span>POSE PICK</span><strong id="poseTitle">엔딩요정 포즈</strong><small id="poseCopy">마지막 컷에는 손 하트, 기억해두기!</small><button id="btnPose" type="button" aria-label="다른 포즈 추천받기">↻</button></div>
+              </div>
+
+              <div class="mode-screen result-screen" data-screen="result">
+                <div class="result-window">
+                  <div class="result-header"><span class="window-badge">YOUR MEMORY / 2026</span><span id="resultFrameLabel">MARKET NIGHT</span></div>
+                  <div class="result-image-wrap"><img id="resultImage" alt="완성된 화개장터 네컷" /></div>
+                  <div class="result-footer"><span>CAU FALL FESTIVAL</span><strong>KEEP THIS NIGHT</strong><span>♡ ♡ ♡</span></div>
+                </div>
+              </div>
+            </div>
+
+            <div class="control-panel" id="controlPanel">
+              <div class="control-group frame-group">
+                <div class="control-heading"><span>FRAME</span><small>마음에 드는 분위기를 골라요</small></div>
+                <div class="frame-list" id="frameList">
+                  <button class="frame-option selected" data-frame="market" type="button"><span class="frame-swatch swatch-market"><i></i><i></i><i></i><i></i></span><strong>화개장터</strong><small>MARKET NIGHT</small></button>
+                  <button class="frame-option" data-frame="pierrot" type="button"><span class="frame-swatch swatch-pierrot"><i></i><i></i><i></i><i></i></span><strong>삐에로</strong><small>CIRCUS CLUB</small></button>
+                  <button class="frame-option" data-frame="poong" type="button"><span class="frame-swatch swatch-poong"><i></i><i></i><i></i><i></i></span><strong>푸앙이</strong><small>CAU FRIENDS</small></button>
+                  <button class="frame-option" data-frame="noir" type="button"><span class="frame-swatch swatch-noir"><i></i><i></i><i></i><i></i></span><strong>나이트</strong><small>NOIR FILM</small></button>
+                </div>
+              </div>
+
+              <div class="control-group filter-group">
+                <div class="control-heading"><span>FILTER</span><small>요즘 인생네컷 무드</small></div>
+                <div class="filter-list" id="filterList">
+                  <button class="filter-option selected" data-filter="soft" type="button"><span>01</span><strong>SOFT FLASH</strong></button>
+                  <button class="filter-option" data-filter="film" type="button"><span>02</span><strong>FILM GRAIN</strong></button>
+                  <button class="filter-option" data-filter="mono" type="button"><span>03</span><strong>MONO MOOD</strong></button>
+                  <button class="filter-option" data-filter="night" type="button"><span>04</span><strong>NIGHT GLOW</strong></button>
+                </div>
+              </div>
+
+              <div class="booth-actions" id="boothActions">
+                <button class="secondary-action" id="btnReset" type="button">처음으로</button>
+                <button class="primary-action" id="btnStart" type="button"><span class="action-number">01</span><span id="startLabel">START BOOTH</span><b>↗</b></button>
+              </div>
+              <p class="action-note" id="actionNote">카메라 권한을 허용하면 바로 촬영할 수 있어요. 권한이 없어도 데모 촬영은 가능합니다.</p>
+            </div>
+
+            <div class="result-actions" id="resultActions" hidden>
+              <button class="secondary-action" id="btnRetake" type="button">↺ 다시 찍기</button>
+              <button class="primary-action" id="btnSave" type="button"><span class="action-number">03</span><span>저장 / 공유하기</span><b>↓</b></button>
+            </div>
+          </div>
+
+          <footer class="booth-footer">
+            <span>OPEN SOURCE CAMERA EXPERIENCE / MADE FOR CAU</span>
+            <span>PHOTO STAYS ON YOUR DEVICE</span>
+          </footer>
+        </section>
+      </main>
+    </div>
+
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <a id="downloadLink" class="download-link" download="cau-hwagae-4cut.png"></a>
+    <script src="app.js"></script>
+  </body>
+</html>
