@@ -1,9 +1,13 @@
 (() => {
   const filters = {
-    soft: { label: "SOFT FLASH", copy: "얼굴은 밝게, 색감은 부드럽게", css: "brightness(1.08) contrast(.94) saturate(1.12)" },
-    film: { label: "FILM GRAIN", copy: "따뜻한 입자감, 오래된 필름처럼", css: "sepia(.16) contrast(1.05) saturate(.9) brightness(1.03)" },
-    mono: { label: "MONO MOOD", copy: "표정과 실루엣만 또렷하게", css: "grayscale(1) contrast(1.1) brightness(1.04)" },
-    night: { label: "NIGHT GLOW", copy: "축제의 불빛을 진하게 담아서", css: "saturate(1.28) contrast(1.08) brightness(.96) hue-rotate(8deg)" }
+    soft: { label: "SOFT FLASH", copy: "피부 톤은 부드럽게, 하이라이트는 살짝", css: "brightness(1.08) contrast(.94) saturate(1.08)" },
+    warm: { label: "AUTUMN HONEY", copy: "가을빛을 한 스푼 더한 따뜻한 웜톤", css: "sepia(.1) saturate(1.15) contrast(1.02) brightness(1.06)" },
+    film: { label: "FILM GRAIN", copy: "따뜻한 입자감과 빈티지 텍스처", css: "sepia(.18) contrast(1.08) saturate(.95) brightness(1.02)" },
+    vivid: { label: "COLOR POP", copy: "축제의 색을 또렷하고 선명하게", css: "saturate(1.35) contrast(1.1) brightness(1.02)" },
+    cool: { label: "BLUE HOUR", copy: "밤공기처럼 맑고 차분한 블루톤", css: "saturate(.9) contrast(1.04) brightness(1.04) hue-rotate(12deg)" },
+    mono: { label: "MONO MOOD", copy: "표정과 실루엣만 선명하게", css: "grayscale(1) contrast(1.12) brightness(1.04)" },
+    retro: { label: "MELLOW RETRO", copy: "바랜 사진처럼 부드러운 레트로", css: "sepia(.24) saturate(.86) contrast(.96) brightness(1.04)" },
+    night: { label: "NIGHT GLOW", copy: "등불과 무대 조명을 깊게 담아서", css: "saturate(1.3) contrast(1.08) brightness(.95) hue-rotate(8deg)" }
   };
 
   const frameLabels = { market: "MARKET NIGHT", pierrot: "PIERROT CIRCUS" };
@@ -34,6 +38,8 @@
   const filterPreviewImage = $("#filterPreviewImage");
   const filterPreviewTitle = $("#filterPreviewTitle");
   const filterPreviewCopy = $("#filterPreviewCopy");
+  const autoEnhanceToggle = $("#autoEnhance");
+  const cauAnniversaryMark = $("#cauAnniversaryMark");
   const controlPanel = $("#controlPanel");
   const boothActions = $("#boothActions");
   const resultActions = $("#resultActions");
@@ -49,6 +55,7 @@
 
   let selectedFrame = "market";
   let selectedFilter = "soft";
+  let autoEnhance = true;
   let currentPose = 0;
   let facingMode = "user";
   let stream = null;
@@ -203,6 +210,7 @@
     ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.filter = "none";
+    if (autoEnhance) applyAutoEnhance(ctx, canvas.width, canvas.height);
     if (selectedFilter === "soft") {
       const glow = ctx.createRadialGradient(360, 360, 20, 360, 360, 600);
       glow.addColorStop(0, "rgba(255,255,255,.23)"); glow.addColorStop(1, "rgba(255,255,255,0)");
@@ -210,6 +218,35 @@
     }
     if (selectedFilter === "film") addFilmGrain(ctx, canvas.width, canvas.height);
     return canvas;
+  }
+
+  function applyAutoEnhance(ctx, width, height) {
+    const image = ctx.getImageData(0, 0, width, height);
+    const data = image.data;
+    for (let i = 0; i < data.length; i += 4) {
+      const red = data[i];
+      const green = data[i + 1];
+      const blue = data[i + 2];
+      const luminance = red * .2126 + green * .7152 + blue * .0722;
+      const contrast = 1.035;
+      const lift = 2.5;
+      const target = (luminance - 128) * contrast + 128 + lift;
+      const saturation = 1.045;
+      data[i] = Math.max(0, Math.min(255, target + (red - luminance) * saturation + 1.5));
+      data[i + 1] = Math.max(0, Math.min(255, target + (green - luminance) * saturation + .5));
+      data[i + 2] = Math.max(0, Math.min(255, target + (blue - luminance) * saturation - 1));
+    }
+    ctx.putImageData(image, 0, 0);
+    const softened = document.createElement("canvas");
+    softened.width = width; softened.height = height;
+    const softenedCtx = softened.getContext("2d");
+    if (!softenedCtx) return;
+    softenedCtx.filter = "blur(1.2px)";
+    softenedCtx.drawImage(ctx.canvas, 0, 0);
+    ctx.save();
+    ctx.globalAlpha = .075;
+    ctx.drawImage(softened, 0, 0);
+    ctx.restore();
   }
 
   function addFilmGrain(ctx, width, height) {
@@ -420,8 +457,8 @@
     let y = header;
     for (let index = 0; index < 4; index += 1) {
       drawPreviewPhoto(ctx, padding, y, photoWidth, photoHeight, selectedFrame, index);
-      ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.82)" : "rgba(255,248,218,.9)";
-      ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
+      ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.58)" : "rgba(255,248,218,.68)";
+      ctx.lineWidth = 1.5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
       const expression = expressionSheet || expressionPoong[index] || poong;
       if (expression) {
         const badgeSize = expressionSheet ? Math.min(104, photoHeight - 4, photoWidth * .44) : 78;
@@ -522,6 +559,44 @@
     return canvas;
   }
 
+  function getTransparentLogo(image) {
+    const width = image?.naturalWidth;
+    const height = image?.naturalHeight;
+    if (!width || !height) return image;
+    const canvas = document.createElement("canvas");
+    canvas.width = width; canvas.height = height;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return image;
+    ctx.drawImage(image, 0, 0);
+    const pixels = ctx.getImageData(0, 0, width, height);
+    const visited = new Uint8Array(width * height);
+    const queue = new Int32Array(width * height);
+    let head = 0; let tail = 0;
+    const isBackdrop = (offset) => {
+      if (pixels.data[offset + 3] < 24) return true;
+      const red = pixels.data[offset]; const green = pixels.data[offset + 1]; const blue = pixels.data[offset + 2];
+      const max = Math.max(red, green, blue); const min = Math.min(red, green, blue);
+      return min > 175 && max - min < 70;
+    };
+    const enqueue = (pixel) => {
+      if (pixel < 0 || pixel >= width * height || visited[pixel] || !isBackdrop(pixel * 4)) return;
+      visited[pixel] = 1; queue[tail] = pixel; tail += 1;
+    };
+    for (let x = 0; x < width; x += 1) { enqueue(x); enqueue((height - 1) * width + x); }
+    for (let y = 1; y < height - 1; y += 1) { enqueue(y * width); enqueue(y * width + width - 1); }
+    while (head < tail) {
+      const pixel = queue[head++];
+      pixels.data[pixel * 4 + 3] = 0;
+      const x = pixel % width; const y = Math.floor(pixel / width);
+      if (x > 0) enqueue(pixel - 1);
+      if (x < width - 1) enqueue(pixel + 1);
+      if (y > 0) enqueue(pixel - width);
+      if (y < height - 1) enqueue(pixel + width);
+    }
+    ctx.putImageData(pixels, 0, 0);
+    return canvas;
+  }
+
   function drawPoongCompanion(ctx, image, index, x, y, width = 136, height = 164) {
     if (!image || !image.naturalWidth) return;
     const labels = ["HAPPY POONG", "FESTIVAL MESSAGE", "MARKET LOOK", "CUTE POONG"];
@@ -607,7 +682,14 @@
       ctx.fillStyle = "rgba(255,218,144,.62)";
       for (let lamp = 0; lamp < 4; lamp += 1) { ctx.beginPath(); ctx.arc(x + width * (.16 + lamp * .23), y + height * (.2 + (lamp % 2) * .08), Math.max(2, width * .012), 0, Math.PI * 2); ctx.fill(); }
       ctx.fillStyle = "rgba(88,38,31,.16)";
-      for (let line = 0; line < 3; line += 1) { ctx.fillRect(x + width * .1, y + height * (.7 + line * .08), width * .8, Math.max(1, height * .01)); }
+      ctx.strokeStyle = "rgba(72, 95, 87, .2)";
+      ctx.lineWidth = Math.max(1, height * .008);
+      for (let ripple = 0; ripple < 2; ripple += 1) {
+        ctx.beginPath();
+        ctx.moveTo(x + width * .16, y + height * (.74 + ripple * .08));
+        ctx.quadraticCurveTo(x + width * .5, y + height * (.71 + ripple * .08), x + width * .84, y + height * (.74 + ripple * .08));
+        ctx.stroke();
+      }
       drawText(ctx, `${String(index + 1).padStart(2, "0")}  MARKET MEMORY`, x + 10, labelY, labelSize, "rgba(95,38,35,.72)", `600 ${labelSize}px 'IBM Plex Mono'`, "left");
     }
     ctx.restore();
@@ -686,7 +768,7 @@
       const expressionSheet = themedExpressions[selectedFrame];
       shots.forEach((shot, index) => {
         ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
-        ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.82)" : "rgba(255,248,218,.9)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
+        ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
         const expression = expressionSheet || expressionPoong[index] || poong;
         if (expression) {
           const stickerWidth = expressionSheet ? 286 : 178; const stickerHeight = expressionSheet ? 326 : 208;
@@ -758,9 +840,14 @@
   $("#btnTopReset").addEventListener("click", resetAll);
   $("#btnRetake").addEventListener("click", resetAll);
   $("#btnSave").addEventListener("click", saveResult);
+  autoEnhanceToggle?.addEventListener("change", () => {
+    autoEnhance = autoEnhanceToggle.checked;
+    showToast(autoEnhance ? "AUTO BEAUTY 보정을 켰어요." : "AUTO BEAUTY 보정을 껐어요.");
+  });
 
   updateFrameSelection(); updateFilterSelection(); updatePose(); setFlow("home");
   Promise.all([
+    loadImage("cau-anniversary-mark.png"),
     loadImage("poong-market.png"),
     loadImage("poong-pierrot.png"),
     loadImage("poong-market-expressions.png"),
@@ -770,7 +857,11 @@
     loadImage("poong-expression-2.png"),
     loadImage("poong-expression-3.png"),
     loadImage("poong-expression-4.png"),
-  ]).then(([market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour]) => {
+  ]).then(([anniversaryMark, market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour]) => {
+    if (anniversaryMark && cauAnniversaryMark) {
+      cauAnniversaryMark.src = getTransparentLogo(anniversaryMark).toDataURL("image/png");
+      cauAnniversaryMark.classList.add("ready");
+    }
     themedPoong = { market, pierrot };
     themedExpressions = { market: marketExpressions, pierrot: pierrotExpressions };
     expressionPoong = [expressionOne, expressionTwo, expressionThree, expressionFour];
