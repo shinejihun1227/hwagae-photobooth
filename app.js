@@ -6,7 +6,7 @@
     night: { label: "NIGHT GLOW", css: "saturate(1.28) contrast(1.08) brightness(.96) hue-rotate(8deg)" }
   };
 
-  const frameLabels = { market: "MARKET NIGHT", pierrot: "PIERROT CIRCUS", poong: "CAU FRIENDS", noir: "NOIR FILM" };
+  const frameLabels = { market: "MARKET NIGHT", pierrot: "PIERROT CIRCUS" };
   const poses = [
     ["엔딩요정 포즈", "마지막 컷에는 손 하트, 기억해두기!"],
     ["삐에로 모드", "눈 크게, 턱 살짝! 과감할수록 귀여워요."],
@@ -17,7 +17,9 @@
 
   const $ = (selector) => document.querySelector(selector);
   const $$ = (selector) => [...document.querySelectorAll(selector)];
+  const body = document.body;
   const stage = $("#captureStage");
+  const themeScreen = $("#themeScreen");
   const video = $("#video");
   const fallback = $("#cameraFallback");
   const countdown = $("#countdown");
@@ -31,6 +33,10 @@
   const boothActions = $("#boothActions");
   const resultActions = $("#resultActions");
   const startButton = $("#btnStart");
+  const enterButton = $("#btnEnterBooth");
+  const captureButton = $("#btnCapture");
+  const backThemeButton = $("#btnBackTheme");
+  const cameraActions = $("#cameraActions");
   const startLabel = $("#startLabel");
   const actionNote = $("#actionNote");
   const toast = $("#toast");
@@ -46,19 +52,18 @@
   let demoMode = false;
   let busy = false;
 
-  function setMode(mode) {
+  function setFlow(flow) {
+    const mode = flow === "camera" ? "camera" : flow === "result" ? "result" : "home";
+    body.dataset.flow = flow;
     stage.dataset.mode = mode;
-    const step = mode === "home" ? 1 : mode === "camera" ? 2 : 3;
+    stage.hidden = flow !== "camera" && flow !== "result";
+    themeScreen.hidden = flow !== "theme";
+    const step = flow === "camera" ? 2 : flow === "result" ? 3 : 1;
     $$(".step").forEach((el) => el.classList.toggle("active", Number(el.dataset.step) === step));
-    if (mode === "result") {
-      controlPanel.hidden = true;
-      boothActions.hidden = true;
-      resultActions.hidden = false;
-    } else {
-      controlPanel.hidden = false;
-      boothActions.hidden = false;
-      resultActions.hidden = true;
-    }
+    controlPanel.hidden = flow !== "theme";
+    boothActions.hidden = flow !== "theme";
+    cameraActions.hidden = flow !== "camera";
+    resultActions.hidden = flow !== "result";
   }
 
   function showToast(message) {
@@ -131,11 +136,24 @@
     shots = [];
     resultDataUrl = "";
     resetDots();
-    setMode("camera");
-    startLabel.textContent = "CAPTURE 4 CUTS";
-    $(".action-number").textContent = "02";
+    setFlow("theme");
+    startLabel.textContent = "NEXT: CAMERA";
+    $("#btnStart .action-number").textContent = "01";
+    actionNote.textContent = "테마와 필터를 고른 다음 카메라 화면으로 이동해요.";
+  }
+
+  async function enterCamera() {
+    if (busy) return;
+    setFlow("camera");
     actionNote.textContent = "카메라 권한을 허용하면 실시간 촬영, 아니면 데모 촬영으로 진행돼요.";
-    openCamera();
+    await openCamera();
+  }
+
+  function backToTheme() {
+    if (busy) return;
+    stopStream();
+    setFlow("theme");
+    actionNote.textContent = "테마와 필터를 고른 다음 카메라 화면으로 이동해요.";
   }
 
   function makeDemoShot(index) {
@@ -239,6 +257,67 @@
     ctx.save(); ctx.shadowColor = "rgba(0,0,0,.3)"; ctx.shadowBlur = 12; ctx.drawImage(image, x - width / 2, y, width, height); ctx.restore();
   }
 
+  function drawThemePoongSticker(ctx, image, theme, x, y, width = 124, height = 142) {
+    if (!image || !image.naturalWidth) return;
+    const market = theme === "market";
+    const imageX = 7;
+    const imageY = 20;
+    const imageWidth = width - 14;
+    const imageHeight = height - 43;
+    ctx.save();
+    ctx.translate(x + width / 2, y + height / 2);
+    ctx.rotate(market ? -.035 : .035);
+    ctx.shadowColor = "rgba(30, 7, 14, .34)";
+    ctx.shadowBlur = 14;
+    ctx.shadowOffsetY = 6;
+    ctx.fillStyle = market ? "#fff2cf" : "#fff6df";
+    ctx.fillRect(-width / 2, -height / 2, width, height);
+    ctx.shadowColor = "transparent";
+    if (market) {
+      ctx.fillStyle = "#c93631";
+      ctx.fillRect(-width / 2, -height / 2, width, 18);
+      for (let stripe = -width / 2; stripe < width / 2; stripe += 18) {
+        ctx.fillStyle = "#ffd05d";
+        ctx.fillRect(stripe, -height / 2, 9, 18);
+      }
+    } else {
+      ctx.fillStyle = "#e9574b";
+      for (let stripe = -height; stripe < width + height; stripe += 25) {
+        ctx.beginPath();
+        ctx.moveTo(stripe, -height / 2);
+        ctx.lineTo(stripe + 12, -height / 2);
+        ctx.lineTo(stripe - height / 2 + 12, height / 2);
+        ctx.lineTo(stripe - height / 2, height / 2);
+        ctx.closePath();
+        ctx.fill();
+      }
+      ctx.fillStyle = "#ffd05d";
+      ctx.fillRect(-width / 2, -height / 2, width, 18);
+    }
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-width / 2 + imageX, -height / 2 + imageY, imageWidth, imageHeight);
+    ctx.clip();
+    drawContain(ctx, image, -width / 2 + imageX, -height / 2 + imageY, imageWidth, imageHeight);
+    ctx.restore();
+    if (market) {
+      ctx.fillStyle = "#c93631";
+      ctx.beginPath();
+      ctx.moveTo(-22, height / 2 - 41); ctx.lineTo(22, height / 2 - 41); ctx.lineTo(17, height / 2 - 23); ctx.lineTo(-17, height / 2 - 23); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#ffd05d"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#ffd05d";
+      ctx.beginPath(); ctx.arc(-8, height / 2 - 32, 2.5, 0, Math.PI * 2); ctx.arc(8, height / 2 - 32, 2.5, 0, Math.PI * 2); ctx.fill();
+    } else {
+      ctx.fillStyle = "#c93631";
+      ctx.beginPath(); ctx.moveTo(-24, -height / 2 + 18); ctx.lineTo(24, -height / 2 + 18); ctx.lineTo(0, -height / 2 - 17); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "#ffd05d"; ctx.lineWidth = 2; ctx.stroke();
+      ctx.fillStyle = "#ffd05d"; ctx.beginPath(); ctx.arc(0, -height / 2 - 19, 4, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = "#e9574b"; ctx.beginPath(); ctx.arc(-14, height / 2 - 31, 3, 0, Math.PI * 2); ctx.arc(14, height / 2 - 31, 3, 0, Math.PI * 2); ctx.fill();
+    }
+    drawText(ctx, market ? "화개장터 푸앙이" : "삐에로 푸앙이", 0, height / 2 - 8, 8, "#762637", "700 8px 'Noto Sans KR'");
+    ctx.restore();
+  }
+
   function loadImage(source) {
     return new Promise((resolve) => {
       const image = new Image();
@@ -308,7 +387,7 @@
       const gradient = ctx.createLinearGradient(0, 0, width, height); gradient.addColorStop(0, "#8f2938"); gradient.addColorStop(.52, "#db543a"); gradient.addColorStop(1, "#ffd36a"); ctx.fillStyle = gradient; ctx.fillRect(0, 0, width, height);
       for (let i = 0; i < 8; i += 1) { ctx.strokeStyle = `rgba(255,244,223,${.1 + i * .015})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(width * .5, 100, 95 + i * 40, Math.PI, Math.PI * 2); ctx.stroke(); }
       drawText(ctx, "푸앙이랑", width / 2, 66, 32, "#fff4df", "400 32px 'Gugi'");
-      drawText(ctx, "4 EXPRESSIONS / HUAGAE × PIERROT", width / 2, 100, 13, "#fff0cf", "600 13px 'IBM Plex Mono'");
+      drawText(ctx, "MARKET POONG / CAU 2026", width / 2, 100, 13, "#fff0cf", "600 13px 'IBM Plex Mono'");
       return;
     }
     if (frame === "noir") {
@@ -329,22 +408,14 @@
     else if (frame === "noir") { ctx.fillStyle = "#111328"; ctx.fillRect(0, y, width, height); }
     else if (frame === "poong") { ctx.fillStyle = "#b8373e"; ctx.fillRect(0, y, width, height); }
     else { ctx.fillStyle = "rgba(113,27,40,.88)"; ctx.fillRect(0, y, width, height); }
-    if (poong && (frame === "market" || frame === "poong")) drawPoong(ctx, poong, width / 2, y + 9, 62, 84);
+    if (poong && (frame === "market" || frame === "pierrot")) drawThemePoongSticker(ctx, poong, frame, width / 2 - 41, y + 1, 82, 101);
     drawText(ctx, frame === "poong" ? "푸앙이와 함께한 가을밤" : "HWAGAE MARKET × PIERROT", width / 2, y + 107, 17, frame === "pierrot" ? "#34203f" : "#fff6e4", "700 17px 'Noto Sans KR'");
     const date = new Date();
     drawText(ctx, `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, "0")}.${String(date.getDate()).padStart(2, "0")}  /  중앙대학교`, width / 2, y + 133, 12, frame === "pierrot" ? "#8c5b55" : "#ffe0bd", "500 12px 'IBM Plex Mono'");
   }
 
   async function composeStrip() {
-    const poongAssets = await Promise.all([
-      loadImage("poong.png"),
-      loadImage("poong-expression-1.png"),
-      loadImage("poong-expression-2.png"),
-      loadImage("poong-expression-3.png"),
-      loadImage("poong-expression-4.png"),
-    ]);
-    const poong = poongAssets[0];
-    const poongCompanions = poongAssets.slice(1);
+    const poong = await loadImage("poong.png");
     const photoWidth = 500; const photoHeight = 667; const padding = 26; const gap = 15; const header = 145; const footer = 155;
     const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
     const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
@@ -354,13 +425,13 @@
     shots.forEach((shot, index) => {
       ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
       ctx.strokeStyle = selectedFrame === "noir" ? "#86d7d0" : "rgba(255,255,255,.86)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
-      if (selectedFrame === "poong") {
-        const stickerWidth = 136; const stickerHeight = 164;
-        const stickerX = index % 2 === 0 ? padding + photoWidth - stickerWidth - 16 : padding + 16;
-        const stickerY = index % 2 === 0 ? y + 16 : y + photoHeight - stickerHeight - 18;
-        drawPoongCompanion(ctx, poongCompanions[index], index, stickerX, stickerY, stickerWidth, stickerHeight);
+      if (index === 0 || index === 3) {
+        const stickerWidth = 124; const stickerHeight = 142;
+        const stickerX = index === 0 ? padding + photoWidth - stickerWidth - 16 : padding + 16;
+        const stickerY = index === 0 ? y + 16 : y + photoHeight - stickerHeight - 18;
+        drawThemePoongSticker(ctx, poong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
       }
-      if (index === 1 && selectedFrame !== "noir") { ctx.fillStyle = "#ff6a3d"; ctx.beginPath(); ctx.arc(width - padding - 17, y - 9, 28, 0, Math.PI * 2); ctx.fill(); drawText(ctx, "CAU", width - padding - 17, y - 5, 10, "#fff", "600 10px 'IBM Plex Mono'"); }
+      if (index === 1) { ctx.fillStyle = "#ff6a3d"; ctx.beginPath(); ctx.arc(width - padding - 17, y - 9, 28, 0, Math.PI * 2); ctx.fill(); drawText(ctx, "CAU", width - padding - 17, y - 5, 10, "#fff", "600 10px 'IBM Plex Mono'"); }
       y += photoHeight + gap;
     });
     drawFrameFooter(ctx, width, height - footer, footer, selectedFrame, poong);
@@ -373,7 +444,7 @@
 
   async function captureSession() {
     if (busy) return;
-    busy = true; startButton.disabled = true; shots = []; resetDots();
+    busy = true; captureButton.disabled = true; backThemeButton.disabled = true; shots = []; resetDots();
     cameraStatus.textContent = "촬영 중 · 포즈 카드만 믿고 따라와요";
     for (let index = 0; index < 4; index += 1) {
       shotDots[index].classList.add("active");
@@ -381,7 +452,7 @@
       await sleep(300);
     }
     cameraStatus.textContent = "네컷 완성 중...";
-    startButton.disabled = false; busy = false;
+    captureButton.disabled = false; backThemeButton.disabled = false; busy = false;
     await composeStrip();
   }
 
@@ -405,17 +476,20 @@
   }
 
   function resetAll() {
-    stopStream(); shots = []; resultDataUrl = ""; busy = false; startButton.disabled = false; startLabel.textContent = "START BOOTH"; $$(".action-number").forEach((el) => { el.textContent = "01"; }); resetDots(); setMode("home"); actionNote.textContent = "카메라 권한을 허용하면 바로 촬영할 수 있어요. 권한이 없어도 데모 촬영은 가능합니다."; fallback.classList.remove("hidden");
+    stopStream(); shots = []; resultDataUrl = ""; busy = false; startButton.disabled = false; captureButton.disabled = false; backThemeButton.disabled = false; startLabel.textContent = "NEXT: CAMERA"; $("#btnStart .action-number").textContent = "01"; resetDots(); setFlow("home"); actionNote.textContent = "카메라 권한을 허용하면 바로 촬영할 수 있어요. 권한이 없어도 데모 촬영은 가능합니다."; fallback.classList.remove("hidden");
   }
 
   $$(".frame-option").forEach((button) => button.addEventListener("click", () => { selectedFrame = button.dataset.frame; updateFrameSelection(); }));
   $$(".filter-option").forEach((button) => button.addEventListener("click", () => { selectedFilter = button.dataset.filter; updateFilterSelection(); }));
   $("#btnPose").addEventListener("click", () => { currentPose = (currentPose + 1) % poses.length; updatePose(); });
-  $("#btnStart").addEventListener("click", () => stage.dataset.mode === "home" ? beginBooth() : captureSession());
+  enterButton.addEventListener("click", beginBooth);
+  $("#btnStart").addEventListener("click", enterCamera);
+  captureButton.addEventListener("click", captureSession);
+  backThemeButton.addEventListener("click", backToTheme);
   $("#btnReset").addEventListener("click", resetAll);
   $("#btnTopReset").addEventListener("click", resetAll);
   $("#btnRetake").addEventListener("click", resetAll);
   $("#btnSave").addEventListener("click", saveResult);
 
-  updateFrameSelection(); updateFilterSelection(); updatePose(); setMode("home");
+  updateFrameSelection(); updateFilterSelection(); updatePose(); setFlow("home");
 })();
