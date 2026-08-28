@@ -54,6 +54,7 @@
   let demoMode = false;
   let busy = false;
   let previewPoong = null;
+  let themedPoong = { market: null, pierrot: null };
 
   function setFlow(flow) {
     const mode = flow === "camera" ? "camera" : flow === "result" ? "result" : "home";
@@ -341,61 +342,19 @@
   function drawThemePoongSticker(ctx, image, theme, x, y, width = 124, height = 142) {
     if (!image || !image.naturalWidth) return;
     const market = theme === "market";
-    const imageX = 7;
-    const imageY = 20;
-    const imageWidth = width - 14;
-    const imageHeight = height - 43;
     ctx.save();
-    ctx.translate(x + width / 2, y + height / 2);
-    ctx.rotate(market ? -.035 : .035);
-    ctx.shadowColor = "rgba(30, 7, 14, .34)";
-    ctx.shadowBlur = 14;
-    ctx.shadowOffsetY = 6;
-    ctx.fillStyle = market ? "#fff2cf" : "#fff6df";
-    ctx.fillRect(-width / 2, -height / 2, width, height);
-    ctx.shadowColor = "transparent";
-    if (market) {
-      ctx.fillStyle = "#c93631";
-      ctx.fillRect(-width / 2, -height / 2, width, 18);
-      for (let stripe = -width / 2; stripe < width / 2; stripe += 18) {
-        ctx.fillStyle = "#ffd05d";
-        ctx.fillRect(stripe, -height / 2, 9, 18);
-      }
-    } else {
-      ctx.fillStyle = "#e9574b";
-      for (let stripe = -height; stripe < width + height; stripe += 25) {
-        ctx.beginPath();
-        ctx.moveTo(stripe, -height / 2);
-        ctx.lineTo(stripe + 12, -height / 2);
-        ctx.lineTo(stripe - height / 2 + 12, height / 2);
-        ctx.lineTo(stripe - height / 2, height / 2);
-        ctx.closePath();
-        ctx.fill();
-      }
-      ctx.fillStyle = "#ffd05d";
-      ctx.fillRect(-width / 2, -height / 2, width, 18);
-    }
-    ctx.save();
+    ctx.shadowColor = market ? "rgba(12, 38, 46, .45)" : "rgba(17, 7, 20, .48)";
+    ctx.shadowBlur = Math.max(7, width * .09);
+    ctx.shadowOffsetY = Math.max(2, height * .04);
+    ctx.fillStyle = market ? "rgba(244, 196, 93, .78)" : "rgba(255, 241, 207, .84)";
     ctx.beginPath();
-    ctx.rect(-width / 2 + imageX, -height / 2 + imageY, imageWidth, imageHeight);
-    ctx.clip();
-    drawContain(ctx, image, -width / 2 + imageX, -height / 2 + imageY, imageWidth, imageHeight);
-    ctx.restore();
-    if (market) {
-      ctx.fillStyle = "#c93631";
-      ctx.beginPath();
-      ctx.moveTo(-22, height / 2 - 41); ctx.lineTo(22, height / 2 - 41); ctx.lineTo(17, height / 2 - 23); ctx.lineTo(-17, height / 2 - 23); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = "#ffd05d"; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = "#ffd05d";
-      ctx.beginPath(); ctx.arc(-8, height / 2 - 32, 2.5, 0, Math.PI * 2); ctx.arc(8, height / 2 - 32, 2.5, 0, Math.PI * 2); ctx.fill();
-    } else {
-      ctx.fillStyle = "#c93631";
-      ctx.beginPath(); ctx.moveTo(-24, -height / 2 + 18); ctx.lineTo(24, -height / 2 + 18); ctx.lineTo(0, -height / 2 - 17); ctx.closePath(); ctx.fill();
-      ctx.strokeStyle = "#ffd05d"; ctx.lineWidth = 2; ctx.stroke();
-      ctx.fillStyle = "#ffd05d"; ctx.beginPath(); ctx.arc(0, -height / 2 - 19, 4, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = "#e9574b"; ctx.beginPath(); ctx.arc(-14, height / 2 - 31, 3, 0, Math.PI * 2); ctx.arc(14, height / 2 - 31, 3, 0, Math.PI * 2); ctx.fill();
-    }
-    drawText(ctx, market ? "화개장터 푸앙이" : "삐에로 푸앙이", 0, height / 2 - 8, 8, "#762637", "700 8px 'Noto Sans KR'");
+    ctx.ellipse(x + width / 2, y + height * .53, width * .44, height * .4, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.shadowColor = "transparent";
+    drawContain(ctx, image, x + width * .02, y, width * .96, height * .9);
+    ctx.fillStyle = market ? "#9b302f" : "#f4c45d";
+    ctx.fillRect(x + width * .15, y + height * .87, width * .7, Math.max(4, height * .045));
+    drawText(ctx, market ? "화개장터 푸앙이" : "삐에로 푸앙이", x + width / 2, y + height * .98, Math.max(6, width * .065), market ? "#fff4dc" : "#35152a", `700 ${Math.max(6, width * .065)}px 'Noto Sans KR'`);
     ctx.restore();
   }
 
@@ -412,22 +371,23 @@
     const ctx = themePreview.getContext("2d");
     paintFrame(ctx, width, height, selectedFrame);
     drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
+    const poong = themedPoong[selectedFrame] || previewPoong;
     let y = header;
     for (let index = 0; index < 4; index += 1) {
       drawPreviewPhoto(ctx, padding, y, photoWidth, photoHeight, selectedFrame, index);
       ctx.strokeStyle = "rgba(255,255,255,.86)"; ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
-      if ((index === 0 || index === 3) && previewPoong) {
+      if ((index === 0 || index === 3) && poong) {
         const stickerWidth = 62; const stickerHeight = 76;
         const stickerX = index === 0 ? padding + photoWidth - stickerWidth - 8 : padding + 8;
         const stickerY = index === 0 ? y + 7 : y + photoHeight - stickerHeight - 7;
-        drawThemePoongSticker(ctx, previewPoong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
+        drawThemePoongSticker(ctx, poong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
       }
       y += photoHeight + gap;
     }
     const footerY = height - footer;
     ctx.fillStyle = selectedFrame === "pierrot" ? "#faefd9" : "#8f2938";
     ctx.fillRect(0, footerY, width, footer);
-    if (previewPoong) drawThemePoongSticker(ctx, previewPoong, selectedFrame, width / 2 - 31, footerY + 2, 62, 76);
+    if (poong) drawThemePoongSticker(ctx, poong, selectedFrame, width / 2 - 31, footerY + 2, 62, 76);
     drawText(ctx, "화개장터 × 삐에로", width / 2, height - 8, 9, selectedFrame === "pierrot" ? "#34203f" : "#fff6e4", "700 9px 'Noto Sans KR'");
     themePreviewLabel.textContent = selectedFrame === "pierrot" ? "삐에로 테마" : "화개장터 테마";
     themePreview.setAttribute("aria-label", `${themePreviewLabel.textContent} 프레임 미리보기`);
@@ -587,7 +547,7 @@
   }
 
   async function composeStrip() {
-    const poong = await loadImage("poong.png");
+    const poong = themedPoong[selectedFrame] || await loadImage("poong.png");
     const photoWidth = 500; const photoHeight = 667; const padding = 26; const gap = 15; const header = 145; const footer = 155;
     const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
     const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
@@ -672,5 +632,13 @@
   $("#btnSave").addEventListener("click", saveResult);
 
   updateFrameSelection(); updateFilterSelection(); updatePose(); setFlow("home");
-  loadImage("poong.png").then((image) => { previewPoong = image; drawThemePreview(); });
+  Promise.all([
+    loadImage("poong-market.png"),
+    loadImage("poong-pierrot.png"),
+    loadImage("poong.png"),
+  ]).then(([market, pierrot, fallbackPoong]) => {
+    themedPoong = { market, pierrot };
+    previewPoong = market || pierrot || fallbackPoong;
+    drawThemePreview();
+  });
 })();
