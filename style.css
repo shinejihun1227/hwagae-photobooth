@@ -66,7 +66,24 @@ h1 { margin: 25px 0 16px; font-family: var(--display); font-size: clamp(54px, 7v
 .poong-scene { position: relative; height: 280px; margin: 38px 0 34px; overflow: hidden; border: 1px solid rgba(255,222,157,.32); border-bottom-width: 3px; background: #8a3c38 url("market-scene.png") center 54% / cover no-repeat; box-shadow: 0 19px 34px rgba(18,5,11,.3); }
 .poong-scene::before { content: ""; position: absolute; z-index: 1; inset: 0; background: linear-gradient(180deg, rgba(91,20,29,.05), rgba(87,18,27,.5)), linear-gradient(90deg, rgba(113,26,36,.42), rgba(245,181,79,.06) 45%, rgba(113,26,36,.27)); pointer-events: none; }
 .scene-sun { position: absolute; z-index: 2; width: 158px; height: 158px; left: 50%; top: 19px; transform: translateX(-50%); border-radius: 50%; border: 1px solid rgba(248,211,107,.28); box-shadow: 0 0 0 14px rgba(248,211,107,.035), 0 0 0 36px rgba(248,211,107,.025); }
-.poong { position: absolute; z-index: 4; width: 172px; height: 234px; left: 50%; top: 18px; object-fit: contain; transform: translateX(-50%) rotate(-4deg); filter: drop-shadow(0 20px 16px rgba(0,0,0,.35)); }
+.poong-pair { position: absolute; z-index: 4; inset: 0; pointer-events: none; }
+.poong-character { position: absolute; bottom: 3px; width: 150px; height: 224px; }
+.poong-market-character { left: 17%; transform: rotate(-3deg); }
+.poong-pierrot-character { right: 17%; transform: rotate(3deg); }
+.poong-character .poong { position: absolute; z-index: 2; width: 100%; height: 100%; left: 50%; top: 0; object-fit: contain; transform: translateX(-50%); filter: drop-shadow(0 20px 16px rgba(0,0,0,.35)); }
+.poong-pierrot-character .poong { transform: translateX(-50%) scaleX(-1); }
+.poong-hat, .poong-costume { position: absolute; z-index: 3; display: block; }
+.market-hat { top: 10px; left: 50%; width: 86px; height: 21px; transform: translateX(-50%) rotate(-2deg); border: 2px solid #9d342f; border-radius: 50% 50% 8px 8px; background: repeating-linear-gradient(90deg, #ffd05d 0 15px, #c93631 15px 24px); box-shadow: 0 3px 0 rgba(87,28,29,.25); }
+.market-hat::after { content: ""; position: absolute; left: 8px; right: 8px; bottom: -5px; height: 7px; border-radius: 50%; background: #ffd05d; }
+.market-apron { bottom: 22px; left: 50%; width: 72px; height: 65px; transform: translateX(-50%); border: 2px solid #ffd05d; border-radius: 8px 8px 17px 17px; background: #c93631; clip-path: polygon(11% 0, 89% 0, 100% 100%, 0 100%); box-shadow: 0 5px 8px rgba(71,19,25,.2); }
+.market-apron::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 11px; background: repeating-linear-gradient(90deg, #ffd05d 0 13px, #c93631 13px 23px); }
+.market-apron::after { content: "✦"; position: absolute; left: 0; right: 0; top: 25px; color: #ffd05d; font-size: 16px; text-align: center; }
+.pierrot-hat { top: -3px; left: 50%; width: 67px; height: 57px; transform: translateX(-50%) rotate(3deg); border: 2px solid #ffd05d; background: repeating-linear-gradient(125deg, #e9574b 0 14px, #ffd05d 14px 26px); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.pierrot-hat::after { content: ""; position: absolute; left: 50%; top: -8px; width: 11px; height: 11px; transform: translateX(-50%); border: 2px solid #e9574b; border-radius: 50%; background: #ffd05d; }
+.pierrot-collar { bottom: 44px; left: 50%; width: 83px; height: 37px; transform: translateX(-50%); background: #ffd05d; clip-path: polygon(0 0, 100% 0, 84% 100%, 68% 60%, 50% 100%, 31% 60%, 16% 100%); }
+.pierrot-collar::after { content: ""; position: absolute; left: 50%; top: 4px; width: 18px; height: 18px; transform: translateX(-50%); border-radius: 50%; background: #e9574b; }
+.poong-character-label { position: absolute; z-index: 5; bottom: 0; left: 50%; padding: 4px 7px; transform: translateX(-50%); border: 1px solid rgba(255,208,93,.75); border-radius: 999px; color: #fff4df; background: rgba(104,28,35,.85); font: 600 7px var(--mono); letter-spacing: .04em; white-space: nowrap; }
+.poong-sticker { display: none; }
 .poong-rings { position: absolute; z-index: 3; left: 50%; top: 60px; transform: translateX(-50%); border: 1px dashed rgba(255,255,255,.16); border-radius: 50%; }
 .poong-ring-one { width: 224px; height: 224px; animation: spin 24s linear infinite; }
 .poong-ring-two { width: 272px; height: 160px; top: 92px; transform: translateX(-50%) rotate(-18deg); border-color: rgba(255,106,61,.25); }
@@ -250,7 +267,15 @@ h1 { margin: 25px 0 16px; font-family: var(--display); font-size: clamp(54px, 7v
   .title-x { margin-left: 46%; }
   .intro-copy { font-size: 15px; }
   .poong-scene { height: 240px; margin-top: 28px; margin-bottom: 24px; }
-  .poong { width: 145px; height: 200px; top: 16px; }
+  .poong-character { bottom: 4px; width: 108px; height: 180px; }
+  .poong-market-character { left: 5%; }
+  .poong-pierrot-character { right: 5%; }
+  .market-hat { top: 7px; width: 63px; height: 16px; }
+  .market-apron { bottom: 19px; width: 53px; height: 49px; }
+  .market-apron::after { top: 18px; font-size: 12px; }
+  .pierrot-hat { top: -2px; width: 51px; height: 44px; }
+  .pierrot-collar { bottom: 36px; width: 61px; height: 28px; }
+  .poong-character-label { padding: 3px 5px; font-size: 6px; }
   .scene-sun { width: 130px; height: 130px; }
   .intro-meta { margin-bottom: 19px; }
   .intro-meta strong { font-size: 10px; }
