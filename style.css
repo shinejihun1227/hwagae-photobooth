@@ -679,11 +679,20 @@ body { min-width: 0; }
 .frame-swatch i { border: 0; border-radius: 0; }
 
 /* Keep CAU present, but make the identity part of the festival masthead instead of a floating plaque. */
-.cau-festival-lockup { width: min(100%, 420px); justify-content: flex-start; margin-top: 19px; padding: 8px 12px 8px 13px; border: 0; border-left: 2px solid var(--yellow); border-radius: 0 8px 8px 0; background: linear-gradient(90deg, rgba(157, 55, 53, .48), rgba(157, 55, 53, 0)); box-shadow: none; }
+.topbar { transition: opacity .2s ease; }
+body[data-flow="home"] .topbar { display: none; }
+.cau-festival-lockup { width: min(100%, 420px); justify-content: flex-start; margin-top: 19px; padding: 8px 12px 8px 13px; border: 0; border-left: 2px solid var(--yellow); border-radius: 0; background: transparent; box-shadow: none; }
 .cau-festival-seal { width: 43px; height: 43px; border-color: rgba(244, 196, 93, .78); color: #fff3d9; background: rgba(110, 33, 42, .34); }
 .cau-festival-copy strong { font-size: 14px; letter-spacing: .02em; }
 .cau-festival-copy small { color: #f3cf82; }
 .cau-campus-plaque { min-width: 0; padding: 5px 10px 5px 12px; border: 0; border-left: 2px solid var(--yellow); border-radius: 0; background: rgba(34, 18, 27, .56); box-shadow: none; }
+
+h1 { font-family: "Black Han Sans", "Noto Sans KR", sans-serif; }
+.title-market { font-family: "Noto Serif KR", "Noto Sans KR", serif; font-weight: 700; background: linear-gradient(110deg, #fff1d7 0%, #ffd56e 34%, #f09062 68%, #fff1d7 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 7px 22px rgba(244, 196, 93, .12); }
+.title-pierrot { font-family: "Black Han Sans", "Noto Sans KR", sans-serif; background: linear-gradient(110deg, #ffd76a 0%, #ff8b58 45%, #f5c3a4 100%); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: 0 7px 22px rgba(244, 120, 83, .14); }
+.title-x { background: linear-gradient(180deg, #ffd76a, #e85c49); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.intro-copy { color: #dfc3ae; }
+.intro-copy b { color: #ffd878; }
 
 @media (max-width: 650px) {
   .cau-festival-lockup { width: 100%; margin-top: 16px; padding-left: 10px; }

@@ -174,21 +174,21 @@
 
   function makeDemoShot(index) {
     const canvas = document.createElement("canvas");
-    canvas.width = 720;
-    canvas.height = 960;
+    canvas.width = 1080;
+    canvas.height = 1440;
     const ctx = canvas.getContext("2d");
     drawPreviewPhoto(ctx, 0, 0, canvas.width, canvas.height, selectedFrame, index);
     const vignette = ctx.createRadialGradient(360, 380, 160, 360, 420, 720);
     vignette.addColorStop(0, "rgba(255,255,255,.05)"); vignette.addColorStop(1, "rgba(18,12,28,.28)");
     ctx.fillStyle = vignette; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawText(ctx, `DEMO / ${String(index + 1).padStart(2, "0")}`, 42, 58, 18, "rgba(255,248,230,.82)", "600 18px 'IBM Plex Mono'", "left");
+    drawText(ctx, `DEMO / ${String(index + 1).padStart(2, "0")}`, 54, 76, 22, "rgba(255,248,230,.82)", "600 22px 'IBM Plex Mono'", "left");
     return canvas;
   }
 
   function captureCanvas(index) {
     if (demoMode || !video.videoWidth) return makeDemoShot(index);
     const canvas = document.createElement("canvas");
-    canvas.width = 720; canvas.height = 960;
+    canvas.width = 1080; canvas.height = 1440;
     const ctx = canvas.getContext("2d");
     const videoRatio = video.videoWidth / video.videoHeight;
     const targetRatio = 3 / 4;
@@ -238,6 +238,18 @@
 
   function drawText(ctx, text, x, y, size, color, font = "600 20px 'IBM Plex Mono'", align = "center") {
     ctx.save(); ctx.fillStyle = color; ctx.font = font; ctx.textAlign = align; ctx.fillText(text, x, y); ctx.restore();
+  }
+
+  function drawGradientText(ctx, text, x, y, size, font, colors) {
+    ctx.save();
+    ctx.font = font;
+    ctx.textAlign = "center";
+    const textWidth = ctx.measureText(text).width;
+    const gradient = ctx.createLinearGradient(x - textWidth / 2, y - size, x + textWidth / 2, y);
+    colors.forEach((color, index) => gradient.addColorStop(index / Math.max(1, colors.length - 1), color));
+    ctx.fillStyle = gradient;
+    ctx.fillText(text, x, y);
+    ctx.restore();
   }
 
   function drawConfetti(ctx, width, height, seed = 1) {
@@ -388,8 +400,11 @@
 
   function drawThemePreview() {
     if (!themePreview) return;
-    const width = themePreview.width;
-    const height = themePreview.height;
+    const width = 300;
+    const height = 580;
+    const previewScale = Math.min(3, Math.max(2, window.devicePixelRatio || 1));
+    themePreview.width = width * previewScale;
+    themePreview.height = height * previewScale;
     const header = 82;
     const footer = 76;
     const padding = 16;
@@ -397,6 +412,7 @@
     const photoHeight = Math.floor((height - header - footer - gap * 3) / 4);
     const photoWidth = width - padding * 2;
     const ctx = themePreview.getContext("2d");
+    ctx.setTransform(previewScale, 0, 0, previewScale, 0, 0);
     paintFrame(ctx, width, height, selectedFrame);
     drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
     const poong = themedPoong[selectedFrame] || previewPoong;
@@ -604,8 +620,10 @@
       drawPierrotCurtains(ctx, width, height, compact);
       drawMarquee(ctx, width * .2, compact ? 8 : 16, width * .6, compact ? 28 : 52, compact);
       drawCauSeal(ctx, width * .11, compact ? 35 : 72, compact ? 11 : 21, "#fff0d1");
-      drawText(ctx, "PIERROT", width / 2, compact ? 29 : 50, compact ? 14 : 25, "#fff4df", "400 25px 'Gugi'");
-      drawText(ctx, "CIRCUS THEATRE", width / 2, compact ? 69 : 127, compact ? 7 : 13, "#ffd05d", "600 7px 'IBM Plex Mono'");
+      const titleSize = compact ? 14 : 25;
+      const subtitleSize = compact ? 7 : 13;
+      drawGradientText(ctx, "PIERROT", width / 2, compact ? 29 : 50, titleSize, `700 ${titleSize}px 'Black Han Sans'`, ["#fff4df", "#ffd05d", "#e9574b", "#f3b45e"]);
+      drawText(ctx, "CIRCUS THEATRE", width / 2, compact ? 69 : 127, subtitleSize, "#ffd05d", `600 ${subtitleSize}px 'IBM Plex Mono'`);
       ctx.fillStyle = "#faefd9"; ctx.fillRect(0, header, width, height - header);
       return;
     }
@@ -614,9 +632,11 @@
     drawMarketRoof(ctx, width / 2, compact ? 3 : 7, width * .5, compact ? 25 : 49);
     drawCauSeal(ctx, width * .13, compact ? 29 : 58, compact ? 10 : 20, "#fff0d1");
     drawLantern(ctx, width * .87, compact ? 31 : 68, compact ? 7 : 14, "#ffe3a2");
-    drawText(ctx, "화개장터", width / 2, compact ? 43 : 83, compact ? 25 : 43, "#fff4dc", "400 43px 'Gugi'");
+    const titleSize = compact ? 25 : 43;
+    const subtitleSize = compact ? 7 : 12;
+    drawGradientText(ctx, "화개장터", width / 2, compact ? 43 : 83, titleSize, `700 ${titleSize}px 'Noto Serif KR'`, ["#fff4dc", "#ffd05d", "#f08d60", "#fff4dc"]);
     drawMarketAwning(ctx, 0, compact ? 57 : 103, width, compact ? 15 : 28);
-    drawText(ctx, "가을 장터 · 물길 따라 기억하기", width / 2, compact ? 75 : 137, compact ? 7 : 12, "#fff1ca", "600 12px 'IBM Plex Mono'");
+    drawText(ctx, "가을 장터 · 물길 따라 기억하기", width / 2, compact ? 75 : 137, subtitleSize, "#fff1ca", `600 ${subtitleSize}px 'IBM Plex Mono'`);
   }
 
   function drawFrameFooter(ctx, width, y, height, frame, poong) {
@@ -644,7 +664,7 @@
       drawMarketAwning(ctx, 0, y, width, bandHeight);
       ctx.fillStyle = "rgba(255,238,187,.16)";
       for (let plank = y + (compact ? 27 : 40); plank < y + height; plank += compact ? 14 : 21) { ctx.fillRect(0, plank, width, 1); }
-      drawLantern(ctx, width * .1, y + height * .56, compact ? 4 : 9, "#ffd77a"); drawLantern(ctx, width * .88, y + height * .5, compact ? 4 : 8, "#ffe3a2");
+      drawLantern(ctx, width * .88, y + height * .5, compact ? 4 : 8, "#ffe3a2");
     }
     drawCauSeal(ctx, compact ? width * .12 : width * .13, y + height * .55, compact ? 8 : 17, "#fff0d1");
     if (poong && (frame === "market" || frame === "pierrot")) drawThemePoongSticker(ctx, poong, frame, mascotX, mascotY, mascotWidth, mascotHeight);
@@ -654,7 +674,7 @@
 
   async function composeStrip() {
     const poong = themedPoong[selectedFrame] || await loadImage("poong.png");
-    const photoWidth = 500; const photoHeight = 667; const padding = 26; const gap = 15; const header = 145; const footer = 155;
+    const photoWidth = 600; const photoHeight = 800; const padding = 32; const gap = 18; const header = 174; const footer = 186;
     const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
     const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
     try {
@@ -669,7 +689,7 @@
         ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.82)" : "rgba(255,248,218,.9)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
         const expression = expressionSheet || expressionPoong[index] || poong;
         if (expression) {
-          const stickerWidth = expressionSheet ? 238 : 178; const stickerHeight = expressionSheet ? 270 : 208;
+          const stickerWidth = expressionSheet ? 286 : 178; const stickerHeight = expressionSheet ? 326 : 208;
           const onRight = index % 2 === 0;
           const stickerX = onRight ? padding + photoWidth - stickerWidth - 18 : padding + 18;
           const stickerY = index % 2 === 0 ? y + 22 : y + photoHeight - stickerHeight - 22;
