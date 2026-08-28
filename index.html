@@ -1,3 +1,4 @@
+
 <title>화개장터 네컷</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -95,6 +96,37 @@
     font-size:0.95rem;
     color:#ffe9cf;
     opacity:0.92;
+  }
+  .mascot-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom:4px;
+  }
+  .mascot-frame{ position:relative; display:inline-block; }
+  .mascot-photo{
+    width:84px; height:auto; display:block;
+    border-radius:14px;
+    box-shadow:0 10px 18px rgba(0,0,0,0.35);
+    border:2px solid rgba(255,255,255,0.85);
+  }
+  .mascot-ribbon{
+    position:absolute; top:-9px; left:50%;
+    transform:translateX(-50%) rotate(-4deg);
+    background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+    color:#fff; font-size:0.52rem; font-weight:800;
+    padding:3px 8px; border-radius:7px;
+    box-shadow:0 3px 7px rgba(0,0,0,0.35);
+    white-space:nowrap;
+  }
+  .mascot-lantern-deco{
+    position:absolute; bottom:-8px; right:-12px;
+    font-size:1.3rem;
+    filter:drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+  }
+  .mascot-confetti{
+    position:absolute; top:-4px; left:-14px;
+    font-size:0.9rem;
+    filter:drop-shadow(0 2px 3px rgba(0,0,0,0.35));
   }
 
   .card{
@@ -206,11 +238,13 @@
   }
 
   /* CAMERA */
-  #screen-camera{ gap:12px; }
+  #screen-camera{ gap:12px; justify-content:center; }
   .camera-box{
     position:relative;
-    flex:1;
-    min-height:340px;
+    width:100%;
+    aspect-ratio:3/4;
+    max-height:56dvh;
+    margin:0 auto;
     border-radius:22px;
     overflow:hidden;
     background:#101014;
@@ -219,9 +253,68 @@
   video{
     width:100%; height:100%;
     object-fit:cover;
-    filter:saturate(1.2) contrast(1.06) brightness(1.02);
+    filter:saturate(1.18) contrast(1.05) brightness(1.02);
+    transition:filter 0.2s ease;
   }
   video.mirror{ transform:scaleX(-1); }
+  .glow-overlay{
+    position:absolute; inset:0;
+    background:radial-gradient(120% 90% at 50% 35%, rgba(255,255,255,0.4), transparent 65%);
+    mix-blend-mode:soft-light;
+    opacity:0;
+    transition:opacity 0.2s ease;
+    pointer-events:none;
+  }
+  .glow-overlay.on{ opacity:1; }
+
+  .filter-row{
+    display:flex;
+    gap:8px;
+    overflow-x:auto;
+    padding:2px 2px 4px;
+    scrollbar-width:none;
+  }
+  .filter-row::-webkit-scrollbar{ display:none; }
+  .filter-chip{
+    flex:0 0 auto;
+    font-family:inherit;
+    font-size:0.82rem;
+    font-weight:600;
+    color:var(--ink);
+    background:#fff;
+    border:1.5px solid var(--line);
+    padding:8px 14px;
+    border-radius:999px;
+    cursor:pointer;
+  }
+  .filter-chip.active{
+    background:linear-gradient(135deg,var(--accent),var(--accent-dark));
+    border-color:transparent;
+    color:#fff;
+  }
+
+  /* FRAME SELECT */
+  #screen-frame{ gap:14px; }
+  .frame-title{ text-align:center; font-size:0.95rem; font-weight:700; color:var(--ink); margin:0; }
+  .frame-sub{ text-align:center; font-size:0.78rem; color:var(--ink-soft); margin:-6px 0 2px; }
+  .frame-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:12px;
+  }
+  .frame-card{
+    border:2.5px solid transparent;
+    border-radius:16px;
+    padding:8px;
+    background:#fff;
+    cursor:pointer;
+    text-align:center;
+    box-shadow:0 6px 14px rgba(52,26,18,0.10);
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .frame-card canvas{ width:100%; height:auto; border-radius:10px; display:block; }
+  .frame-card span{ display:block; margin-top:6px; font-size:0.8rem; font-weight:700; color:var(--ink); }
+  .frame-card.active{ border-color:var(--accent); transform:translateY(-2px); }
 
   .dots{
     position:absolute; top:12px; left:0; right:0;
@@ -289,6 +382,14 @@
 <div class="stage">
   <div class="brand">
     <span class="tag">2026 중앙대학교 가을 축제</span>
+    <div class="mascot-wrap">
+      <div class="mascot-frame">
+        <img src="image.png" alt="푸앙이" class="mascot-photo">
+        <span class="mascot-ribbon">화개장터×삐에로</span>
+        <span class="mascot-lantern-deco">🏮</span>
+        <span class="mascot-confetti">🎪</span>
+      </div>
+    </div>
     <h1>화개장터</h1>
     <p>가을밤 시장, 네컷에 담다 🎪</p>
   </div>
@@ -314,14 +415,27 @@
       </div>
     </div>
 
+    <!-- FRAME SELECT -->
+    <div id="screen-frame" class="screen">
+      <p class="frame-title">프레임을 골라주세요</p>
+      <p class="frame-sub">촬영 후 이 프레임으로 네컷이 완성돼요</p>
+      <div class="frame-grid" id="frameGrid"></div>
+      <div class="btn-row">
+        <button class="btn ghost" id="btnFrameBack">처음으로</button>
+        <button class="btn" id="btnFrameNext">다음 → 촬영하기</button>
+      </div>
+    </div>
+
     <!-- CAMERA -->
     <div id="screen-camera" class="screen">
       <div class="camera-box" id="cameraBox">
         <video id="video" autoplay playsinline muted></video>
+        <div class="glow-overlay" id="glowOverlay"></div>
         <div class="dots" id="dots"></div>
         <div class="countdown" id="countdown"></div>
         <div class="flash" id="flash"></div>
       </div>
+      <div class="filter-row" id="filterRow"></div>
       <div class="cam-controls">
         <button class="btn icon-btn" id="btnFlip">🔄</button>
         <button class="btn" id="btnCapture">촬영 시작 (4컷)</button>
@@ -344,7 +458,7 @@
     <!-- RESULT -->
     <div id="screen-result" class="screen">
       <div class="result-wrap"><img id="resultImg" alt="화개장터 네컷 결과"></div>
-      <p class="save-status" id="saveStatus"> </p>
+      <p class="save-status" id="saveStatus"> </p>
       <div class="btn-row">
         <button class="btn gold" id="btnSave">💾 이미지 저장</button>
         <button class="btn ghost" id="btnRetake">🔁 다시 찍기</button>
@@ -357,7 +471,16 @@
 
 <script>
 (function(){
-  const screens = ['home','camera','loading','error','result'];
+  // ---------- 촬영 필터 ----------
+  const FILTERS = [
+    { key:'soft', label:'✨ 뽀샤시', css:'brightness(1.14) contrast(0.88) saturate(1.12) blur(0.5px)', glow:true },
+    { key:'clear', label:'🎬 선명', css:'saturate(1.2) contrast(1.08) brightness(1.02)', glow:false },
+    { key:'film', label:'📼 필름', css:'sepia(0.22) contrast(1.05) saturate(1.05) brightness(1.02)', glow:false },
+    { key:'mono', label:'⚫ 흑백', css:'grayscale(1) contrast(1.12) brightness(1.02)', glow:false }
+  ];
+  let currentFilter = FILTERS[0];
+
+  const screens = ['home','frame','camera','loading','error','result'];
   function show(name){
     screens.forEach(s=>{
       document.getElementById('screen-'+s).classList.toggle('active', s===name);
@@ -366,6 +489,9 @@
 
   const video = document.getElementById('video');
   const btnStart = document.getElementById('btnStart');
+  const btnFrameBack = document.getElementById('btnFrameBack');
+  const btnFrameNext = document.getElementById('btnFrameNext');
+  const frameGrid = document.getElementById('frameGrid');
   const btnCapture = document.getElementById('btnCapture');
   const btnFlip = document.getElementById('btnFlip');
   const btnCancel = document.getElementById('btnCancel');
@@ -374,6 +500,8 @@
   const btnSave = document.getElementById('btnSave');
   const countdownEl = document.getElementById('countdown');
   const flashEl = document.getElementById('flash');
+  const glowOverlay = document.getElementById('glowOverlay');
+  const filterRow = document.getElementById('filterRow');
   const dotsEl = document.getElementById('dots');
   const resultImg = document.getElementById('resultImg');
   const errorMsg = document.getElementById('errorMsg');
@@ -395,6 +523,30 @@
     }
   }
 
+  function applyFilter(f){
+    currentFilter = f;
+    video.style.filter = f.css;
+    glowOverlay.classList.toggle('on', !!f.glow);
+    filterRow.querySelectorAll('.filter-chip').forEach(chip=>{
+      chip.classList.toggle('active', chip.dataset.key === f.key);
+    });
+  }
+
+  function buildFilterRow(){
+    filterRow.innerHTML = '';
+    FILTERS.forEach(f=>{
+      const chip = document.createElement('button');
+      chip.className = 'filter-chip' + (f.key===currentFilter.key ? ' active' : '');
+      chip.type = 'button';
+      chip.textContent = f.label;
+      chip.dataset.key = f.key;
+      chip.addEventListener('click', ()=> applyFilter(f));
+      filterRow.appendChild(chip);
+    });
+  }
+  buildFilterRow();
+  applyFilter(currentFilter);
+
   async function startStream(){
     if(stream){ stream.getTracks().forEach(t=>t.stop()); }
     try{
@@ -412,7 +564,13 @@
     }
   }
 
-  btnStart.addEventListener('click', async ()=>{
+  btnStart.addEventListener('click', ()=>{
+    buildFrameGrid();
+    show('frame');
+  });
+
+  btnFrameBack.addEventListener('click', ()=> show('home'));
+  btnFrameNext.addEventListener('click', async ()=>{
     shots = [];
     buildDots();
     show('camera');
@@ -454,9 +612,20 @@
     else { sh = vw / targetRatio; sy = (vh - sh)/2; }
     c.width = 480; c.height = 640;
     const ctx = c.getContext('2d');
-    ctx.filter = 'saturate(1.2) contrast(1.06) brightness(1.02)';
+    ctx.filter = currentFilter.css;
     if (facingMode === 'user'){ ctx.translate(c.width,0); ctx.scale(-1,1); }
     ctx.drawImage(video, sx, sy, sw, sh, 0, 0, c.width, c.height);
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.filter = 'none';
+    if (currentFilter.glow){
+      const g = ctx.createRadialGradient(c.width/2,c.height*0.4,10,c.width/2,c.height*0.4,c.width*0.75);
+      g.addColorStop(0,'rgba(255,255,255,0.45)');
+      g.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.globalCompositeOperation = 'soft-light';
+      ctx.fillStyle = g;
+      ctx.fillRect(0,0,c.width,c.height);
+      ctx.globalCompositeOperation = 'source-over';
+    }
     shots.push(c);
 
     const dot = document.getElementById('dot'+index);
@@ -517,41 +686,270 @@
     }
   }
 
+  function dateStr(){
+    const d = new Date();
+    return d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function drawStripeBand(ctx,x,y,w,h,bg,stripeColor,sw){
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x,y,w,h); ctx.clip();
+    ctx.fillStyle = bg; ctx.fillRect(x,y,w,h);
+    ctx.fillStyle = stripeColor;
+    const diag = w+h;
+    for(let i=-h; i<diag; i+=sw*2){
+      ctx.beginPath();
+      ctx.moveTo(x+i,y);
+      ctx.lineTo(x+i+sw,y);
+      ctx.lineTo(x+i+sw-h,y+h);
+      ctx.lineTo(x+i-h,y+h);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawPolkaDots(ctx,x,y,w,h,color,count,seed){
+    let s = seed || 7;
+    function rand(){ s = (s*9301+49297) % 233280; return s/233280; }
+    ctx.fillStyle = color;
+    for(let i=0;i<count;i++){
+      const px = x + rand()*w, py = y + rand()*h, r = 2 + rand()*3;
+      ctx.beginPath(); ctx.arc(px,py,r,0,Math.PI*2); ctx.fill();
+    }
+  }
+
+  function drawNeonDots(ctx,x,y,w,count,colors,seed){
+    let s = seed || 3;
+    function rand(){ s = (s*9301+49297) % 233280; return s/233280; }
+    for(let i=0;i<count;i++){
+      const px = x + (w/Math.max(count-1,1))*i;
+      const py = y + Math.sin(i*1.3 + s)*5;
+      const c = colors[i%colors.length];
+      ctx.save();
+      ctx.shadowColor = c; ctx.shadowBlur = 8;
+      ctx.fillStyle = c;
+      ctx.beginPath(); ctx.arc(px,py,3.2,0,Math.PI*2); ctx.fill();
+      ctx.restore();
+    }
+  }
+
+  // ---------- 프레임(테마) 정의 ----------
+  const FRAME_LIST = [
+    { key:'hwagae', label:'🏮 화개장터' },
+    { key:'pierrot', label:'🤡 삐에로 서커스' },
+    { key:'mono', label:'🤍 미니멀 화이트' },
+    { key:'night', label:'🌙 나이트마켓' }
+  ];
+  let currentFrameKey = 'hwagae';
+
+  const FRAME_THEMES = {
+    hwagae:{
+      photoBorder:'rgba(255,255,255,0.85)',
+      paintBackground(ctx,w,h){
+        const g = ctx.createLinearGradient(0,0,0,h);
+        g.addColorStop(0,'#3a1526'); g.addColorStop(0.22,'#7a2036'); g.addColorStop(0.55,'#d9622b'); g.addColorStop(1,'#f6c869');
+        ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      },
+      swatchAccent(ctx,w,h){
+        drawLantern(ctx, w*0.18, h*0.08, w*0.05, '#ffe6a8', '#e2472a');
+        drawLantern(ctx, w*0.82, h*0.09, w*0.036, '#ffe6a8', '#f2b53c');
+      },
+      paintHeader(ctx,w,headerH){
+        drawLantern(ctx, w*0.1, headerH*0.32, 16, '#ffe6a8', '#e2472a');
+        drawLantern(ctx, w*0.9, headerH*0.36, 12, '#ffe6a8', '#f2b53c');
+        drawConfetti(ctx, w, headerH, 11);
+        ctx.textAlign = 'center';
+        ctx.save();
+        ctx.shadowColor = 'rgba(0,0,0,0.35)'; ctx.shadowBlur = 6; ctx.shadowOffsetY = 3;
+        ctx.fillStyle = '#fff6e6'; ctx.font = '400 46px "Gugi"';
+        ctx.fillText('화개장터', w/2, headerH-58);
+        ctx.restore();
+        ctx.font = '600 19px "Pretendard"'; ctx.fillStyle = '#ffe9cf';
+        ctx.fillText('2026 중앙대학교 가을 축제', w/2, headerH-28);
+      },
+      paintFooter(ctx,w,footerY,footerH,mascotImg){
+        drawConfetti(ctx, w, footerH, 31);
+        ctx.textAlign = 'center';
+        drawMascotImg(ctx, mascotImg, w/2, footerY+4, 64);
+        ctx.font = '700 19px "Pretendard"'; ctx.fillStyle = '#fff6e6';
+        ctx.fillText('HWAGAE MARKET × PIERROT', w/2, footerY+82);
+        ctx.font = '500 14px "Pretendard"'; ctx.fillStyle = '#ffe9cf';
+        ctx.fillText(dateStr(), w/2, footerY+104);
+      }
+    },
+    pierrot:{
+      photoBorder:'#e2472a',
+      paintBackground(ctx,w,h){
+        ctx.fillStyle = '#fbf1e0'; ctx.fillRect(0,0,w,h);
+      },
+      swatchAccent(ctx,w,h){
+        drawStripeBand(ctx,0,0,w,h*0.14,'#fbf1e0','#e2472a', w*0.09);
+        drawStripeBand(ctx,0,h*0.86,w,h*0.14,'#fbf1e0','#e2472a', w*0.09);
+      },
+      paintHeader(ctx,w,headerH){
+        drawStripeBand(ctx,0,0,w,headerH*0.34,'#fbf1e0','#e2472a', 26);
+        drawPolkaDots(ctx,0,headerH*0.34,w,headerH*0.66,'#f2b53c',26,17);
+        ctx.textAlign = 'center';
+        ctx.save();
+        ctx.strokeStyle = '#e2472a'; ctx.lineWidth = 3;
+        ctx.font = '400 44px "Gugi"';
+        ctx.strokeText('화개장터', w/2, headerH-56);
+        ctx.fillStyle = '#fff'; ctx.fillText('화개장터', w/2, headerH-56);
+        ctx.restore();
+        ctx.font = '700 16px "Pretendard"'; ctx.fillStyle = '#b6321a';
+        ctx.fillText('PIERROT CIRCUS NIGHT', w/2, headerH-26);
+      },
+      paintFooter(ctx,w,footerY,footerH,mascotImg){
+        drawPolkaDots(ctx,0,footerY,w,footerH*0.55,'#f2b53c',22,29);
+        drawStripeBand(ctx,0,footerY+footerH*0.72,w,footerH*0.28,'#fbf1e0','#e2472a',26);
+        ctx.textAlign = 'center';
+        drawMascotImg(ctx, mascotImg, w/2, footerY+2, 60);
+        ctx.font = '700 18px "Pretendard"'; ctx.fillStyle = '#341a12';
+        ctx.fillText('HWAGAE × PIERROT', w/2, footerY+76);
+        ctx.font = '500 13px "Pretendard"'; ctx.fillStyle = '#7a5a4a';
+        ctx.fillText(dateStr(), w/2, footerY+98);
+      }
+    },
+    mono:{
+      photoBorder:'#c9a227',
+      paintBackground(ctx,w,h){
+        ctx.fillStyle = '#fbf9f4'; ctx.fillRect(0,0,w,h);
+        ctx.strokeStyle = '#c9a227'; ctx.lineWidth = 2;
+        ctx.strokeRect(14,14,w-28,h-28);
+      },
+      swatchAccent(){},
+      paintHeader(ctx,w,headerH){
+        ctx.textAlign = 'center';
+        ctx.fillStyle = '#341a12'; ctx.font = '400 38px "Gugi"';
+        ctx.fillText('화개장터', w/2, headerH-56);
+        ctx.font = '600 15px "Pretendard"'; ctx.fillStyle = '#7a5a4a';
+        ctx.fillText('2026 중앙대학교 가을 축제', w/2, headerH-30);
+      },
+      paintFooter(ctx,w,footerY,footerH,mascotImg){
+        ctx.strokeStyle = 'rgba(52,26,18,0.15)'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(w*0.28, footerY+2); ctx.lineTo(w*0.72, footerY+2); ctx.stroke();
+        ctx.textAlign = 'center';
+        drawMascotImg(ctx, mascotImg, w/2, footerY+10, 50);
+        ctx.font = '600 16px "Pretendard"'; ctx.fillStyle = '#341a12';
+        ctx.fillText('HWAGAE MARKET', w/2, footerY+76);
+        ctx.font = '500 13px "Pretendard"'; ctx.fillStyle = '#a08770';
+        ctx.fillText(dateStr(), w/2, footerY+96);
+      }
+    },
+    night:{
+      photoBorder:'rgba(0,232,255,0.85)',
+      paintBackground(ctx,w,h){
+        const g = ctx.createLinearGradient(0,0,0,h);
+        g.addColorStop(0,'#0c0f2e'); g.addColorStop(0.5,'#1b1442'); g.addColorStop(1,'#2a1b52');
+        ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+      },
+      swatchAccent(ctx,w,h){
+        drawNeonDots(ctx,8,h*0.06,w-16,6,['#00e8ff','#ff4fd8','#ffd93c'],5);
+      },
+      paintHeader(ctx,w,headerH){
+        drawNeonDots(ctx,20,26,w-40,10,['#00e8ff','#ff4fd8','#ffd93c'],4);
+        ctx.textAlign = 'center';
+        ctx.save();
+        ctx.shadowColor = '#ff4fd8'; ctx.shadowBlur = 16;
+        ctx.fillStyle = '#fff'; ctx.font = '400 44px "Gugi"';
+        ctx.fillText('화개장터', w/2, headerH-56);
+        ctx.restore();
+        ctx.font = '600 15px "Pretendard"'; ctx.fillStyle = '#8fd8ff';
+        ctx.fillText('NIGHT MARKET × PIERROT', w/2, headerH-28);
+      },
+      paintFooter(ctx,w,footerY,footerH,mascotImg){
+        drawNeonDots(ctx,20,footerY+footerH-22,w-40,10,['#00e8ff','#ff4fd8','#ffd93c'],9);
+        ctx.textAlign = 'center';
+        drawMascotImg(ctx, mascotImg, w/2, footerY+2, 60);
+        ctx.font = '700 18px "Pretendard"'; ctx.fillStyle = '#fff';
+        ctx.fillText('HWAGAE MARKET', w/2, footerY+76);
+        ctx.font = '500 13px "Pretendard"'; ctx.fillStyle = '#8fd8ff';
+        ctx.fillText(dateStr(), w/2, footerY+96);
+      }
+    }
+  };
+
+  function drawThemeSwatch(ctx,w,h,key){
+    const t = FRAME_THEMES[key];
+    t.paintBackground(ctx,w,h);
+    if (t.swatchAccent) t.swatchAccent(ctx,w,h);
+    const pw = w*0.66, ph = pw*0.76, px = (w-pw)/2;
+    let py = h*0.12;
+    const gap = h*0.03;
+    for(let i=0;i<4;i++){
+      ctx.fillStyle = 'rgba(255,255,255,0.6)';
+      ctx.fillRect(px,py,pw,ph);
+      ctx.strokeStyle = t.photoBorder;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(px,py,pw,ph);
+      py += ph+gap;
+    }
+  }
+
+  function buildFrameGrid(){
+    frameGrid.innerHTML = '';
+    FRAME_LIST.forEach(f=>{
+      const card = document.createElement('div');
+      card.className = 'frame-card' + (f.key===currentFrameKey ? ' active' : '');
+      card.dataset.key = f.key;
+      const cv = document.createElement('canvas');
+      cv.width = 96; cv.height = 128;
+      drawThemeSwatch(cv.getContext('2d'), 96, 128, f.key);
+      const span = document.createElement('span');
+      span.textContent = f.label;
+      card.appendChild(cv);
+      card.appendChild(span);
+      card.addEventListener('click', ()=>{
+        currentFrameKey = f.key;
+        frameGrid.querySelectorAll('.frame-card').forEach(c=>{
+          c.classList.toggle('active', c.dataset.key === currentFrameKey);
+        });
+      });
+      frameGrid.appendChild(card);
+    });
+  }
+
+  let mascotImgPromise = null;
+  function loadMascotImage(){
+    if (!mascotImgPromise){
+      mascotImgPromise = new Promise((resolve)=>{
+        const img = new Image();
+        img.onload = ()=>resolve(img);
+        img.onerror = ()=>resolve(null);
+        img.src = 'image.png';
+      });
+    }
+    return mascotImgPromise;
+  }
+
+  // 마스코트 사진을 원본 비율 그대로, 지정한 높이에 맞춰 중앙 정렬로 그린다
+  function drawMascotImg(ctx, img, cx, topY, targetH){
+    if (!img) return;
+    const ratio = (img.naturalWidth && img.naturalHeight) ? (img.naturalWidth/img.naturalHeight) : (208/283);
+    const h = targetH, w = h * ratio;
+    ctx.save();
+    ctx.shadowColor = 'rgba(0,0,0,0.3)';
+    ctx.shadowBlur = 8;
+    ctx.drawImage(img, cx - w/2, topY, w, h);
+    ctx.restore();
+    return { w, h };
+  }
+
   async function composeStrip(){
     await loadFont();
+    const mascotImg = await loadMascotImage();
+    const theme = FRAME_THEMES[currentFrameKey] || FRAME_THEMES.hwagae;
     const photoW = 480, photoH = 640, gap = 16, pad = 26;
-    const headerH = 150, footerH = 96;
+    const headerH = 150, footerH = 128;
     const W = photoW + pad*2;
     const H = headerH + 4*photoH + 3*gap + footerH;
     const cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     const ctx = cv.getContext('2d');
 
-    const bgGrad = ctx.createLinearGradient(0,0,0,H);
-    bgGrad.addColorStop(0,'#3a1526');
-    bgGrad.addColorStop(0.22,'#7a2036');
-    bgGrad.addColorStop(0.55,'#d9622b');
-    bgGrad.addColorStop(1,'#f6c869');
-    ctx.fillStyle = bgGrad;
-    ctx.fillRect(0,0,W,H);
-
-    drawLantern(ctx, 46, 46, 16, '#ffe6a8', '#e2472a');
-    drawLantern(ctx, W-46, 50, 12, '#ffe6a8', '#f2b53c');
-    drawConfetti(ctx, W, headerH, 11);
-
-    ctx.textAlign = 'center';
-    ctx.fillStyle = '#fff6e6';
-    ctx.font = '400 46px "Gugi"';
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.35)';
-    ctx.shadowBlur = 6;
-    ctx.shadowOffsetY = 3;
-    ctx.fillText('화개장터', W/2, headerH - 58);
-    ctx.restore();
-
-    ctx.font = '600 19px "Pretendard"';
-    ctx.fillStyle = '#ffe9cf';
-    ctx.fillText('2026 중앙대학교 가을 축제', W/2, headerH - 28);
+    theme.paintBackground(ctx, W, H);
+    theme.paintHeader(ctx, W, headerH);
 
     let y = headerH;
     shots.forEach((shotCanvas)=>{
@@ -560,22 +958,14 @@
       ctx.shadowBlur = 12;
       ctx.drawImage(shotCanvas, pad, y, photoW, photoH);
       ctx.restore();
-      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.strokeStyle = theme.photoBorder;
       ctx.lineWidth = 5;
       ctx.strokeRect(pad, y, photoW, photoH);
       y += photoH + gap;
     });
 
     const footerY = H - footerH;
-    drawConfetti(ctx, W, footerH, 31);
-    ctx.font = '700 20px "Pretendard"';
-    ctx.fillStyle = '#fff6e6';
-    ctx.fillText('HWAGAE MARKET × PIERROT', W/2, footerY + 40);
-    const d = new Date();
-    const dateStr = d.getFullYear()+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+String(d.getDate()).padStart(2,'0');
-    ctx.font = '500 15px "Pretendard"';
-    ctx.fillStyle = '#ffe9cf';
-    ctx.fillText(dateStr, W/2, footerY + 64);
+    theme.paintFooter(ctx, W, footerY, footerH, mascotImg);
 
     resultDataUrl = cv.toDataURL('image/png');
     resultImg.src = resultDataUrl;
@@ -612,3 +1002,4 @@
   document.getElementById('qrImg').src = QR_DATA_URI;
 })();
 </script>
+
