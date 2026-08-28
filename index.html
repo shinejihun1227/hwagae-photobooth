@@ -46,31 +46,33 @@
             <span class="title-x">×</span>
             <span class="title-pierrot">삐에로</span>
           </h1>
-          <p class="intro-copy">한옥 지붕과 등불, 극장 커튼과 마퀴 조명.<br /><b>우리의 가을밤</b>을 네컷에 꽉 눌러 담아요.</p>
+          <p class="intro-copy">등불 아래서 웃고, 무대 앞에서 남겨요.<br /><b>중앙대 가을밤</b>을 네컷으로.</p>
 
           <figure class="poong-scene festival-key-visual" aria-label="화개장터와 삐에로 극장이 만난 중앙대학교 가을축제 일러스트">
             <img src="festival-key-visual.png" alt="화개장터와 삐에로 극장이 만난 중앙대학교 가을축제 장면" />
             <figcaption>
-              <span>MARKET SIDE · THEATRE SIDE</span>
-              <strong>서로 다른 밤이, 한 장면이 되는 곳</strong>
+              <span>화개장터에서 극장까지 · CAU FALL FESTIVAL</span>
+              <strong>오늘 밤, 여기서 한 컷.</strong>
             </figcaption>
           </figure>
 
           <div class="intro-meta">
             <div><span>PLACE</span><strong>중앙대학교 서울캠퍼스</strong></div>
-            <div><span>MOOD</span><strong>Hwagae market × Pierrot circus</strong></div>
+            <div><span>MOOD</span><strong>마켓과 극장 사이, 우리의 가을밤</strong></div>
           </div>
 
           <div class="intro-note">
             <span class="note-icon">✦</span>
             <p>사진은 브라우저 안에서만 처리돼요.<br />장터와 서커스가 만난 축제의 한 장면.</p>
           </div>
-          <button class="primary-action home-start" id="btnEnterBooth" type="button"><span>포토부스 들어가기</span><b>↗</b></button>
-          <div class="home-qr">
-            <a class="qr-card" href="https://shinejihun1227.github.io/hwagae-photobooth/" target="_blank" rel="noreferrer">
-              <img src="qr.png" alt="휴대폰으로 포토부스를 열 수 있는 QR 코드" />
-            </a>
-            <p><span>SCAN TO SHOOT</span><strong>휴대폰으로 바로 찍기</strong><small>QR을 스캔하면 카메라가 열려요.</small></p>
+          <div class="home-action-stack">
+            <button class="primary-action home-start" id="btnEnterBooth" type="button"><span>포토부스 들어가기</span><b>↗</b></button>
+            <div class="home-qr">
+              <a class="qr-card" href="https://shinejihun1227.github.io/hwagae-photobooth/" target="_blank" rel="noreferrer">
+                <img src="qr.png" alt="휴대폰으로 포토부스를 열 수 있는 QR 코드" />
+              </a>
+              <p><span>SCAN TO SHOOT</span><strong>휴대폰으로 바로 찍기</strong><small>QR을 스캔하면 카메라가 열려요.</small></p>
+            </div>
           </div>
         </section>
 
@@ -150,7 +152,7 @@
               <div class="theme-intro">
                 <span class="theme-step">STEP 01 · THEME</span>
                 <h3>중앙대 가을축제 무드를 골라주세요</h3>
-                <p>두 테마 모두 사진 옆에 푸앙이가 함께 등장해요.<br />화개장터는 한옥·등불·물길로, 삐에로는 커튼·마퀴 조명으로 꾸며드릴게요.</p>
+                <p>화개장터는 등불과 물길, 삐에로는 커튼과 조명.<br />사진 속 푸앙이까지 골라보세요.</p>
               </div>
               <div class="theme-choice-layout">
                 <div class="theme-preview-panel">
@@ -168,6 +170,13 @@
 
               <div class="control-group filter-group">
                 <div class="control-heading"><span>FILTER</span><small>요즘 인생네컷 무드</small></div>
+                <div class="filter-demo" aria-live="polite">
+                  <div class="filter-demo-image-wrap">
+                    <img id="filterPreviewImage" src="poong-filter-demo.png" alt="선택한 필터가 적용된 푸앙이 예시" />
+                    <span>LIVE COLOR</span>
+                  </div>
+                  <div class="filter-demo-copy"><strong id="filterPreviewTitle">SOFT FLASH</strong><small id="filterPreviewCopy">얼굴은 밝게, 색감은 부드럽게</small></div>
+                </div>
                 <div class="filter-list" id="filterList">
                   <button class="filter-option selected" data-filter="soft" type="button"><span>01</span><strong>SOFT FLASH</strong></button>
                   <button class="filter-option" data-filter="film" type="button"><span>02</span><strong>FILM GRAIN</strong></button>

@@ -1,9 +1,9 @@
 (() => {
   const filters = {
-    soft: { label: "SOFT FLASH", css: "brightness(1.08) contrast(.94) saturate(1.12)" },
-    film: { label: "FILM GRAIN", css: "sepia(.16) contrast(1.05) saturate(.9) brightness(1.03)" },
-    mono: { label: "MONO MOOD", css: "grayscale(1) contrast(1.1) brightness(1.04)" },
-    night: { label: "NIGHT GLOW", css: "saturate(1.28) contrast(1.08) brightness(.96) hue-rotate(8deg)" }
+    soft: { label: "SOFT FLASH", copy: "얼굴은 밝게, 색감은 부드럽게", css: "brightness(1.08) contrast(.94) saturate(1.12)" },
+    film: { label: "FILM GRAIN", copy: "따뜻한 입자감, 오래된 필름처럼", css: "sepia(.16) contrast(1.05) saturate(.9) brightness(1.03)" },
+    mono: { label: "MONO MOOD", copy: "표정과 실루엣만 또렷하게", css: "grayscale(1) contrast(1.1) brightness(1.04)" },
+    night: { label: "NIGHT GLOW", copy: "축제의 불빛을 진하게 담아서", css: "saturate(1.28) contrast(1.08) brightness(.96) hue-rotate(8deg)" }
   };
 
   const frameLabels = { market: "MARKET NIGHT", pierrot: "PIERROT CIRCUS" };
@@ -31,6 +31,9 @@
   const cameraStatus = $("#cameraStatus");
   const resultImage = $("#resultImage");
   const resultFrameLabel = $("#resultFrameLabel");
+  const filterPreviewImage = $("#filterPreviewImage");
+  const filterPreviewTitle = $("#filterPreviewTitle");
+  const filterPreviewCopy = $("#filterPreviewCopy");
   const controlPanel = $("#controlPanel");
   const boothActions = $("#boothActions");
   const resultActions = $("#resultActions");
@@ -128,6 +131,9 @@
   function updateFilterSelection() {
     $$(".filter-option").forEach((button) => button.classList.toggle("selected", button.dataset.filter === selectedFilter));
     video.style.filter = filters[selectedFilter].css;
+    if (filterPreviewImage) filterPreviewImage.style.filter = filters[selectedFilter].css;
+    if (filterPreviewTitle) filterPreviewTitle.textContent = filters[selectedFilter].label;
+    if (filterPreviewCopy) filterPreviewCopy.textContent = filters[selectedFilter].copy;
   }
 
   function updatePose() {
@@ -561,9 +567,9 @@
         ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
         ctx.strokeStyle = "rgba(255,255,255,.86)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
         if (index === 0 || index === 3) {
-          const stickerWidth = 124; const stickerHeight = 142;
-          const stickerX = index === 0 ? padding + photoWidth - stickerWidth - 16 : padding + 16;
-          const stickerY = index === 0 ? y + 16 : y + photoHeight - stickerHeight - 18;
+          const stickerWidth = 250; const stickerHeight = 292;
+          const stickerX = index === 0 ? padding + photoWidth - stickerWidth + 32 : padding - 28;
+          const stickerY = index === 0 ? y + 22 : y + photoHeight - stickerHeight - 20;
           drawThemePoongSticker(ctx, poong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
         }
         if (index === 1) { ctx.fillStyle = "#ff6a3d"; ctx.beginPath(); ctx.arc(width - padding - 17, y - 9, 28, 0, Math.PI * 2); ctx.fill(); drawText(ctx, "CAU", width - padding - 17, y - 5, 10, "#fff", "600 10px 'IBM Plex Mono'"); }
