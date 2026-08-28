@@ -58,6 +58,8 @@
   let busy = false;
   let previewPoong = null;
   let themedPoong = { market: null, pierrot: null };
+  let expressionPoong = [];
+  const expressionModes = ["pink", "dark", "black", "pink"];
   const poongArtworkCache = new WeakMap();
 
   function setFlow(flow) {
@@ -337,13 +339,48 @@
 
   function drawThemePoongSticker(ctx, image, theme, x, y, width = 124, height = 142) {
     if (!image || !image.naturalWidth) return;
-    const artwork = getPoongArtwork(image);
+    const artwork = getPoongArtwork(image, "neutral");
     ctx.save();
     ctx.shadowColor = theme === "market" ? "rgba(18, 53, 63, .34)" : "rgba(18, 7, 25, .42)";
     ctx.shadowBlur = Math.max(6, width * .08);
     ctx.shadowOffsetY = Math.max(2, height * .035);
     drawContain(ctx, artwork, x, y, width, height);
     ctx.restore();
+  }
+
+  function drawExpressionBadge(ctx, image, theme, index, x, y, width, height) {
+    if (!image || !image.naturalWidth) return;
+    const artwork = getPoongArtwork(image, expressionModes[index] || "neutral");
+    const radius = Math.max(7, width * .12);
+    ctx.save();
+    ctx.shadowColor = theme === "market" ? "rgba(18, 53, 63, .3)" : "rgba(18, 7, 25, .34)";
+    ctx.shadowBlur = Math.max(5, width * .06);
+    ctx.shadowOffsetY = Math.max(2, height * .025);
+    roundedRect(ctx, x, y, width, height, radius);
+    ctx.clip();
+    drawContain(ctx, artwork, x, y, width, height);
+    ctx.restore();
+    ctx.save();
+    ctx.strokeStyle = theme === "market" ? "rgba(255, 230, 167, .88)" : "rgba(255, 221, 154, .9)";
+    ctx.lineWidth = Math.max(1.5, width * .025);
+    roundedRect(ctx, x, y, width, height, radius);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function roundedRect(ctx, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + width - r, y);
+    ctx.quadraticCurveTo(x + width, y, x + width, y + r);
+    ctx.lineTo(x + width, y + height - r);
+    ctx.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    ctx.lineTo(x + r, y + height);
+    ctx.quadraticCurveTo(x, y + height, x, y + height - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
   }
 
   function drawThemePreview() {
@@ -365,11 +402,14 @@
       drawPreviewPhoto(ctx, padding, y, photoWidth, photoHeight, selectedFrame, index);
       ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.82)" : "rgba(255,248,218,.9)";
       ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
-      if ((index === 0 || index === 3) && poong) {
-        const stickerWidth = 48; const stickerHeight = 60;
-        const stickerX = index === 0 ? padding + photoWidth - stickerWidth + 8 : padding - 7;
-        const stickerY = index === 0 ? y + 8 : y + photoHeight - stickerHeight + 4;
-        drawThemePoongSticker(ctx, poong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
+      const expression = expressionPoong[index] || poong;
+      if (expression) {
+        const badgeWidth = 78; const badgeHeight = 88;
+        const onRight = index % 2 === 0;
+        const onTop = index === 0 || index === 2;
+        const badgeX = onRight ? padding + photoWidth - badgeWidth + 20 : padding - 26;
+        const badgeY = onTop ? y + 4 : y + photoHeight - badgeHeight + 3;
+        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight);
       }
       y += photoHeight + gap;
     }
@@ -405,8 +445,10 @@
     ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
   }
 
-  function getPoongArtwork(image) {
-    if (poongArtworkCache.has(image)) return poongArtworkCache.get(image);
+  function getPoongArtwork(image, mode = "neutral") {
+    let imageCache = poongArtworkCache.get(image);
+    if (!imageCache) { imageCache = new Map(); poongArtworkCache.set(image, imageCache); }
+    if (imageCache.has(mode)) return imageCache.get(mode);
     const width = image.naturalWidth;
     const height = image.naturalHeight;
     const canvas = document.createElement("canvas");
@@ -420,7 +462,11 @@
     let head = 0; let tail = 0;
     const isBackdrop = (offset) => {
       const red = pixels.data[offset]; const green = pixels.data[offset + 1]; const blue = pixels.data[offset + 2];
-      return Math.max(red, green, blue) - Math.min(red, green, blue) < 30 && Math.min(red, green, blue) > 140;
+      const max = Math.max(red, green, blue); const min = Math.min(red, green, blue);
+      if (mode === "pink") return (red > 145 && red - green > 20 && red - blue > 4) || (min > 215 && max - min < 36);
+      if (mode === "dark") return (max - min < 46 && max < 150) || (min > 175 && max - min < 32);
+      if (mode === "black") return max < 76;
+      return max - min < 30 && min > 140;
     };
     const enqueue = (pixel) => {
       if (pixel < 0 || pixel >= width * height || visited[pixel] || !isBackdrop(pixel * 4)) return;
@@ -438,7 +484,7 @@
       if (y < height - 1) enqueue(pixel + width);
     }
     ctx.putImageData(pixels, 0, 0);
-    poongArtworkCache.set(image, canvas);
+    imageCache.set(mode, canvas);
     return canvas;
   }
 
@@ -600,11 +646,14 @@
       shots.forEach((shot, index) => {
         ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
         ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.82)" : "rgba(255,248,218,.9)"; ctx.lineWidth = 5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
-        if (index === 0 || index === 3) {
-          const stickerWidth = 148; const stickerHeight = 178;
-          const stickerX = index === 0 ? padding + photoWidth - stickerWidth + 52 : padding - 48;
-          const stickerY = index === 0 ? y + 22 : y + photoHeight - stickerHeight - 18;
-          drawThemePoongSticker(ctx, poong, selectedFrame, stickerX, stickerY, stickerWidth, stickerHeight);
+        const expression = expressionPoong[index] || poong;
+        if (expression) {
+          const stickerWidth = 178; const stickerHeight = 208;
+          const onRight = index % 2 === 0;
+          const onTop = index === 0 || index === 2;
+          const stickerX = onRight ? padding + photoWidth - stickerWidth + 54 : padding - 54;
+          const stickerY = onTop ? y + 24 : y + photoHeight - stickerHeight - 20;
+          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight);
         }
         y += photoHeight + gap;
       });
@@ -675,8 +724,13 @@
     loadImage("poong-market.png"),
     loadImage("poong-pierrot.png"),
     loadImage("poong.png"),
-  ]).then(([market, pierrot, fallbackPoong]) => {
+    loadImage("poong-expression-1.png"),
+    loadImage("poong-expression-2.png"),
+    loadImage("poong-expression-3.png"),
+    loadImage("poong-expression-4.png"),
+  ]).then(([market, pierrot, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour]) => {
     themedPoong = { market, pierrot };
+    expressionPoong = [expressionOne, expressionTwo, expressionThree, expressionFour];
     previewPoong = market || pierrot || fallbackPoong;
     drawThemePreview();
   });
