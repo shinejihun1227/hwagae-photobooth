@@ -342,6 +342,21 @@ h1 { margin: 25px 0 16px; font-family: var(--display); font-size: clamp(54px, 7v
 }
 
 /* Final visual pass: calm, camera-first photobooth styling. */
+:root {
+  --ink: #1b2a3d;
+  --muted: #66717c;
+  --muted-dark: #9a958d;
+  --canvas: #f4eee4;
+  --canvas-deep: #eee6da;
+  --panel: #fffdf8;
+  --panel-light: #f7f1e7;
+  --line: rgba(27, 42, 61, .14);
+  --orange: #bd3936;
+  --coral: #c94a3e;
+  --yellow: #dca64d;
+  --lilac: #174875;
+  --cyan: #3f8f86;
+}
 body { color: var(--ink); background: var(--canvas); }
 .ambient { opacity: .26; filter: blur(8px); }
 .ambient-one { background: radial-gradient(circle, rgba(201,74,62,.17), transparent 68%); }
