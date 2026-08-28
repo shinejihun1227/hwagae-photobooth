@@ -639,3 +639,27 @@ body:not([data-flow="home"]) .studio-layout { padding-top: 36px; }
   .result-image-wrap { height: 520px; }
   #resultImage { max-height: 490px; }
 }
+
+/* Mobile stability pass: keep the page inside the viewport and give each step room to breathe. */
+html, body { overflow-x: hidden; }
+body { min-width: 0; }
+
+@media (max-width: 650px) {
+  .theme-choice-layout { grid-template-columns: 1fr; gap: 14px; }
+  .theme-preview-panel { padding: 10px; }
+  #themePreview { width: min(100%, 220px); max-height: none; }
+  .control-panel { padding-top: 0; }
+  .frame-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .filter-demo { grid-template-columns: 76px minmax(0, 1fr); }
+  .booth-actions, .result-actions { grid-template-columns: 94px minmax(0, 1fr); }
+}
+
+@media (max-width: 360px) {
+  .site-shell { width: calc(100% - 20px); }
+  .booth-card { padding-left: 12px; padding-right: 12px; }
+  h1 { gap: 5px; font-size: clamp(35px, 11.5vw, 43px); }
+  .title-x { font-size: 18px; }
+  .intro-copy { font-size: 13px; }
+  #themePreview { width: min(100%, 205px); }
+  .filter-demo { grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
+}

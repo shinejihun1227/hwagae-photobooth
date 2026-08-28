@@ -71,6 +71,7 @@
     boothActions.hidden = flow !== "theme";
     cameraActions.hidden = flow !== "camera";
     resultActions.hidden = flow !== "result";
+    window.scrollTo({ top: 0, behavior: "auto" });
   }
 
   function showToast(message) {
