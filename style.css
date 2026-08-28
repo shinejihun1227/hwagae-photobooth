@@ -663,3 +663,13 @@ body { min-width: 0; }
   #themePreview { width: min(100%, 205px); }
   .filter-demo { grid-template-columns: 64px minmax(0, 1fr); gap: 8px; }
 }
+
+/* Make the frame choices read as real vertical four-cut strips at every size. */
+.frame-swatch { position: relative; grid-template-columns: 1fr; grid-template-rows: repeat(4, minmax(0, 1fr)); height: 78px; gap: 2px; }
+.frame-swatch i { min-height: 0; border-width: 1px; }
+.swatch-market::before { position: absolute; z-index: 1; top: 0; left: 0; right: 0; height: 8px; margin: 0; }
+.swatch-pierrot::before { position: absolute; z-index: 1; top: 50%; left: 50%; display: block; margin: 0; transform: translate(-50%, -50%); }
+
+@media (max-width: 650px) {
+  .frame-swatch { height: 72px; }
+}
