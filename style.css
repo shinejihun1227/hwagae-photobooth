@@ -715,6 +715,8 @@ body[data-flow="home"] h1 { margin: 16px 0 12px; font-size: clamp(48px, 6.5vw, 8
 .cau-festival-year b { color: #ffd76d; font: 700 18px/1 var(--mono); letter-spacing: -.08em; }
 .cau-festival-year small { color: #e09b69; font: 600 7px/1.2 var(--mono); letter-spacing: .08em; }
 .title-market, .title-pierrot { position: relative; }
+.title-market::before { content: ""; position: absolute; z-index: 2; top: 4px; left: -22px; width: 15px; height: 20px; transform: rotate(-28deg); clip-path: polygon(50% 0, 68% 32%, 100% 21%, 76% 51%, 91% 83%, 56% 66%, 35% 100%, 30% 63%, 0 70%, 27% 43%, 7% 17%, 42% 28%); background: linear-gradient(145deg, #f3bf58, #c8403d 72%); filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .2)); pointer-events: none; }
+.title-pierrot::before { content: ""; position: absolute; z-index: 2; top: 10px; right: -22px; width: 15px; height: 18px; transform: rotate(16deg); clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%); background: #e9574b; box-shadow: 21px -10px 0 -4px #ffd05d; filter: drop-shadow(0 4px 4px rgba(0, 0, 0, .2)); pointer-events: none; }
 .title-market::after { content: ""; display: block; width: 72%; height: 5px; margin: 8px 0 0 auto; border-radius: 999px 0 0 999px; background: repeating-linear-gradient(90deg, #f3bd55 0 20px, #b93937 20px 31px); opacity: .8; }
 .title-pierrot::after { content: ""; display: block; width: 70%; height: 5px; margin: 8px auto 0 0; border-radius: 0 999px 999px 0; background: radial-gradient(circle, #ffd76d 0 2px, transparent 3px) 0 50% / 16px 5px repeat-x; opacity: .8; }
 .poong-scene.festival-key-visual { max-width: 920px; margin-top: 24px; margin-bottom: 23px; aspect-ratio: 2.15 / 1; border-radius: 18px; }
@@ -724,7 +726,10 @@ body[data-flow="home"] h1 { margin: 16px 0 12px; font-size: clamp(48px, 6.5vw, 8
 .theme-preview-panel { padding: 12px; border-radius: 18px; background: linear-gradient(160deg, rgba(55, 20, 32, .76), rgba(15, 7, 12, .62)); }
 #themePreview { border: 1px solid rgba(255, 242, 216, .75); border-radius: 8px; box-shadow: 0 20px 38px rgba(0, 0, 0, .42); image-rendering: auto; }
 .frame-option { padding: 8px; border-radius: 15px; }
-.frame-swatch { height: 86px; margin-bottom: 8px; padding: 0; border: 0; border-radius: 10px; box-shadow: inset 0 0 0 1px rgba(255, 239, 213, .18); }
+.frame-swatch { position: relative; height: 86px; margin-bottom: 8px; padding: 0; border: 0; border-radius: 10px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(255, 239, 213, .18); }
+.frame-swatch::after { position: absolute; z-index: 2; display: block; pointer-events: none; }
+.swatch-market::after { content: ""; top: 10px; right: 13px; width: 13px; height: 17px; clip-path: polygon(50% 0, 68% 32%, 100% 21%, 76% 51%, 91% 83%, 56% 66%, 35% 100%, 30% 63%, 0 70%, 27% 43%, 7% 17%, 42% 28%); background: linear-gradient(145deg, #f3bd55, #c8403d 72%); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .28)); }
+.swatch-pierrot::after { content: "◆"; top: 34px; right: 14px; color: #e9574b; font-size: 18px; text-shadow: -13px -8px 0 #ffd05d, 13px 8px 0 #fff0d1; }
 .filter-list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
 .filter-option { min-height: 55px; padding: 9px 10px 7px; border-radius: 12px; background: rgba(255, 255, 255, .045); }
 .filter-option strong { overflow: hidden; color: #f6dfc6; font: 600 8px/1.15 "DM Sans", var(--mono); letter-spacing: .015em; white-space: nowrap; text-overflow: ellipsis; }
@@ -742,6 +747,8 @@ body[data-flow="home"] h1 { margin: 16px 0 12px; font-size: clamp(48px, 6.5vw, 8
 .enhance-toggle i::after { content: ""; position: absolute; top: 3px; left: 3px; width: 12px; height: 12px; border-radius: 50%; background: #a98b7e; transition: transform .2s ease, background .2s ease; }
 .enhance-toggle input:checked + .enhance-toggle-copy + i { border-color: #ffd05d; background: rgba(244, 196, 93, .24); }
 .enhance-toggle input:checked + .enhance-toggle-copy + i::after { transform: translateX(14px); background: #ffd05d; box-shadow: 0 0 9px rgba(255, 208, 93, .7); }
+.filter-demo-image-wrap img { image-rendering: auto; transform: translateZ(0); transition: filter .28s ease, transform .28s ease; }
+.festival-key-visual img { image-rendering: auto; transform: translateZ(0); backface-visibility: hidden; }
 
 @media (max-width: 650px) {
   body[data-flow="home"] .studio-layout { max-width: none; }
@@ -753,6 +760,8 @@ body[data-flow="home"] h1 { margin: 16px 0 12px; font-size: clamp(48px, 6.5vw, 8
   .cau-festival-year b { font-size: 15px; }
   .cau-festival-year small { font-size: 6px; }
   .title-market::after, .title-pierrot::after { height: 4px; margin-top: 5px; }
+  .title-market::before { left: -14px; width: 11px; height: 15px; }
+  .title-pierrot::before { right: -14px; width: 11px; height: 14px; }
   .theme-intro { padding: 16px 15px; }
   .theme-intro h3 { font-size: 18px; }
   .filter-option { min-height: 52px; padding: 8px 7px 6px; }

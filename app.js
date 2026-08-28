@@ -183,7 +183,7 @@
     const canvas = document.createElement("canvas");
     canvas.width = 1080;
     canvas.height = 1440;
-    const ctx = canvas.getContext("2d");
+    const ctx = configureCanvasContext(canvas.getContext("2d"));
     drawPreviewPhoto(ctx, 0, 0, canvas.width, canvas.height, selectedFrame, index);
     const vignette = ctx.createRadialGradient(360, 380, 160, 360, 420, 720);
     vignette.addColorStop(0, "rgba(255,255,255,.05)"); vignette.addColorStop(1, "rgba(18,12,28,.28)");
@@ -196,7 +196,7 @@
     if (demoMode || !video.videoWidth) return makeDemoShot(index);
     const canvas = document.createElement("canvas");
     canvas.width = 1080; canvas.height = 1440;
-    const ctx = canvas.getContext("2d");
+    const ctx = configureCanvasContext(canvas.getContext("2d"));
     const videoRatio = video.videoWidth / video.videoHeight;
     const targetRatio = 3 / 4;
     let sourceWidth = video.videoWidth;
@@ -277,6 +277,13 @@
     ctx.save(); ctx.fillStyle = color; ctx.font = font; ctx.textAlign = align; ctx.fillText(text, x, y); ctx.restore();
   }
 
+  function configureCanvasContext(ctx) {
+    if (!ctx) return ctx;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = "high";
+    return ctx;
+  }
+
   function drawGradientText(ctx, text, x, y, size, font, colors) {
     ctx.save();
     ctx.font = font;
@@ -312,6 +319,48 @@
     ctx.globalAlpha = .92;
     ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.stroke();
     drawText(ctx, "CAU", x, y + radius * .28, Math.max(5, radius * .46), color, `700 ${Math.max(5, radius * .46)}px 'IBM Plex Mono'`);
+    ctx.restore();
+  }
+
+  function drawMapleLeaf(ctx, x, y, size, rotation, color = "#d9553f") {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.scale(size, size);
+    const points = [[0, -1], [.18, -.42], [.62, -.68], [.43, -.16], [1, 0], [.43, .18], [.64, .68], [.16, .43], [0, 1], [-.16, .43], [-.64, .68], [-.43, .18], [-1, 0], [-.43, -.16], [-.62, -.68], [-.18, -.42]];
+    ctx.beginPath();
+    ctx.moveTo(points[0][0], points[0][1]);
+    points.slice(1).forEach(([pointX, pointY]) => ctx.lineTo(pointX, pointY));
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.globalAlpha = .92;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(77, 26, 29, .55)";
+    ctx.lineWidth = .08;
+    ctx.stroke();
+    ctx.strokeStyle = "rgba(255, 226, 143, .6)";
+    ctx.lineWidth = .06;
+    ctx.beginPath(); ctx.moveTo(0, .88); ctx.lineTo(0, -.7); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawPierrotMakeupMark(ctx, x, y, size, rotation = 0, color = "#e9574b") {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(rotation);
+    ctx.fillStyle = color;
+    ctx.strokeStyle = "rgba(255, 215, 109, .76)";
+    ctx.lineWidth = Math.max(.6, size * .08);
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(size * .46, 0);
+    ctx.lineTo(0, size);
+    ctx.lineTo(-size * .46, 0);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#fff0d1";
+    ctx.beginPath(); ctx.arc(size * .85, -size * .55, size * .18, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
   }
 
@@ -448,7 +497,7 @@
     const gap = 7;
     const photoHeight = Math.floor((height - header - footer - gap * 3) / 4);
     const photoWidth = width - padding * 2;
-    const ctx = themePreview.getContext("2d");
+    const ctx = configureCanvasContext(themePreview.getContext("2d"));
     ctx.setTransform(previewScale, 0, 0, previewScale, 0, 0);
     paintFrame(ctx, width, height, selectedFrame);
     drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
@@ -705,6 +754,8 @@
       const titleSize = compact ? 14 : 25;
       const subtitleSize = compact ? 7 : 13;
       drawGradientText(ctx, "PIERROT", width / 2, compact ? 29 : 50, titleSize, `700 ${titleSize}px 'Black Han Sans'`, ["#fff4df", "#ffd05d", "#e9574b", "#f3b45e"]);
+      drawPierrotMakeupMark(ctx, width * .28, compact ? 31 : 52, compact ? 4 : 8, -.18);
+      drawPierrotMakeupMark(ctx, width * .72, compact ? 31 : 52, compact ? 4 : 8, .18, "#ffd05d");
       drawText(ctx, "CIRCUS THEATRE", width / 2, compact ? 69 : 127, subtitleSize, "#ffd05d", `600 ${subtitleSize}px 'IBM Plex Mono'`);
       ctx.fillStyle = "#faefd9"; ctx.fillRect(0, header, width, height - header);
       return;
@@ -718,6 +769,10 @@
     const subtitleSize = compact ? 7 : 12;
     drawGradientText(ctx, "화개장터", width / 2, compact ? 43 : 83, titleSize, `700 ${titleSize}px 'Noto Serif KR'`, ["#fff4dc", "#ffd05d", "#f08d60", "#fff4dc"]);
     drawMarketAwning(ctx, 0, compact ? 57 : 103, width, compact ? 15 : 28);
+    drawMapleLeaf(ctx, width * .18, compact ? 21 : 42, compact ? 5 : 11, -.42, "#d9553f");
+    drawMapleLeaf(ctx, width * .82, compact ? 21 : 42, compact ? 5 : 11, .42, "#e58d3d");
+    drawMapleLeaf(ctx, width * .27, compact ? 70 : 124, compact ? 4 : 9, .24, "#b94338");
+    drawMapleLeaf(ctx, width * .73, compact ? 70 : 124, compact ? 4 : 9, -.24, "#d87938");
     drawText(ctx, "가을 장터 · 물길 따라 기억하기", width / 2, compact ? 75 : 137, subtitleSize, "#fff1ca", `600 ${subtitleSize}px 'IBM Plex Mono'`);
   }
 
@@ -741,12 +796,16 @@
       }
       ctx.strokeStyle = "#ffd05d"; ctx.lineWidth = compact ? 1 : 2; ctx.strokeRect(compact ? 9 : 18, y + (compact ? 9 : 18), width - (compact ? 18 : 36), height - (compact ? 18 : 36));
       for (let x = compact ? 20 : 35; x < width - (compact ? 12 : 20); x += compact ? 25 : 34) drawLantern(ctx, x, y + (compact ? 16 : 26), compact ? 2 : 3, "#ffd05d");
+      drawPierrotMakeupMark(ctx, width * .24, y + height * .56, compact ? 3 : 7, -.18);
+      drawPierrotMakeupMark(ctx, width * .31, y + height * .7, compact ? 2.5 : 6, .2, "#ffd05d");
     } else {
       ctx.fillStyle = "#9b3735"; ctx.fillRect(0, y, width, height);
       drawMarketAwning(ctx, 0, y, width, bandHeight);
       ctx.fillStyle = "rgba(255,238,187,.16)";
       for (let plank = y + (compact ? 27 : 40); plank < y + height; plank += compact ? 14 : 21) { ctx.fillRect(0, plank, width, 1); }
       drawLantern(ctx, width * .88, y + height * .5, compact ? 4 : 8, "#ffe3a2");
+      drawMapleLeaf(ctx, width * .23, y + height * .42, compact ? 4 : 9, -.35, "#e05f3f");
+      drawMapleLeaf(ctx, width * .3, y + height * .68, compact ? 3 : 7, .35, "#f0a044");
     }
     drawCauSeal(ctx, compact ? width * .12 : width * .13, y + height * .55, compact ? 8 : 17, "#fff0d1");
     if (poong && (frame === "market" || frame === "pierrot")) drawThemePoongSticker(ctx, poong, frame, mascotX, mascotY, mascotWidth, mascotHeight);
@@ -757,11 +816,13 @@
   async function composeStrip() {
     const poong = themedPoong[selectedFrame] || await loadImage("poong.png");
     const photoWidth = 600; const photoHeight = 800; const padding = 32; const gap = 18; const header = 174; const footer = 186;
+    const renderScale = 1.25;
     const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
-    const canvas = document.createElement("canvas"); canvas.width = width; canvas.height = height;
+    const canvas = document.createElement("canvas"); canvas.width = Math.round(width * renderScale); canvas.height = Math.round(height * renderScale);
     try {
-      const ctx = canvas.getContext("2d");
+      const ctx = configureCanvasContext(canvas.getContext("2d"));
       if (!ctx) throw new Error("Canvas context unavailable");
+      ctx.scale(renderScale, renderScale);
       paintFrame(ctx, width, height, selectedFrame);
       drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
       let y = header;
@@ -850,8 +911,8 @@
     loadImage("cau-anniversary-mark.png"),
     loadImage("poong-market.png"),
     loadImage("poong-pierrot.png"),
-    loadImage("poong-market-expressions.png"),
-    loadImage("poong-pierrot-expressions.png"),
+    loadImage("poong-market-expressions-v2.png"),
+    loadImage("poong-pierrot-expressions-v2.png"),
     loadImage("poong.png"),
     loadImage("poong-expression-1.png"),
     loadImage("poong-expression-2.png"),
