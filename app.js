@@ -40,6 +40,7 @@
   const filterPreviewCopy = $("#filterPreviewCopy");
   const autoEnhanceToggle = $("#autoEnhance");
   const cauAnniversaryMark = $("#cauAnniversaryMark");
+  const frameSwatchArt = { market: $("#frameSwatchMarket"), pierrot: $("#frameSwatchPierrot") };
   const controlPanel = $("#controlPanel");
   const boothActions = $("#boothActions");
   const resultActions = $("#resultActions");
@@ -933,6 +934,12 @@
     themedExpressions = { market: marketExpressions, pierrot: pierrotExpressions };
     expressionPoong = [expressionOne, expressionTwo, expressionThree, expressionFour];
     previewPoong = market || pierrot || fallbackPoong;
+    Object.entries(themedPoong).forEach(([theme, image]) => {
+      const swatch = frameSwatchArt[theme];
+      if (!swatch || !image) return;
+      swatch.src = getPoongArtwork(image, "neutral").toDataURL("image/png");
+      swatch.classList.add("ready");
+    });
     drawThemePreview();
   });
 })();

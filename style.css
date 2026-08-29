@@ -1009,3 +1009,126 @@ body[data-flow="home"] .festival-key-visual figcaption strong {
     font-size: 15px;
   }
 }
+
+/* Theme selector: let each Poong character carry the theme, without a scene thumbnail behind it. */
+.frame-option {
+  display: grid;
+  grid-template-rows: 118px auto auto;
+  justify-items: center;
+  min-height: 166px;
+  padding: 10px 11px 11px;
+  border-radius: 16px;
+  text-align: center;
+}
+
+.frame-option .frame-swatch {
+  width: 100%;
+  height: 118px;
+  margin-bottom: 9px;
+  border: 1px solid rgba(255, 239, 213, .2);
+  border-radius: 13px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .035), 0 8px 18px rgba(15, 3, 8, .14);
+}
+
+.frame-swatch.swatch-market {
+  background-color: #8d3436;
+  background-image: radial-gradient(circle at 20% 22%, rgba(255, 215, 111, .34) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 76%, rgba(255, 193, 76, .24) 0 2px, transparent 3px),
+    url("poong-market.png");
+  background-repeat: no-repeat;
+  background-position: 20% 22%, 78% 76%, center bottom;
+  background-size: auto, auto, auto 113px;
+}
+
+.frame-swatch.swatch-pierrot {
+  background-color: #342044;
+  background-image: radial-gradient(circle at 18% 26%, #ffd76d 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 72%, #ec695b 0 2px, transparent 3px),
+    url("poong-pierrot.png");
+  background-repeat: no-repeat;
+  background-position: 18% 26%, 82% 72%, center bottom;
+  background-size: auto, auto, auto 113px;
+}
+
+.frame-swatch.swatch-market::before,
+.frame-swatch.swatch-market::after,
+.frame-swatch.swatch-pierrot::before,
+.frame-swatch.swatch-pierrot::after { display: none; }
+
+.frame-option strong {
+  align-self: end;
+  color: #fff1da;
+  font-size: 14px;
+  line-height: 1.15;
+  letter-spacing: -.04em;
+}
+
+.frame-option small {
+  align-self: start;
+  margin-top: 4px;
+  color: #c6a28e;
+  font-size: 7px;
+  line-height: 1;
+  letter-spacing: .1em;
+}
+
+@media (max-width: 650px) {
+  .frame-option {
+    grid-template-rows: 104px auto auto;
+    min-height: 150px;
+    padding: 8px 8px 10px;
+    border-radius: 14px;
+  }
+
+  .frame-option .frame-swatch {
+    height: 104px;
+    margin-bottom: 8px;
+    border-radius: 11px;
+  }
+
+  .frame-swatch.swatch-market,
+  .frame-swatch.swatch-pierrot { background-size: auto, auto, auto 100px; }
+  .frame-option strong { font-size: 12px; }
+  .frame-option small { margin-top: 3px; font-size: 6px; }
+}
+
+/* Use the actual themed Poong art as the selector thumbnail; no scene photo or frame overlay. */
+.frame-option .frame-swatch {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  place-items: end center;
+  background-repeat: no-repeat;
+  background-position: 20% 22%, 78% 76%;
+  background-size: auto, auto;
+}
+
+.frame-swatch.swatch-market {
+  background-color: #8d3436;
+  background-image: radial-gradient(circle at 20% 22%, rgba(255, 215, 111, .34) 0 2px, transparent 3px),
+    radial-gradient(circle at 78% 76%, rgba(255, 193, 76, .24) 0 2px, transparent 3px);
+}
+
+.frame-swatch.swatch-pierrot {
+  background-color: #342044;
+  background-image: radial-gradient(circle at 18% 26%, #ffd76d 0 2px, transparent 3px),
+    radial-gradient(circle at 82% 72%, #ec695b 0 2px, transparent 3px);
+}
+
+.frame-swatch-character {
+  display: block;
+  width: auto;
+  height: 113px;
+  max-width: 84%;
+  object-fit: contain;
+  opacity: 0;
+  filter: drop-shadow(0 7px 7px rgba(18, 7, 12, .35));
+  transition: opacity .2s ease, transform .2s ease;
+}
+
+.frame-swatch-character.ready { opacity: 1; }
+.frame-option:hover .frame-swatch-character { transform: translateY(-2px); }
+
+@media (max-width: 650px) {
+  .frame-swatch-character { height: 99px; }
+}
