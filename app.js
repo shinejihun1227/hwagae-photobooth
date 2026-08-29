@@ -403,40 +403,59 @@
   }
 
   function drawPierrotCurtains(ctx, width, height, compact) {
-    const curtainHeight = compact ? 78 : 145;
-    ctx.fillStyle = "#24172e";
+    const curtainHeight = compact ? 88 : 174;
+    const stage = ctx.createLinearGradient(0, 0, 0, curtainHeight);
+    stage.addColorStop(0, "#171126"); stage.addColorStop(1, "#2b1738");
+    ctx.fillStyle = stage;
     ctx.fillRect(0, 0, width, curtainHeight);
-    ctx.fillStyle = "#842238";
+    const leftCurtain = ctx.createLinearGradient(0, 0, width * .34, 0);
+    leftCurtain.addColorStop(0, "#7f2747"); leftCurtain.addColorStop(.65, "#4b1e3c"); leftCurtain.addColorStop(1, "#2e1837");
+    ctx.fillStyle = leftCurtain;
     ctx.beginPath();
     ctx.moveTo(0, 0); ctx.lineTo(width * .27, 0); ctx.quadraticCurveTo(width * .2, curtainHeight * .54, width * .31, curtainHeight); ctx.lineTo(0, curtainHeight); ctx.closePath(); ctx.fill();
+    const rightCurtain = ctx.createLinearGradient(width, 0, width * .66, 0);
+    rightCurtain.addColorStop(0, "#7f2747"); rightCurtain.addColorStop(.65, "#4b1e3c"); rightCurtain.addColorStop(1, "#2e1837");
+    ctx.fillStyle = rightCurtain;
     ctx.beginPath();
     ctx.moveTo(width, 0); ctx.lineTo(width * .73, 0); ctx.quadraticCurveTo(width * .8, curtainHeight * .54, width * .69, curtainHeight); ctx.lineTo(width, curtainHeight); ctx.closePath(); ctx.fill();
-    ctx.strokeStyle = "rgba(255,205,97,.28)";
-    ctx.lineWidth = compact ? 2 : 4;
+    ctx.strokeStyle = "rgba(255,205,97,.18)";
+    ctx.lineWidth = compact ? 1.5 : 3;
     for (const side of [1, -1]) {
-      for (let stripe = 0; stripe < 3; stripe += 1) {
-        const startX = side === 1 ? width * (.04 + stripe * .075) : width * (.96 - stripe * .075);
+      for (let fold = 0; fold < 4; fold += 1) {
+        const startX = side === 1 ? width * (.035 + fold * .065) : width * (.965 - fold * .065);
         ctx.beginPath();
         ctx.moveTo(startX, 0);
-        ctx.quadraticCurveTo(startX + side * width * .01, curtainHeight * .55, startX + side * width * .05, curtainHeight);
+        ctx.quadraticCurveTo(startX + side * width * .02, curtainHeight * .48, startX + side * width * (.035 + fold * .008), curtainHeight);
         ctx.stroke();
       }
     }
-    ctx.fillStyle = "rgba(255,222,130,.15)";
+    ctx.strokeStyle = "rgba(255,220,139,.54)";
+    ctx.lineWidth = compact ? 1 : 2;
+    ctx.beginPath();
+    ctx.moveTo(width * .27, curtainHeight);
+    ctx.quadraticCurveTo(width * .34, compact ? 34 : 67, width * .5, compact ? 19 : 37);
+    ctx.quadraticCurveTo(width * .66, compact ? 34 : 67, width * .73, curtainHeight);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255,222,130,.11)";
     ctx.beginPath(); ctx.moveTo(width * .1, curtainHeight); ctx.lineTo(width * .38, curtainHeight); ctx.lineTo(width * .5, compact ? 35 : 73); ctx.lineTo(width * .62, curtainHeight); ctx.lineTo(width * .9, curtainHeight); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = "#e5b65d";
+    ctx.beginPath(); ctx.arc(width * .28, curtainHeight * .68, compact ? 3 : 6, 0, Math.PI * 2); ctx.arc(width * .72, curtainHeight * .68, compact ? 3 : 6, 0, Math.PI * 2); ctx.fill();
   }
 
   function drawMarquee(ctx, x, y, width, height, compact) {
     ctx.save();
-    ctx.fillStyle = "#3a2044";
-    ctx.fillRect(x, y, width, height);
-    ctx.strokeStyle = "#ffd05d";
-    ctx.lineWidth = compact ? 1 : 3;
-    ctx.strokeRect(x, y, width, height);
-    const bulbRadius = compact ? 1.7 : 3.5;
-    for (let bulbX = x + 12; bulbX < x + width - 8; bulbX += compact ? 13 : 26) {
-      drawLantern(ctx, bulbX, y + 7, bulbRadius, "#ffd05d");
-      drawLantern(ctx, bulbX, y + height - 7, bulbRadius, "#ffd05d");
+    const plaque = ctx.createLinearGradient(x, y, x, y + height);
+    plaque.addColorStop(0, "#4b2750"); plaque.addColorStop(1, "#261735");
+    roundedRect(ctx, x, y, width, height, compact ? 7 : 14);
+    ctx.fillStyle = plaque; ctx.fill();
+    ctx.strokeStyle = "rgba(255,208,103,.86)";
+    ctx.lineWidth = compact ? 1 : 2;
+    roundedRect(ctx, x, y, width, height, compact ? 7 : 14);
+    ctx.stroke();
+    const bulbRadius = compact ? 1.5 : 3;
+    for (let bulbX = x + (compact ? 10 : 16); bulbX < x + width - (compact ? 8 : 12); bulbX += compact ? 17 : 34) {
+      drawLantern(ctx, bulbX, y + (compact ? 6 : 9), bulbRadius, "#ffd05d");
+      drawLantern(ctx, bulbX, y + height - (compact ? 6 : 9), bulbRadius, "#ffd05d");
     }
     ctx.restore();
   }
@@ -727,12 +746,23 @@
     if (railHeight <= 0) return;
     ctx.save();
     if (frame === "pierrot") {
-      ctx.fillStyle = "#542447";
+      const railGradient = ctx.createLinearGradient(0, header, 0, height - footer);
+      railGradient.addColorStop(0, "#432044"); railGradient.addColorStop(.52, "#251934"); railGradient.addColorStop(1, "#542447");
+      ctx.fillStyle = railGradient;
       ctx.fillRect(0, header, padding, railHeight);
       ctx.fillRect(width - padding, header, padding, railHeight);
-      ctx.fillStyle = "#ffd05d";
-      for (let y = header + 18; y < height - footer; y += 48) {
-        ctx.beginPath(); ctx.arc(padding / 2, y, 3, 0, Math.PI * 2); ctx.arc(width - padding / 2, y, 3, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = "rgba(255,208,103,.58)";
+      ctx.lineWidth = height < 1000 ? 1 : 2;
+      ctx.beginPath();
+      ctx.moveTo(padding - (height < 1000 ? 2 : 4), header);
+      ctx.lineTo(padding - (height < 1000 ? 2 : 4), height - footer);
+      ctx.moveTo(width - padding + (height < 1000 ? 2 : 4), header);
+      ctx.lineTo(width - padding + (height < 1000 ? 2 : 4), height - footer);
+      ctx.stroke();
+      const step = height < 1000 ? 78 : 210;
+      for (let y = header + (height < 1000 ? 38 : 82); y < height - footer - 14; y += step) {
+        drawPierrotMakeupMark(ctx, padding / 2, y, height < 1000 ? 2.8 : 6, -.15, y % 2 ? "#e9574b" : "#ffd05d");
+        drawPierrotMakeupMark(ctx, width - padding / 2, y + (height < 1000 ? 21 : 48), height < 1000 ? 2.6 : 5.5, .15, y % 2 ? "#ffd05d" : "#e9574b");
       }
     } else {
       const compact = height < 1000;
@@ -762,15 +792,23 @@
   function drawPreviewPhoto(ctx, x, y, width, height, frame, index) {
     ctx.save();
     if (frame === "pierrot") {
-      const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
-      gradient.addColorStop(0, "#463052"); gradient.addColorStop(.48, "#1a1730"); gradient.addColorStop(1, "#8c3d55");
+      const gradient = ctx.createLinearGradient(x, y, x, y + height);
+      gradient.addColorStop(0, "#352044"); gradient.addColorStop(.52, "#17152d"); gradient.addColorStop(1, "#6c304f");
       ctx.fillStyle = gradient; ctx.fillRect(x, y, width, height);
-      ctx.fillStyle = "rgba(255,226,150,.18)";
-      ctx.beginPath(); ctx.moveTo(x + width * .5, y); ctx.lineTo(x + width * .78, y + height); ctx.lineTo(x + width * .22, y + height); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = "#efb94f";
-      for (let dot = 0; dot < 4; dot += 1) { ctx.beginPath(); ctx.arc(x + width * (.18 + dot * .22), y + height * (.16 + (index % 2) * .04), Math.max(2, width * .012), 0, Math.PI * 2); ctx.fill(); }
-      ctx.fillStyle = "rgba(255,246,219,.08)";
-      for (let ray = 0; ray < 3; ray += 1) { ctx.fillRect(x + width * (.22 + ray * .28), y + height * .28, Math.max(1, width * .006), height * .44); }
+      const spotlight = ctx.createRadialGradient(x + width * .5, y + height * .38, 2, x + width * .5, y + height * .38, width * .75);
+      spotlight.addColorStop(0, "rgba(255,224,161,.3)"); spotlight.addColorStop(.42, "rgba(238,174,113,.11)"); spotlight.addColorStop(1, "rgba(17,13,31,0)");
+      ctx.fillStyle = spotlight; ctx.fillRect(x, y, width, height);
+      ctx.fillStyle = "rgba(255,226,161,.07)";
+      ctx.beginPath(); ctx.moveTo(x + width * .44, y); ctx.lineTo(x + width * .18, y + height); ctx.lineTo(x + width * .82, y + height); ctx.lineTo(x + width * .56, y); ctx.closePath(); ctx.fill();
+      ctx.strokeStyle = "rgba(255,221,146,.15)";
+      ctx.lineWidth = Math.max(1, width * .006);
+      ctx.beginPath(); ctx.arc(x + width * .5, y + height * .14, width * .3, Math.PI, 0); ctx.stroke();
+      const starPositions = [[.16, .22], [.82, .24], [.32, .74], [.69, .68]];
+      starPositions.forEach(([starX, starY], starIndex) => {
+        drawPierrotMakeupMark(ctx, x + width * starX, y + height * starY, Math.max(2.5, width * (starIndex % 2 ? .018 : .024)), starIndex % 2 ? .2 : -.12, starIndex % 2 ? "#ffd05d" : "#f6eee0");
+      });
+      ctx.fillStyle = "rgba(255,208,103,.66)";
+      for (let dot = 0; dot < 3; dot += 1) { ctx.beginPath(); ctx.arc(x + width * (.24 + dot * .26), y + height * (.87 - (index % 2) * .04), Math.max(1.5, width * .009), 0, Math.PI * 2); ctx.fill(); }
     } else {
       const gradient = ctx.createLinearGradient(x, y, x, y + height);
       gradient.addColorStop(0, "#f0d5a5"); gradient.addColorStop(.42, "#d48666"); gradient.addColorStop(1, "#718f81");
@@ -795,15 +833,20 @@
     const header = compact ? 88 : 174;
     if (frame === "pierrot") {
       drawPierrotCurtains(ctx, width, height, compact);
-      drawMarquee(ctx, width * .2, compact ? 8 : 16, width * .6, compact ? 28 : 52, compact);
-      drawCauSeal(ctx, width * .11, compact ? 35 : 72, compact ? 11 : 21, "#fff0d1");
-      const titleSize = compact ? 14 : 25;
-      const subtitleSize = compact ? 7 : 13;
-      drawGradientText(ctx, "PIERROT", width / 2, compact ? 29 : 50, titleSize, `700 ${titleSize}px 'Black Han Sans'`, ["#fff4df", "#ffd05d", "#e9574b", "#f3b45e"]);
-      drawPierrotMakeupMark(ctx, width * .28, compact ? 31 : 52, compact ? 4 : 8, -.18);
-      drawPierrotMakeupMark(ctx, width * .72, compact ? 31 : 52, compact ? 4 : 8, .18, "#ffd05d");
-      drawText(ctx, "CIRCUS THEATRE", width / 2, compact ? 69 : 127, subtitleSize, "#ffd05d", `600 ${subtitleSize}px 'IBM Plex Mono'`);
-      ctx.fillStyle = "#faefd9"; ctx.fillRect(0, header, width, height - header);
+      const plaqueX = width * .18;
+      const plaqueY = compact ? 10 : 22;
+      const plaqueWidth = width * .64;
+      const plaqueHeight = compact ? 38 : 64;
+      drawMarquee(ctx, plaqueX, plaqueY, plaqueWidth, plaqueHeight, compact);
+      drawCauSeal(ctx, width * .1, compact ? 42 : 88, compact ? 10 : 19, "#fff0d1");
+      const titleSize = compact ? 18 : 38;
+      const subtitleSize = compact ? 6 : 11;
+      drawGradientText(ctx, "삐에로", width / 2, compact ? 36 : 61, titleSize, `700 ${titleSize}px 'Noto Serif KR'`, ["#fff4df", "#ffd05d", "#e9574b", "#f3b45e"]);
+      drawPierrotMakeupMark(ctx, width * .16, compact ? 35 : 59, compact ? 3 : 6, -.18, "#e9574b");
+      drawPierrotMakeupMark(ctx, width * .84, compact ? 35 : 59, compact ? 3 : 6, .18, "#ffd05d");
+      drawText(ctx, "PIERROT THEATRE", width / 2, compact ? 58 : 110, subtitleSize, "#ffd05d", `600 ${subtitleSize}px 'IBM Plex Mono'`);
+      drawText(ctx, "CAU FALL FESTIVAL  ·  2026", width / 2, compact ? 70 : 130, compact ? 5 : 9, "rgba(255,240,214,.7)", `500 ${compact ? 5 : 9}px 'IBM Plex Mono'`);
+      ctx.fillStyle = "#17152d"; ctx.fillRect(0, header, width, height - header);
       return;
     }
     const paper = ctx.createLinearGradient(0, 0, width, height);
@@ -843,17 +886,19 @@
     const titleY = y + (compact ? 45 : 82);
     const metaY = y + (compact ? 61 : 111);
     if (frame === "pierrot") {
-      ctx.fillStyle = "#3a2044"; ctx.fillRect(0, y, width, height);
-      ctx.fillStyle = "#e9574b";
-      for (let x = -height; x < width + height; x += compact ? 38 : 74) {
-        const stripeHeight = compact ? 24 : 46;
-        const stripeWidth = compact ? 18 : 34;
-        ctx.beginPath(); ctx.moveTo(x, y + height); ctx.lineTo(x + stripeWidth, y + height); ctx.lineTo(x - stripeHeight + stripeWidth, y + height - stripeHeight); ctx.lineTo(x - stripeHeight, y + height - stripeHeight); ctx.closePath(); ctx.fill();
-      }
-      ctx.strokeStyle = "#ffd05d"; ctx.lineWidth = compact ? 1 : 2; ctx.strokeRect(compact ? 9 : 18, y + (compact ? 9 : 18), width - (compact ? 18 : 36), height - (compact ? 18 : 36));
-      for (let x = compact ? 20 : 35; x < width - (compact ? 12 : 20); x += compact ? 25 : 34) drawLantern(ctx, x, y + (compact ? 16 : 26), compact ? 2 : 3, "#ffd05d");
-      drawPierrotMakeupMark(ctx, width * .24, y + height * .56, compact ? 3 : 7, -.18);
-      drawPierrotMakeupMark(ctx, width * .31, y + height * .7, compact ? 2.5 : 6, .2, "#ffd05d");
+      const footerGradient = ctx.createLinearGradient(0, y, 0, y + height);
+      footerGradient.addColorStop(0, "#2d1b42"); footerGradient.addColorStop(1, "#141126");
+      ctx.fillStyle = footerGradient; ctx.fillRect(0, y, width, height);
+      ctx.fillStyle = "rgba(255,208,103,.78)"; ctx.fillRect(0, y, width, compact ? 3 : 6);
+      ctx.strokeStyle = "rgba(255,208,103,.42)"; ctx.lineWidth = compact ? 1 : 2;
+      ctx.beginPath(); ctx.moveTo(width * .11, y + (compact ? 31 : 52)); ctx.lineTo(width * .31, y + (compact ? 31 : 52)); ctx.moveTo(width * .69, y + (compact ? 31 : 52)); ctx.lineTo(width * .89, y + (compact ? 31 : 52)); ctx.stroke();
+      for (let lightX = width * .15; lightX < width * .88; lightX += compact ? 32 : 64) drawLantern(ctx, lightX, y + (compact ? 31 : 52), compact ? 2 : 3, "#ffd05d");
+      drawPierrotMakeupMark(ctx, width * .12, y + height * .68, compact ? 3 : 7, -.18, "#e9574b");
+      drawPierrotMakeupMark(ctx, width * .2, y + height * .78, compact ? 2.5 : 6, .2, "#ffd05d");
+      drawGradientText(ctx, "삐에로 극장", textX, y + (compact ? 50 : 83), compact ? 9 : 21, `700 ${compact ? 9 : 21}px 'Noto Serif KR'`, ["#fff4df", "#ffd05d", "#e9574b"]);
+      drawText(ctx, "CAU FALL FESTIVAL  ·  PIERROT THEATRE", textX, y + (compact ? 65 : 108), compact ? 5 : 10, "#ead0b3", `500 ${compact ? 5 : 10}px 'IBM Plex Mono'`);
+      if (poong) drawThemePoongSticker(ctx, poong, frame, mascotX, mascotY, mascotWidth, mascotHeight);
+      return;
     } else {
       const footerGradient = ctx.createLinearGradient(0, y, 0, y + height);
       footerGradient.addColorStop(0, "#3a2027"); footerGradient.addColorStop(1, "#24141a");
