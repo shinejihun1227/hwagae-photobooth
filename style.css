@@ -730,6 +730,9 @@ body[data-flow="home"] h1 { margin: 16px 0 12px; font-size: clamp(48px, 6.5vw, 8
 .frame-swatch::after { position: absolute; z-index: 2; display: block; pointer-events: none; }
 .swatch-market::after { content: ""; top: 10px; right: 13px; width: 13px; height: 17px; clip-path: polygon(50% 0, 68% 32%, 100% 21%, 76% 51%, 91% 83%, 56% 66%, 35% 100%, 30% 63%, 0 70%, 27% 43%, 7% 17%, 42% 28%); background: linear-gradient(145deg, #f3bd55, #c8403d 72%); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .28)); }
 .swatch-pierrot::after { content: "◆"; top: 34px; right: 14px; color: #e9574b; font-size: 18px; text-shadow: -13px -8px 0 #ffd05d, 13px 8px 0 #fff0d1; }
+.frame-swatch.swatch-market { background: linear-gradient(90deg, rgba(77, 24, 31, .15), rgba(244, 196, 93, .04)), url("market-scene.png") center / cover no-repeat; }
+.frame-swatch.swatch-pierrot { background: linear-gradient(90deg, rgba(31, 17, 43, .08), rgba(43, 19, 38, .22)), url("festival-key-visual.png") 88% center / auto 245% no-repeat, #3a1d3f; }
+.frame-swatch.swatch-market::before, .frame-swatch.swatch-market::after, .frame-swatch.swatch-pierrot::before, .frame-swatch.swatch-pierrot::after { display: none; }
 .filter-list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
 .filter-option { min-height: 55px; padding: 9px 10px 7px; border-radius: 12px; background: rgba(255, 255, 255, .045); }
 .filter-option strong { overflow: hidden; color: #f6dfc6; font: 600 8px/1.15 "DM Sans", var(--mono); letter-spacing: .015em; white-space: nowrap; text-overflow: ellipsis; }

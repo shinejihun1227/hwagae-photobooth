@@ -188,7 +188,6 @@
     const vignette = ctx.createRadialGradient(360, 380, 160, 360, 420, 720);
     vignette.addColorStop(0, "rgba(255,255,255,.05)"); vignette.addColorStop(1, "rgba(18,12,28,.28)");
     ctx.fillStyle = vignette; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    drawText(ctx, `DEMO / ${String(index + 1).padStart(2, "0")}`, 54, 76, 22, "rgba(255,248,230,.82)", "600 22px 'IBM Plex Mono'", "left");
     return canvas;
   }
 
@@ -457,15 +456,15 @@
     ctx.restore();
   }
 
-  function drawExpressionBadge(ctx, image, theme, index, x, y, width, height, spriteSheet = false) {
+  function drawExpressionBadge(ctx, image, theme, index, x, y, width, height, spriteSheet = false, faceRight = false) {
     if (!image || !image.naturalWidth) return;
     const artwork = spriteSheet ? getPoongArtwork(image, "neutral") : getPoongArtwork(image, expressionModes[index] || "neutral");
     ctx.save();
     ctx.shadowColor = theme === "market" ? "rgba(18, 53, 63, .3)" : "rgba(18, 7, 25, .34)";
     ctx.shadowBlur = Math.max(5, width * .06);
     ctx.shadowOffsetY = Math.max(2, height * .025);
-    if (spriteSheet) drawSpriteContain(ctx, artwork, index, x, y, width, height);
-    else drawContain(ctx, artwork, x, y, width, height);
+    if (spriteSheet) drawSpriteContain(ctx, artwork, index, x, y, width, height, faceRight);
+    else drawContain(ctx, artwork, x, y, width, height, faceRight);
     ctx.restore();
   }
 
@@ -515,7 +514,7 @@
         const onRight = index % 2 === 0;
         const badgeX = onRight ? padding + photoWidth - badgeWidth - 4 : padding + 4;
         const badgeY = index % 2 === 0 ? y + 2 : y + photoHeight - badgeHeight - 2;
-        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet));
+        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet), !onRight);
       }
       y += photoHeight + gap;
     }
@@ -541,17 +540,27 @@
     });
   }
 
-  function drawContain(ctx, image, x, y, width, height) {
+  function drawContain(ctx, image, x, y, width, height, faceRight = false) {
     const sourceWidth = image?.naturalWidth || image?.width;
     const sourceHeight = image?.naturalHeight || image?.height;
     if (!image || !sourceWidth || !sourceHeight) return;
     const scale = Math.min(width / sourceWidth, height / sourceHeight);
     const drawWidth = sourceWidth * scale;
     const drawHeight = sourceHeight * scale;
-    ctx.drawImage(image, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+    const drawX = x + (width - drawWidth) / 2;
+    const drawY = y + (height - drawHeight) / 2;
+    if (faceRight) {
+      ctx.save();
+      ctx.translate(x + width, y);
+      ctx.scale(-1, 1);
+      ctx.drawImage(image, width - (drawX - x) - drawWidth, drawY - y, drawWidth, drawHeight);
+      ctx.restore();
+      return;
+    }
+    ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
   }
 
-  function drawSpriteContain(ctx, image, index, x, y, width, height) {
+  function drawSpriteContain(ctx, image, index, x, y, width, height, faceRight = false) {
     const sourceWidth = image?.naturalWidth || image?.width;
     const sourceHeight = image?.naturalHeight || image?.height;
     if (!image || !sourceWidth || !sourceHeight) return;
@@ -562,7 +571,17 @@
     const scale = Math.min(width / cellWidth, height / cellHeight);
     const drawWidth = cellWidth * scale;
     const drawHeight = cellHeight * scale;
-    ctx.drawImage(image, sourceX, sourceY, cellWidth, cellHeight, x + (width - drawWidth) / 2, y + (height - drawHeight) / 2, drawWidth, drawHeight);
+    const drawX = x + (width - drawWidth) / 2;
+    const drawY = y + (height - drawHeight) / 2;
+    if (faceRight) {
+      ctx.save();
+      ctx.translate(x + width, y);
+      ctx.scale(-1, 1);
+      ctx.drawImage(image, sourceX, sourceY, cellWidth, cellHeight, width - (drawX - x) - drawWidth, drawY - y, drawWidth, drawHeight);
+      ctx.restore();
+      return;
+    }
+    ctx.drawImage(image, sourceX, sourceY, cellWidth, cellHeight, drawX, drawY, drawWidth, drawHeight);
   }
 
   function getPoongArtwork(image, mode = "neutral") {
@@ -709,8 +728,6 @@
 
   function drawPreviewPhoto(ctx, x, y, width, height, frame, index) {
     ctx.save();
-    const labelSize = Math.max(7, Math.round(width * .025));
-    const labelY = y + height - Math.max(10, Math.round(width * .04));
     if (frame === "pierrot") {
       const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
       gradient.addColorStop(0, "#463052"); gradient.addColorStop(.48, "#1a1730"); gradient.addColorStop(1, "#8c3d55");
@@ -721,7 +738,6 @@
       for (let dot = 0; dot < 4; dot += 1) { ctx.beginPath(); ctx.arc(x + width * (.18 + dot * .22), y + height * (.16 + (index % 2) * .04), Math.max(2, width * .012), 0, Math.PI * 2); ctx.fill(); }
       ctx.fillStyle = "rgba(255,246,219,.08)";
       for (let ray = 0; ray < 3; ray += 1) { ctx.fillRect(x + width * (.22 + ray * .28), y + height * .28, Math.max(1, width * .006), height * .44); }
-      drawText(ctx, `${String(index + 1).padStart(2, "0")}  CIRCUS CLUB`, x + 10, labelY, labelSize, "rgba(255,246,219,.78)", `600 ${labelSize}px 'IBM Plex Mono'`, "left");
     } else {
       const gradient = ctx.createLinearGradient(x, y, x, y + height);
       gradient.addColorStop(0, "#f6d59d"); gradient.addColorStop(.43, "#d6805c"); gradient.addColorStop(1, "#4b817a");
@@ -730,16 +746,6 @@
       ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(x, y + height * .54, width, Math.max(2, height * .025));
       ctx.fillStyle = "rgba(255,218,144,.62)";
       for (let lamp = 0; lamp < 4; lamp += 1) { ctx.beginPath(); ctx.arc(x + width * (.16 + lamp * .23), y + height * (.2 + (lamp % 2) * .08), Math.max(2, width * .012), 0, Math.PI * 2); ctx.fill(); }
-      ctx.fillStyle = "rgba(88,38,31,.16)";
-      ctx.strokeStyle = "rgba(72, 95, 87, .2)";
-      ctx.lineWidth = Math.max(1, height * .008);
-      for (let ripple = 0; ripple < 2; ripple += 1) {
-        ctx.beginPath();
-        ctx.moveTo(x + width * .16, y + height * (.74 + ripple * .08));
-        ctx.quadraticCurveTo(x + width * .5, y + height * (.71 + ripple * .08), x + width * .84, y + height * (.74 + ripple * .08));
-        ctx.stroke();
-      }
-      drawText(ctx, `${String(index + 1).padStart(2, "0")}  MARKET MEMORY`, x + 10, labelY, labelSize, "rgba(95,38,35,.72)", `600 ${labelSize}px 'IBM Plex Mono'`, "left");
     }
     ctx.restore();
   }
@@ -836,7 +842,7 @@
           const onRight = index % 2 === 0;
           const stickerX = onRight ? padding + photoWidth - stickerWidth - 18 : padding + 18;
           const stickerY = index % 2 === 0 ? y + 22 : y + photoHeight - stickerHeight - 22;
-          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet));
+          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), !onRight);
         }
         y += photoHeight + gap;
       });
