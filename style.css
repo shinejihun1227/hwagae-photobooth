@@ -951,3 +951,61 @@ body[data-flow="home"] .intro-copy {
   body[data-flow="home"] h1 { column-gap: 4px; font-size: clamp(35px, 11.5vw, 43px); }
   body[data-flow="home"] .title-x { font-size: 18px; }
 }
+
+/* Center the hero message without blurring the artwork underneath it. */
+body[data-flow="home"] .festival-key-visual figcaption {
+  left: 50%;
+  right: auto;
+  bottom: 18px;
+  width: min(82%, 680px);
+  display: grid;
+  align-items: center;
+  justify-items: center;
+  gap: 5px;
+  padding: 14px 22px 15px;
+  transform: translateX(-50%);
+  border: 1px solid rgba(255, 220, 142, .46);
+  border-radius: 14px;
+  background: linear-gradient(180deg, rgba(44, 17, 24, .94), rgba(31, 10, 17, .9));
+  box-shadow: 0 12px 26px rgba(15, 3, 8, .32), inset 0 1px 0 rgba(255, 242, 213, .11);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  text-align: center;
+}
+
+body[data-flow="home"] .festival-key-visual figcaption span {
+  color: #f6c85d;
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: .18em;
+  white-space: nowrap;
+}
+
+body[data-flow="home"] .festival-key-visual figcaption strong {
+  color: #fff2d8;
+  font: 600 clamp(16px, 1.7vw, 20px)/1.2 "Noto Sans KR", sans-serif;
+  letter-spacing: -.055em;
+  white-space: nowrap;
+}
+
+@media (max-width: 650px) {
+  body[data-flow="home"] .festival-key-visual figcaption {
+    bottom: 12px;
+    width: calc(100% - 24px);
+    gap: 4px;
+    padding: 10px 12px 11px;
+    border-radius: 11px;
+  }
+
+  body[data-flow="home"] .festival-key-visual figcaption span {
+    max-width: 100%;
+    overflow: hidden;
+    font-size: 6px;
+    letter-spacing: .11em;
+    text-overflow: ellipsis;
+  }
+
+  body[data-flow="home"] .festival-key-visual figcaption strong {
+    font-size: 15px;
+  }
+}
