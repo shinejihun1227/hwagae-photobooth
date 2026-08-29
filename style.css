@@ -1287,6 +1287,12 @@ body[data-flow="home"] .title-x {
   body[data-flow="home"] .title-x { width: 30px; height: 30px; font-size: 18px; }
 }
 
+/* Give the wider 2x2 keepsake enough room on small screens. */
+@media (max-width: 650px) {
+  .result-window { padding-right: 12px; padding-left: 12px; }
+  #resultImage { max-width: 100%; }
+}
+
 /* Centered CAU masthead: keep the anniversary mark and campus name as one clear identity lockup. */
 body[data-flow="home"] .cau-festival-lockup {
   grid-template-columns: 84px auto auto;

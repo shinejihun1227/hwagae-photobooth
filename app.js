@@ -182,11 +182,11 @@
 
   function makeDemoShot(index) {
     const canvas = document.createElement("canvas");
-    canvas.width = 1080;
-    canvas.height = 1440;
+    canvas.width = 1440;
+    canvas.height = 1080;
     const ctx = configureCanvasContext(canvas.getContext("2d"));
     drawPreviewPhoto(ctx, 0, 0, canvas.width, canvas.height, selectedFrame, index);
-    const vignette = ctx.createRadialGradient(360, 380, 160, 360, 420, 720);
+    const vignette = ctx.createRadialGradient(720, 320, 160, 720, 400, 800);
     vignette.addColorStop(0, "rgba(255,255,255,.05)"); vignette.addColorStop(1, "rgba(18,12,28,.28)");
     ctx.fillStyle = vignette; ctx.fillRect(0, 0, canvas.width, canvas.height);
     return canvas;
@@ -195,10 +195,10 @@
   function captureCanvas(index) {
     if (demoMode || !video.videoWidth) return makeDemoShot(index);
     const canvas = document.createElement("canvas");
-    canvas.width = 1080; canvas.height = 1440;
+    canvas.width = 1440; canvas.height = 1080;
     const ctx = configureCanvasContext(canvas.getContext("2d"));
     const videoRatio = video.videoWidth / video.videoHeight;
-    const targetRatio = 3 / 4;
+    const targetRatio = 4 / 3;
     let sourceWidth = video.videoWidth;
     let sourceHeight = video.videoHeight;
     let sourceX = 0;
@@ -212,7 +212,7 @@
     ctx.filter = "none";
     if (autoEnhance) applyAutoEnhance(ctx, canvas.width, canvas.height);
     if (selectedFilter === "soft") {
-      const glow = ctx.createRadialGradient(360, 360, 20, 360, 360, 600);
+      const glow = ctx.createRadialGradient(720, 360, 20, 720, 360, 760);
       glow.addColorStop(0, "rgba(255,255,255,.23)"); glow.addColorStop(1, "rgba(255,255,255,0)");
       ctx.fillStyle = glow; ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
@@ -506,37 +506,39 @@
   function drawThemePreview() {
     if (!themePreview) return;
     const width = 300;
-    const height = 620;
     const previewScale = Math.min(3, Math.max(2, window.devicePixelRatio || 1));
-    themePreview.width = width * previewScale;
-    themePreview.height = height * previewScale;
     const header = 88;
     const footer = 76;
     const padding = 16;
     const gap = 8;
-    const photoHeight = Math.floor((height - header - footer - gap * 3) / 4);
-    const photoWidth = width - padding * 2;
+    const photoWidth = Math.floor((width - padding * 2 - gap) / 2);
+    const photoHeight = Math.floor(photoWidth * .75);
+    const height = header + photoHeight * 2 + gap + footer;
+    themePreview.width = width * previewScale;
+    themePreview.height = height * previewScale;
     const ctx = configureCanvasContext(themePreview.getContext("2d"));
     ctx.setTransform(previewScale, 0, 0, previewScale, 0, 0);
     paintFrame(ctx, width, height, selectedFrame);
     drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
     const poong = themedPoong[selectedFrame] || previewPoong;
     const expressionSheet = themedExpressions[selectedFrame];
-    let y = header;
     for (let index = 0; index < 4; index += 1) {
-      drawPreviewPhoto(ctx, padding, y, photoWidth, photoHeight, selectedFrame, index);
+      const column = index % 2;
+      const row = Math.floor(index / 2);
+      const x = padding + column * (photoWidth + gap);
+      const y = header + row * (photoHeight + gap);
+      drawPreviewPhoto(ctx, x, y, photoWidth, photoHeight, selectedFrame, index);
       ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.58)" : "rgba(255,248,218,.68)";
-      ctx.lineWidth = 1.5; ctx.strokeRect(padding, y, photoWidth, photoHeight);
+      ctx.lineWidth = 1.5; ctx.strokeRect(x, y, photoWidth, photoHeight);
       const expression = expressionSheet || expressionPoong[index] || poong;
       if (expression) {
-        const badgeSize = expressionSheet ? Math.min(104, photoHeight - 4, photoWidth * .44) : 78;
-        const badgeWidth = badgeSize; const badgeHeight = expressionSheet ? badgeSize : 88;
-        const onRight = index % 2 === 0;
-        const badgeX = onRight ? padding + photoWidth - badgeWidth - 4 : padding + 4;
+        const badgeWidth = expressionSheet ? Math.min(86, photoHeight * .74) : Math.min(78, photoHeight * .6);
+        const badgeHeight = expressionSheet ? Math.min(92, photoHeight * .84) : Math.min(84, photoHeight * .84);
+        const onRight = column === 1;
+        const badgeX = onRight ? x + photoWidth - badgeWidth - 6 : x + 6;
         const badgeY = index % 2 === 0 ? y + 2 : y + photoHeight - badgeHeight - 2;
         drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet), !onRight);
       }
-      y += photoHeight + gap;
     }
     const footerY = height - footer;
     drawFrameFooter(ctx, width, footerY, footer, selectedFrame, poong);
@@ -929,9 +931,9 @@
 
   async function composeStrip() {
     const poong = themedPoong[selectedFrame] || await loadImage("poong.png");
-    const photoWidth = 720; const photoHeight = 300; const padding = 32; const gap = 18; const header = 174; const footer = 186;
+    const photoWidth = 360; const photoHeight = 270; const padding = 32; const gap = 18; const header = 174; const footer = 186;
     const renderScale = 2;
-    const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
+    const width = photoWidth * 2 + gap + padding * 2; const height = header + photoHeight * 2 + gap + footer;
     const canvas = document.createElement("canvas"); canvas.width = Math.round(width * renderScale); canvas.height = Math.round(height * renderScale);
     try {
       const ctx = configureCanvasContext(canvas.getContext("2d"));
@@ -939,20 +941,22 @@
       ctx.scale(renderScale, renderScale);
       paintFrame(ctx, width, height, selectedFrame);
       drawFrameRails(ctx, width, height, selectedFrame, padding, header, footer);
-      let y = header;
       const expressionSheet = themedExpressions[selectedFrame];
       shots.forEach((shot, index) => {
-        ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; drawCover(ctx, shot, padding, y, photoWidth, photoHeight); ctx.restore();
-        ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
+        const column = index % 2;
+        const row = Math.floor(index / 2);
+        const x = padding + column * (photoWidth + gap);
+        const y = header + row * (photoHeight + gap);
+        ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; drawCover(ctx, shot, x, y, photoWidth, photoHeight); ctx.restore();
+        ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; ctx.strokeRect(x, y, photoWidth, photoHeight);
         const expression = expressionSheet || expressionPoong[index] || poong;
         if (expression) {
-          const stickerWidth = expressionSheet ? 236 : 166; const stickerHeight = expressionSheet ? 254 : 202;
-          const onRight = index % 2 === 0;
-          const stickerX = onRight ? padding + photoWidth - stickerWidth - 18 : padding + 18;
+          const stickerWidth = expressionSheet ? 178 : 146; const stickerHeight = expressionSheet ? 198 : 176;
+          const onRight = column === 1;
+          const stickerX = onRight ? x + photoWidth - stickerWidth - 18 : x + 18;
           const stickerY = index % 2 === 0 ? y + 18 : y + photoHeight - stickerHeight - 18;
           drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), !onRight);
         }
-        y += photoHeight + gap;
       });
       drawFrameFooter(ctx, width, height - footer, footer, selectedFrame, poong);
       resultDataUrl = canvas.toDataURL("image/png");
