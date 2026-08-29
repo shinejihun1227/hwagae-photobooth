@@ -1286,3 +1286,87 @@ body[data-flow="home"] .title-x {
 
   body[data-flow="home"] .title-x { width: 30px; height: 30px; font-size: 18px; }
 }
+
+/* Centered CAU masthead: keep the anniversary mark and campus name as one clear identity lockup. */
+body[data-flow="home"] .cau-festival-lockup {
+  grid-template-columns: 84px auto auto;
+  justify-content: center;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 94px;
+  column-gap: 18px;
+  padding: 0 18px;
+  border-left: 0;
+  border-radius: 18px;
+  background: linear-gradient(90deg, rgba(255, 208, 93, .02), rgba(255, 208, 93, .08) 50%, rgba(255, 208, 93, .02));
+}
+
+body[data-flow="home"] .cau-anniversary-mark {
+  width: 84px;
+  height: 84px;
+}
+
+body[data-flow="home"] .cau-festival-copy {
+  justify-items: start;
+}
+
+body[data-flow="home"] .cau-festival-copy strong {
+  font-size: clamp(21px, 2.35vw, 28px);
+  letter-spacing: -.08em;
+}
+
+body[data-flow="home"] .cau-festival-copy small {
+  color: #f3cf82;
+  font-size: 8px;
+  letter-spacing: .14em;
+}
+
+body[data-flow="home"] .cau-festival-year {
+  min-width: 0;
+  margin-left: 3px;
+  padding: 0 0 0 20px;
+  border-left: 1px solid rgba(244, 196, 93, .42);
+  text-align: left;
+}
+
+body[data-flow="home"] .cau-festival-year b {
+  font-size: clamp(21px, 2.2vw, 27px);
+}
+
+body[data-flow="home"] .cau-festival-year small {
+  font-size: 7px;
+}
+
+@media (max-width: 650px) {
+  body[data-flow="home"] .cau-festival-lockup {
+    grid-template-columns: 58px auto auto;
+    min-height: 68px;
+    column-gap: 10px;
+    padding: 0 8px;
+    border-radius: 14px;
+  }
+
+  body[data-flow="home"] .cau-anniversary-mark { width: 58px; height: 58px; }
+  body[data-flow="home"] .cau-festival-copy { gap: 3px; }
+  body[data-flow="home"] .cau-festival-copy strong { font-size: 17px; }
+  body[data-flow="home"] .cau-festival-copy small { font-size: 6px; letter-spacing: .1em; }
+  body[data-flow="home"] .cau-festival-year { margin-left: 0; padding-left: 10px; }
+  body[data-flow="home"] .cau-festival-year b { font-size: 16px; }
+  body[data-flow="home"] .cau-festival-year small { font-size: 6px; letter-spacing: .06em; }
+}
+
+@media (max-width: 360px) {
+  body[data-flow="home"] .cau-festival-lockup {
+    grid-template-columns: 49px auto auto;
+    min-height: 58px;
+    column-gap: 7px;
+    padding: 0 4px;
+  }
+
+  body[data-flow="home"] .cau-anniversary-mark { width: 49px; height: 49px; }
+  body[data-flow="home"] .cau-festival-copy strong { font-size: 14px; }
+  body[data-flow="home"] .cau-festival-copy small { font-size: 5px; }
+  body[data-flow="home"] .cau-festival-year { padding-left: 7px; }
+  body[data-flow="home"] .cau-festival-year b { font-size: 13px; }
+  body[data-flow="home"] .cau-festival-year small { font-size: 5px; }
+}
