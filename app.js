@@ -487,14 +487,14 @@
   function drawThemePreview() {
     if (!themePreview) return;
     const width = 300;
-    const height = 580;
+    const height = 620;
     const previewScale = Math.min(3, Math.max(2, window.devicePixelRatio || 1));
     themePreview.width = width * previewScale;
     themePreview.height = height * previewScale;
-    const header = 82;
+    const header = 88;
     const footer = 76;
     const padding = 16;
-    const gap = 7;
+    const gap = 8;
     const photoHeight = Math.floor((height - header - footer - gap * 3) / 4);
     const photoWidth = width - padding * 2;
     const ctx = configureCanvasContext(themePreview.getContext("2d"));
@@ -559,6 +559,26 @@
       return;
     }
     ctx.drawImage(image, drawX, drawY, drawWidth, drawHeight);
+  }
+
+  function drawCover(ctx, image, x, y, width, height) {
+    const sourceWidth = image?.naturalWidth || image?.width;
+    const sourceHeight = image?.naturalHeight || image?.height;
+    if (!image || !sourceWidth || !sourceHeight) return;
+    const targetRatio = width / height;
+    const sourceRatio = sourceWidth / sourceHeight;
+    let cropWidth = sourceWidth;
+    let cropHeight = sourceHeight;
+    let sourceX = 0;
+    let sourceY = 0;
+    if (sourceRatio > targetRatio) {
+      cropWidth = sourceHeight * targetRatio;
+      sourceX = (sourceWidth - cropWidth) / 2;
+    } else {
+      cropHeight = sourceWidth / targetRatio;
+      sourceY = (sourceHeight - cropHeight) / 2;
+    }
+    ctx.drawImage(image, sourceX, sourceY, cropWidth, cropHeight, x, y, width, height);
   }
 
   function drawSpriteContain(ctx, image, index, x, y, width, height, faceRight = false) {
@@ -715,13 +735,25 @@
         ctx.beginPath(); ctx.arc(padding / 2, y, 3, 0, Math.PI * 2); ctx.arc(width - padding / 2, y, 3, 0, Math.PI * 2); ctx.fill();
       }
     } else {
-      ctx.fillStyle = "#9d3736";
+      const compact = height < 1000;
+      const railGradient = ctx.createLinearGradient(0, header, 0, height - footer);
+      railGradient.addColorStop(0, "#5b302d");
+      railGradient.addColorStop(.5, "#3c2529");
+      railGradient.addColorStop(1, "#6a352f");
+      ctx.fillStyle = railGradient;
       ctx.fillRect(0, header, padding, railHeight);
       ctx.fillRect(width - padding, header, padding, railHeight);
       ctx.strokeStyle = "rgba(255,208,93,.7)";
-      ctx.lineWidth = Math.max(1, padding * .08);
-      for (let y = header + 12; y < height - footer; y += 42) {
-        ctx.beginPath(); ctx.moveTo(padding * .35, y); ctx.lineTo(padding * .65, y + 16); ctx.moveTo(width - padding * .35, y); ctx.lineTo(width - padding * .65, y + 16); ctx.stroke();
+      ctx.lineWidth = compact ? 1 : 2;
+      ctx.beginPath();
+      ctx.moveTo(padding - (compact ? 2 : 4), header);
+      ctx.lineTo(padding - (compact ? 2 : 4), height - footer);
+      ctx.moveTo(width - padding + (compact ? 2 : 4), header);
+      ctx.lineTo(width - padding + (compact ? 2 : 4), height - footer);
+      ctx.stroke();
+      for (let y = header + (compact ? 52 : 150); y < height - footer - 20; y += compact ? 78 : 220) {
+        drawMapleLeaf(ctx, padding / 2, y, compact ? 2.8 : 6.5, -.35, y % 2 ? "#d86d43" : "#e8ae55");
+        drawMapleLeaf(ctx, width - padding / 2, y + (compact ? 18 : 40), compact ? 2.6 : 6, .35, y % 2 ? "#e8ae55" : "#c84d3d");
       }
     }
     ctx.restore();
@@ -741,19 +773,26 @@
       for (let ray = 0; ray < 3; ray += 1) { ctx.fillRect(x + width * (.22 + ray * .28), y + height * .28, Math.max(1, width * .006), height * .44); }
     } else {
       const gradient = ctx.createLinearGradient(x, y, x, y + height);
-      gradient.addColorStop(0, "#f6d59d"); gradient.addColorStop(.43, "#d6805c"); gradient.addColorStop(1, "#4b817a");
+      gradient.addColorStop(0, "#f0d5a5"); gradient.addColorStop(.42, "#d48666"); gradient.addColorStop(1, "#718f81");
       ctx.fillStyle = gradient; ctx.fillRect(x, y, width, height);
-      ctx.fillStyle = "rgba(255,239,183,.34)"; ctx.fillRect(x, y + height * .58, width, height * .42);
-      ctx.fillStyle = "rgba(255,255,255,.12)"; ctx.fillRect(x, y + height * .54, width, Math.max(2, height * .025));
-      ctx.fillStyle = "rgba(255,218,144,.62)";
-      for (let lamp = 0; lamp < 4; lamp += 1) { ctx.beginPath(); ctx.arc(x + width * (.16 + lamp * .23), y + height * (.2 + (lamp % 2) * .08), Math.max(2, width * .012), 0, Math.PI * 2); ctx.fill(); }
+      ctx.save();
+      ctx.globalAlpha = .12;
+      drawMarketRoof(ctx, x + width * .5, y + height * .1, width * .54, height * .16);
+      ctx.restore();
+      const glow = ctx.createRadialGradient(x + width * .5, y + height * .32, 4, x + width * .5, y + height * .32, width * .7);
+      glow.addColorStop(0, "rgba(255,235,181,.2)"); glow.addColorStop(1, "rgba(255,235,181,0)");
+      ctx.fillStyle = glow; ctx.fillRect(x, y, width, height);
+      ctx.fillStyle = "rgba(255,218,144,.56)";
+      for (let lamp = 0; lamp < 4; lamp += 1) { ctx.beginPath(); ctx.arc(x + width * (.16 + lamp * .23), y + height * (.21 + (lamp % 2) * .08), Math.max(2, width * .012), 0, Math.PI * 2); ctx.fill(); }
+      drawMapleLeaf(ctx, x + width * .12, y + height * .82, Math.max(3, width * .018), -.32, "#b9493c");
+      drawMapleLeaf(ctx, x + width * .88, y + height * .18, Math.max(3, width * .015), .3, "#e4a14d");
     }
     ctx.restore();
   }
 
   function paintFrame(ctx, width, height, frame) {
     const compact = height < 1000;
-    const header = compact ? 78 : 145;
+    const header = compact ? 88 : 174;
     if (frame === "pierrot") {
       drawPierrotCurtains(ctx, width, height, compact);
       drawMarquee(ctx, width * .2, compact ? 8 : 16, width * .6, compact ? 28 : 52, compact);
@@ -767,20 +806,30 @@
       ctx.fillStyle = "#faefd9"; ctx.fillRect(0, header, width, height - header);
       return;
     }
-    ctx.fillStyle = "#f7e5bd"; ctx.fillRect(0, 0, width, height);
-    ctx.fillStyle = "#a93635"; ctx.fillRect(0, 0, width, header);
-    drawMarketRoof(ctx, width / 2, compact ? 3 : 7, width * .5, compact ? 25 : 49);
-    drawCauSeal(ctx, width * .13, compact ? 29 : 58, compact ? 10 : 20, "#fff0d1");
-    drawLantern(ctx, width * .87, compact ? 31 : 68, compact ? 7 : 14, "#ffe3a2");
-    const titleSize = compact ? 25 : 43;
-    const subtitleSize = compact ? 7 : 12;
-    drawGradientText(ctx, "화개장터", width / 2, compact ? 43 : 83, titleSize, `700 ${titleSize}px 'Noto Serif KR'`, ["#fff4dc", "#ffd05d", "#f08d60", "#fff4dc"]);
-    drawMarketAwning(ctx, 0, compact ? 57 : 103, width, compact ? 15 : 28);
-    drawMapleLeaf(ctx, width * .18, compact ? 21 : 42, compact ? 5 : 11, -.42, "#d9553f");
-    drawMapleLeaf(ctx, width * .82, compact ? 21 : 42, compact ? 5 : 11, .42, "#e58d3d");
-    drawMapleLeaf(ctx, width * .27, compact ? 70 : 124, compact ? 4 : 9, .24, "#b94338");
-    drawMapleLeaf(ctx, width * .73, compact ? 70 : 124, compact ? 4 : 9, -.24, "#d87938");
-    drawText(ctx, "가을 장터 · 물길 따라 기억하기", width / 2, compact ? 75 : 137, subtitleSize, "#fff1ca", `600 ${subtitleSize}px 'IBM Plex Mono'`);
+    const paper = ctx.createLinearGradient(0, 0, width, height);
+    paper.addColorStop(0, "#f6e8c9"); paper.addColorStop(.5, "#efe0be"); paper.addColorStop(1, "#e7d3ac");
+    ctx.fillStyle = paper; ctx.fillRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(90, 45, 40, .08)";
+    for (let grain = 0; grain < height; grain += compact ? 13 : 29) ctx.fillRect(0, grain, width, 1);
+    ctx.fillStyle = "#2b171c"; ctx.fillRect(0, 0, width, header);
+    ctx.fillStyle = "#d9a24d"; ctx.fillRect(0, 0, width, compact ? 4 : 7);
+    drawMarketRoof(ctx, width / 2, compact ? 5 : 12, width * .43, compact ? 18 : 31);
+    const signX = width * .2;
+    const signY = compact ? 21 : 41;
+    const signWidth = width * .6;
+    const signHeight = compact ? 37 : 71;
+    roundedRect(ctx, signX, signY, signWidth, signHeight, compact ? 7 : 13);
+    ctx.fillStyle = "#f3dfb3"; ctx.fill();
+    ctx.strokeStyle = "rgba(215, 162, 77, .82)"; ctx.lineWidth = compact ? 1 : 2; ctx.stroke();
+    drawMapleLeaf(ctx, signX + signWidth * .1, signY + signHeight * .32, compact ? 3.5 : 7, -.35, "#c84d3d");
+    drawMapleLeaf(ctx, signX + signWidth * .9, signY + signHeight * .32, compact ? 3.5 : 7, .35, "#d8843b");
+    const titleSize = compact ? 19 : 37;
+    const subtitleSize = compact ? 5 : 10;
+    drawGradientText(ctx, "화개장터", width / 2, compact ? 46 : 83, titleSize, `700 ${titleSize}px 'Noto Serif KR'`, ["#7b2f32", "#c25b3f", "#7b2f32"]);
+    drawText(ctx, "CAU FALL FESTIVAL  ·  MARKET NIGHT", width / 2, compact ? 58 : 105, subtitleSize, "#855147", `600 ${subtitleSize}px 'IBM Plex Mono'`);
+    drawCauSeal(ctx, width * .1, compact ? 32 : 71, compact ? 8 : 15, "#f3d49a");
+    drawText(ctx, "2026", width * .9, compact ? 31 : 67, compact ? 7 : 12, "#f0c766", `700 ${compact ? 7 : 12}px 'IBM Plex Mono'`);
+    drawMarketAwning(ctx, 0, header - (compact ? 14 : 24), width, compact ? 14 : 24);
   }
 
   function drawFrameFooter(ctx, width, y, height, frame, poong) {
@@ -806,13 +855,26 @@
       drawPierrotMakeupMark(ctx, width * .24, y + height * .56, compact ? 3 : 7, -.18);
       drawPierrotMakeupMark(ctx, width * .31, y + height * .7, compact ? 2.5 : 6, .2, "#ffd05d");
     } else {
-      ctx.fillStyle = "#9b3735"; ctx.fillRect(0, y, width, height);
-      drawMarketAwning(ctx, 0, y, width, bandHeight);
-      ctx.fillStyle = "rgba(255,238,187,.16)";
-      for (let plank = y + (compact ? 27 : 40); plank < y + height; plank += compact ? 14 : 21) { ctx.fillRect(0, plank, width, 1); }
-      drawLantern(ctx, width * .88, y + height * .5, compact ? 4 : 8, "#ffe3a2");
-      drawMapleLeaf(ctx, width * .23, y + height * .42, compact ? 4 : 9, -.35, "#e05f3f");
-      drawMapleLeaf(ctx, width * .3, y + height * .68, compact ? 3 : 7, .35, "#f0a044");
+      const footerGradient = ctx.createLinearGradient(0, y, 0, y + height);
+      footerGradient.addColorStop(0, "#3a2027"); footerGradient.addColorStop(1, "#24141a");
+      ctx.fillStyle = footerGradient; ctx.fillRect(0, y, width, height);
+      ctx.fillStyle = "#d9a24d"; ctx.fillRect(0, y, width, compact ? 4 : 7);
+      drawMarketAwning(ctx, 0, y + (compact ? 8 : 13), width, bandHeight);
+      const ticketX = compact ? 22 : 58;
+      const ticketY = y + (compact ? 31 : 52);
+      const ticketWidth = width - ticketX - mascotWidth - (compact ? 20 : 34);
+      const ticketHeight = compact ? 35 : 76;
+      roundedRect(ctx, ticketX, ticketY, ticketWidth, ticketHeight, compact ? 7 : 12);
+      ctx.fillStyle = "#f3dfb3"; ctx.fill();
+      ctx.strokeStyle = "rgba(217, 162, 77, .82)"; ctx.lineWidth = compact ? 1 : 2; ctx.stroke();
+      drawCauSeal(ctx, ticketX + (compact ? 17 : 27), ticketY + ticketHeight / 2, compact ? 7 : 13, "#7b3a35");
+      const ticketTextX = ticketX + ticketWidth * .57;
+      drawText(ctx, "오늘의 한 컷 · 화개장터", ticketTextX, ticketY + (compact ? 16 : 34), compact ? 8 : 17, "#7b2f32", `700 ${compact ? 8 : 17}px 'Noto Sans KR'`);
+      drawText(ctx, "CAU FALL FESTIVAL  ·  2026", ticketTextX, ticketY + (compact ? 27 : 55), compact ? 5 : 10, "#9d604d", `600 ${compact ? 5 : 10}px 'IBM Plex Mono'`);
+      drawMapleLeaf(ctx, ticketX + ticketWidth - (compact ? 13 : 23), ticketY + (compact ? 11 : 22), compact ? 3 : 6, .32, "#c84d3d");
+      drawMapleLeaf(ctx, width * .08, y + height * .68, compact ? 2.6 : 5.5, -.3, "#d8843b");
+      if (poong) drawThemePoongSticker(ctx, poong, frame, mascotX, mascotY, mascotWidth, mascotHeight);
+      return;
     }
     drawCauSeal(ctx, compact ? width * .12 : width * .13, y + height * .55, compact ? 8 : 17, "#fff0d1");
     if (poong && (frame === "market" || frame === "pierrot")) drawThemePoongSticker(ctx, poong, frame, mascotX, mascotY, mascotWidth, mascotHeight);
@@ -822,8 +884,8 @@
 
   async function composeStrip() {
     const poong = themedPoong[selectedFrame] || await loadImage("poong.png");
-    const photoWidth = 600; const photoHeight = 800; const padding = 32; const gap = 18; const header = 174; const footer = 186;
-    const renderScale = 1.25;
+    const photoWidth = 720; const photoHeight = 300; const padding = 32; const gap = 18; const header = 174; const footer = 186;
+    const renderScale = 2;
     const width = photoWidth + padding * 2; const height = header + photoHeight * 4 + gap * 3 + footer;
     const canvas = document.createElement("canvas"); canvas.width = Math.round(width * renderScale); canvas.height = Math.round(height * renderScale);
     try {
@@ -835,14 +897,14 @@
       let y = header;
       const expressionSheet = themedExpressions[selectedFrame];
       shots.forEach((shot, index) => {
-        ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; ctx.drawImage(shot, padding, y, photoWidth, photoHeight); ctx.restore();
+        ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; drawCover(ctx, shot, padding, y, photoWidth, photoHeight); ctx.restore();
         ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; ctx.strokeRect(padding, y, photoWidth, photoHeight);
         const expression = expressionSheet || expressionPoong[index] || poong;
         if (expression) {
-          const stickerWidth = expressionSheet ? 286 : 178; const stickerHeight = expressionSheet ? 326 : 208;
+          const stickerWidth = expressionSheet ? 236 : 166; const stickerHeight = expressionSheet ? 254 : 202;
           const onRight = index % 2 === 0;
           const stickerX = onRight ? padding + photoWidth - stickerWidth - 18 : padding + 18;
-          const stickerY = index % 2 === 0 ? y + 22 : y + photoHeight - stickerHeight - 22;
+          const stickerY = index % 2 === 0 ? y + 18 : y + photoHeight - stickerHeight - 18;
           drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), !onRight);
         }
         y += photoHeight + gap;
