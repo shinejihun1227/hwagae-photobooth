@@ -30,6 +30,8 @@
   const fallback = $("#cameraFallback");
   const countdown = $("#countdown");
   const flash = $("#flash");
+  const cameraPoongGuide = $("#cameraPoongGuide");
+  const cameraPoongGuideImage = $("#cameraPoongGuideImage");
   const shotCount = $("#shotCount");
   const shotDots = $$("#shotDots i");
   const cameraStatus = $("#cameraStatus");
@@ -139,6 +141,19 @@
   function updateFrameSelection() {
     $$(".frame-option").forEach((button) => button.classList.toggle("selected", button.dataset.frame === selectedFrame));
     drawThemePreview();
+    updateCameraPoongGuide();
+  }
+
+  function updateCameraPoongGuide() {
+    if (!cameraPoongGuide || !cameraPoongGuideImage) return;
+    const image = themedPoong[selectedFrame];
+    if (!image || !image.naturalWidth) {
+      cameraPoongGuide.classList.remove("ready");
+      return;
+    }
+    cameraPoongGuideImage.src = getPoongArtwork(image, "neutral").toDataURL("image/png");
+    cameraPoongGuide.dataset.frame = selectedFrame;
+    cameraPoongGuide.classList.add("ready");
   }
 
   function updateFilterSelection() {
@@ -476,15 +491,15 @@
     ctx.restore();
   }
 
-  function drawExpressionBadge(ctx, image, theme, index, x, y, width, height, spriteSheet = false, faceRight = false) {
+  function drawExpressionBadge(ctx, image, theme, index, x, y, width, height, spriteSheet = false, faceRight = false, bottomAlign = false) {
     if (!image || !image.naturalWidth) return;
     const artwork = spriteSheet ? getPoongArtwork(image, "neutral") : getPoongArtwork(image, expressionModes[index] || "neutral");
     ctx.save();
     ctx.shadowColor = theme === "market" ? "rgba(18, 53, 63, .3)" : "rgba(18, 7, 25, .34)";
     ctx.shadowBlur = Math.max(5, width * .06);
     ctx.shadowOffsetY = Math.max(2, height * .025);
-    if (spriteSheet) drawSpriteContain(ctx, artwork, index, x, y, width, height, faceRight);
-    else drawContain(ctx, artwork, x, y, width, height, faceRight);
+    if (spriteSheet) drawSpriteContain(ctx, artwork, index, x, y, width, height, faceRight, bottomAlign);
+    else drawContain(ctx, artwork, x, y, width, height, faceRight, bottomAlign);
     ctx.restore();
   }
 
@@ -536,8 +551,8 @@
         const badgeHeight = expressionSheet ? Math.min(92, photoHeight * .84) : Math.min(84, photoHeight * .84);
         const onRight = column === 1;
         const badgeX = onRight ? x + photoWidth - badgeWidth - 6 : x + 6;
-        const badgeY = index % 2 === 0 ? y + 2 : y + photoHeight - badgeHeight - 2;
-        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet), !onRight);
+        const badgeY = y + photoHeight - badgeHeight - 5;
+        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet), !onRight, true);
       }
     }
     const footerY = height - footer;
@@ -562,7 +577,7 @@
     });
   }
 
-  function drawContain(ctx, image, x, y, width, height, faceRight = false) {
+  function drawContain(ctx, image, x, y, width, height, faceRight = false, bottomAlign = false) {
     const sourceWidth = image?.naturalWidth || image?.width;
     const sourceHeight = image?.naturalHeight || image?.height;
     if (!image || !sourceWidth || !sourceHeight) return;
@@ -570,7 +585,7 @@
     const drawWidth = sourceWidth * scale;
     const drawHeight = sourceHeight * scale;
     const drawX = x + (width - drawWidth) / 2;
-    const drawY = y + (height - drawHeight) / 2;
+    const drawY = y + (bottomAlign ? height - drawHeight : (height - drawHeight) / 2);
     if (faceRight) {
       ctx.save();
       ctx.translate(x + width, y);
@@ -602,7 +617,7 @@
     ctx.drawImage(image, sourceX, sourceY, cropWidth, cropHeight, x, y, width, height);
   }
 
-  function drawSpriteContain(ctx, image, index, x, y, width, height, faceRight = false) {
+  function drawSpriteContain(ctx, image, index, x, y, width, height, faceRight = false, bottomAlign = false) {
     const sourceWidth = image?.naturalWidth || image?.width;
     const sourceHeight = image?.naturalHeight || image?.height;
     if (!image || !sourceWidth || !sourceHeight) return;
@@ -614,7 +629,7 @@
     const drawWidth = cellWidth * scale;
     const drawHeight = cellHeight * scale;
     const drawX = x + (width - drawWidth) / 2;
-    const drawY = y + (height - drawHeight) / 2;
+    const drawY = y + (bottomAlign ? height - drawHeight : (height - drawHeight) / 2);
     if (faceRight) {
       ctx.save();
       ctx.translate(x + width, y);
@@ -954,8 +969,8 @@
           const stickerWidth = expressionSheet ? 178 : 146; const stickerHeight = expressionSheet ? 198 : 176;
           const onRight = column === 1;
           const stickerX = onRight ? x + photoWidth - stickerWidth - 18 : x + 18;
-          const stickerY = index % 2 === 0 ? y + 18 : y + photoHeight - stickerHeight - 18;
-          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), !onRight);
+          const stickerY = y + photoHeight - stickerHeight - 16;
+          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), !onRight, true);
         }
       });
       drawFrameFooter(ctx, width, height - footer, footer, selectedFrame, poong);
@@ -1052,5 +1067,6 @@
       swatch.classList.add("ready");
     });
     drawThemePreview();
+    updateCameraPoongGuide();
   });
 })();

@@ -1161,6 +1161,52 @@ body[data-flow="home"] .festival-key-visual figcaption strong {
 }
 #video { height: 390px; transform: none; border-radius: 21px; filter: brightness(1.04) contrast(.98) saturate(1.06); }
 .camera-overlay { background: linear-gradient(180deg, rgba(10, 7, 20, .34), transparent 23%, transparent 72%, rgba(10, 7, 20, .58)), radial-gradient(ellipse at center, transparent 52%, rgba(8, 5, 16, .34) 100%); }
+.camera-poong-guide {
+  position: absolute;
+  z-index: 3;
+  right: clamp(20px, 4vw, 48px);
+  bottom: 42px;
+  display: grid;
+  justify-items: center;
+  width: clamp(96px, 18vw, 156px);
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity .2s ease, transform .2s ease;
+  pointer-events: none;
+}
+body[data-flow="camera"] .camera-poong-guide.ready { opacity: .84; transform: none; }
+.camera-poong-guide::after {
+  content: "";
+  position: absolute;
+  right: 7%;
+  bottom: 0;
+  left: 7%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 224, 160, .9), transparent);
+  box-shadow: 0 0 10px rgba(255, 208, 93, .38);
+}
+.camera-poong-guide-label {
+  position: absolute;
+  z-index: 1;
+  top: -3px;
+  padding: 5px 7px;
+  border: 1px solid rgba(255, 226, 164, .34);
+  border-radius: 999px;
+  color: rgba(255, 237, 198, .92);
+  background: rgba(17, 11, 27, .68);
+  font: 600 7px/1 var(--mono);
+  letter-spacing: .08em;
+  white-space: nowrap;
+  box-shadow: 0 5px 12px rgba(0, 0, 0, .18);
+}
+.camera-poong-guide img {
+  display: block;
+  width: 100%;
+  height: clamp(150px, 25vw, 210px);
+  object-fit: contain;
+  object-position: center bottom;
+  filter: drop-shadow(0 8px 8px rgba(0, 0, 0, .28));
+}
 .camera-top-row { top: 20px; left: 22px; right: 22px; }
 .camera-top-row .window-badge { border-color: rgba(255, 226, 164, .26); background: rgba(17, 11, 27, .66); backdrop-filter: blur(8px); }
 .camera-top-row > span:last-child { padding: 6px 9px; border: 1px solid rgba(255, 226, 164, .19); border-radius: 999px; color: #f3d49f; background: rgba(17, 11, 27, .55); }
@@ -1188,6 +1234,9 @@ body[data-flow="home"] .festival-key-visual figcaption strong {
   .camera-window { min-height: 340px; border-radius: 17px; }
   .camera-window::before { inset: 11px; border-radius: 11px; }
   #video { height: 340px; border-radius: 16px; }
+  .camera-poong-guide { right: 17px; bottom: 39px; width: 98px; }
+  .camera-poong-guide img { height: 148px; }
+  .camera-poong-guide-label { display: none; }
   .camera-top-row { top: 15px; left: 16px; right: 16px; }
   .camera-bottom-row { bottom: 15px; left: 16px; right: 16px; }
   .camera-bottom-row > span:first-child { max-width: 66%; }
