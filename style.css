@@ -1425,3 +1425,52 @@ body[data-flow="home"] .cau-festival-year small {
   body[data-flow="home"] .cau-festival-year b { font-size: 13px; }
   body[data-flow="home"] .cau-festival-year small { font-size: 5px; }
 }
+
+/* Theme step focus pass: make the live four-cut preview the visual anchor. */
+@media (min-width: 651px) {
+  .theme-choice-layout {
+    grid-template-columns: minmax(370px, 1.05fr) minmax(0, .95fr);
+    gap: 18px;
+  }
+
+  .theme-preview-panel { padding: 10px; }
+  #themePreview { max-height: none; }
+  .theme-intro { margin-bottom: 16px; padding: 14px 18px; }
+  .theme-intro h3 { margin: 7px 0 4px; font-size: 19px; }
+  .theme-intro p { font-size: 11px; line-height: 1.5; }
+
+  .control-panel { padding-top: 0; }
+  .control-group + .control-group { margin-top: 13px; }
+  .control-heading { margin-bottom: 8px; }
+  .frame-option {
+    grid-template-rows: 102px auto auto;
+    min-height: 148px;
+    padding: 8px 9px 9px;
+  }
+  .frame-option .frame-swatch { height: 102px; margin-bottom: 7px; }
+  .frame-swatch-character { height: 97px; }
+  .filter-demo { grid-template-columns: 80px minmax(0, 1fr); gap: 10px; padding: 7px; }
+  .filter-option { min-height: 48px; padding: 7px 9px 6px; }
+  .enhance-toggle { padding: 8px 10px; }
+  .booth-actions { margin-top: 14px; }
+}
+
+@media (min-width: 651px) and (max-width: 900px) {
+  .theme-choice-layout {
+    grid-template-columns: minmax(290px, .92fr) minmax(0, 1.08fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 650px) {
+  .theme-preview-panel { padding: 8px; }
+  #themePreview { width: min(100%, 300px); max-height: none; }
+  .theme-intro { margin-bottom: 12px; padding: 13px 14px; }
+  .theme-intro h3 { margin: 6px 0 4px; font-size: 17px; }
+  .theme-intro p { font-size: 10px; line-height: 1.45; }
+  .control-group + .control-group { margin-top: 12px; }
+  .control-heading { margin-bottom: 7px; }
+  .filter-demo { grid-template-columns: 68px minmax(0, 1fr); gap: 8px; padding: 6px; }
+  .filter-option { min-height: 48px; padding: 7px 7px 6px; }
+  .enhance-toggle { margin-top: 7px; padding: 8px; }
+}

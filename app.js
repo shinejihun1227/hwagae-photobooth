@@ -162,6 +162,7 @@
     if (filterPreviewImage) filterPreviewImage.style.filter = filters[selectedFilter].css;
     if (filterPreviewTitle) filterPreviewTitle.textContent = filters[selectedFilter].label;
     if (filterPreviewCopy) filterPreviewCopy.textContent = filters[selectedFilter].copy;
+    drawThemePreview();
   }
 
   function updatePose() {
@@ -542,7 +543,10 @@
       const row = Math.floor(index / 2);
       const x = padding + column * (photoWidth + gap);
       const y = header + row * (photoHeight + gap);
+      ctx.save();
+      ctx.filter = filters[selectedFilter].css;
       drawPreviewPhoto(ctx, x, y, photoWidth, photoHeight, selectedFrame, index);
+      ctx.restore();
       ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.58)" : "rgba(255,248,218,.68)";
       ctx.lineWidth = 1.5; ctx.strokeRect(x, y, photoWidth, photoHeight);
       const expression = expressionSheet || expressionPoong[index] || poong;
