@@ -69,6 +69,7 @@
   let themedPoong = { market: null, pierrot: null };
   let themedExpressions = { market: null, pierrot: null };
   let marketBackground = null;
+  let pierrotBackground = null;
   let expressionPoong = [];
   let segmentationModel = null;
   let segmentationSetupPromise = null;
@@ -1009,11 +1010,12 @@
 
   function drawPreviewPhoto(ctx, x, y, width, height, frame, index) {
     ctx.save();
-    if (frame === "market" && marketBackground?.naturalWidth) {
-      drawCover(ctx, marketBackground, x, y, width, height);
+    const themedBackground = frame === "market" ? marketBackground : frame === "pierrot" ? pierrotBackground : null;
+    if (themedBackground?.naturalWidth) {
+      drawCover(ctx, themedBackground, x, y, width, height);
       const atmosphere = ctx.createLinearGradient(x, y, x, y + height);
-      atmosphere.addColorStop(0, "rgba(21, 16, 25, .04)");
-      atmosphere.addColorStop(1, "rgba(38, 12, 18, .18)");
+      atmosphere.addColorStop(0, frame === "pierrot" ? "rgba(18, 8, 24, .04)" : "rgba(21, 16, 25, .04)");
+      atmosphere.addColorStop(1, frame === "pierrot" ? "rgba(27, 7, 20, .2)" : "rgba(38, 12, 18, .18)");
       ctx.fillStyle = atmosphere;
       ctx.fillRect(x, y, width, height);
       ctx.restore();
@@ -1286,7 +1288,8 @@
     loadImage("poong-expression-3.png"),
     loadImage("poong-expression-4.png"),
     loadImage("market-background-v2.png"),
-  ]).then(([anniversaryMark, market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour, marketBackgroundImage]) => {
+    loadImage("pierrot-background-v2.png"),
+  ]).then(([anniversaryMark, market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour, marketBackgroundImage, pierrotBackgroundImage]) => {
     if (anniversaryMark && cauAnniversaryMark) {
       cauAnniversaryMark.src = getTransparentLogo(anniversaryMark).toDataURL("image/png");
       cauAnniversaryMark.classList.add("ready");
@@ -1294,6 +1297,7 @@
     themedPoong = { market, pierrot };
     themedExpressions = { market: marketExpressions, pierrot: pierrotExpressions };
     marketBackground = marketBackgroundImage;
+    pierrotBackground = pierrotBackgroundImage;
     expressionPoong = [expressionOne, expressionTwo, expressionThree, expressionFour];
     previewPoong = market || pierrot || fallbackPoong;
     Object.entries(themedPoong).forEach(([theme, image]) => {
