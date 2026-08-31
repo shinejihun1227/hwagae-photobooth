@@ -1827,6 +1827,54 @@ body[data-flow="home"] .home-qr {
   left: 6%;
 }
 
+/* The live monitor uses the same themed plates that are rendered into the
+   finished four-cut. This is especially useful before camera permission is
+   granted, when the preview is in demo mode. */
+.camera-window[data-frame="market"] {
+  background:
+    linear-gradient(180deg, rgba(23, 8, 14, .18), rgba(23, 8, 14, .54)),
+    url("market-campus-background.png") center / cover no-repeat;
+}
+
+.camera-window[data-frame="pierrot"] {
+  background:
+    linear-gradient(180deg, rgba(12, 8, 23, .2), rgba(12, 8, 23, .56)),
+    url("pierrot-campus-background.png") center / cover no-repeat;
+}
+
+.camera-window[data-frame="market"] .camera-fallback,
+.camera-window[data-frame="pierrot"] .camera-fallback {
+  background:
+    linear-gradient(180deg, rgba(15, 7, 15, .16), rgba(15, 7, 15, .5)),
+    rgba(15, 7, 15, .08);
+}
+
+.camera-window[data-frame="market"] .fallback-eyebrow,
+.camera-window[data-frame="pierrot"] .fallback-eyebrow {
+  text-shadow: 0 2px 12px rgba(0, 0, 0, .48);
+}
+
+/* Once person segmentation is ready, this canvas replaces the raw feed with
+   the exact themed plate used by the saved photos while preserving the live
+   subject. The Poong guide remains above it so its position is unambiguous. */
+.camera-composite {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  display: none;
+  width: 100%;
+  height: 390px;
+  object-fit: contain;
+  border-radius: 21px;
+  pointer-events: none;
+}
+
+.camera-composite.ready { display: block; }
+
+@media (max-width: 650px) {
+  .camera-composite { height: 340px; border-radius: 16px; }
+}
+
 /* Keep the masthead readable on narrow screens and replace the repetitive dotted rules with a single editorial underline. */
 body[data-flow="home"] .title-market::after,
 body[data-flow="home"] .title-pierrot::after {

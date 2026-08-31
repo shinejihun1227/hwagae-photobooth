@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=20260901-home-refresh-1" />
+    <link rel="stylesheet" href="style.css?v=20260901-capture-sync-1" />
   </head>
   <body data-flow="home">
     <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -120,6 +120,7 @@
               <div class="mode-screen camera-screen" data-screen="camera">
                 <div class="preview-window camera-window">
                   <video id="video" autoplay playsinline muted aria-label="촬영 카메라 미리보기"></video>
+                  <canvas id="cameraComposite" class="camera-composite" width="1440" height="1080" aria-hidden="true"></canvas>
                   <div class="camera-fallback" id="cameraFallback">
                     <span class="fallback-orbit"></span>
                     <span class="fallback-eyebrow">CAMERA PREVIEW</span>
@@ -217,6 +218,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <a id="downloadLink" class="download-link" download="cau-hwagae-4cut.png"></a>
-    <script src="app.js?v=20260901-home-refresh-1"></script>
+    <script src="app.js?v=20260901-capture-sync-1"></script>
   </body>
 </html>

@@ -27,6 +27,8 @@
   const themePreview = $("#themePreview");
   const themePreviewLabel = $("#themePreviewLabel");
   const video = $("#video");
+  const cameraWindow = $(".camera-window");
+  const cameraComposite = $("#cameraComposite");
   const fallback = $("#cameraFallback");
   const countdown = $("#countdown");
   const flash = $("#flash");
@@ -74,6 +76,8 @@
   let segmentationModel = null;
   let segmentationSetupPromise = null;
   let pendingSegmentation = null;
+  let liveSegmentationTimer = null;
+  let liveSegmentationBusy = false;
   const expressionModes = ["pink", "dark", "black", "pink"];
   const poongArtworkCache = new WeakMap();
 
@@ -131,10 +135,15 @@
       const model = new window.SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
       model.setOptions({ modelSelection: 1 });
       model.onResults((results) => {
-        if (!pendingSegmentation) return;
-        const resolve = pendingSegmentation;
-        pendingSegmentation = null;
-        resolve(results?.segmentationMask || null);
+        const mask = results?.segmentationMask || null;
+        if (pendingSegmentation) {
+          const resolve = pendingSegmentation;
+          pendingSegmentation = null;
+          resolve(mask);
+        }
+        if (mask && !busy && !demoMode && body.dataset.flow === "camera") {
+          renderLiveCamera(mask);
+        }
       });
       if (typeof model.initialize === "function") await model.initialize();
       segmentationModel = model;
@@ -164,9 +173,69 @@
   }
 
   function stopStream() {
+    stopLiveSegmentation();
     if (stream) stream.getTracks().forEach((track) => track.stop());
     stream = null;
     video.srcObject = null;
+  }
+
+  function renderLiveCamera(mask) {
+    if (!cameraComposite || !mask || !video.videoWidth || !cameraComposite.getContext("2d")) return;
+    const canvas = cameraComposite;
+    const ctx = configureCanvasContext(canvas.getContext("2d"));
+    if (!ctx) return;
+    const crop = getVideoCrop();
+    const background = document.createElement("canvas");
+    background.width = canvas.width; background.height = canvas.height;
+    const backgroundCtx = configureCanvasContext(background.getContext("2d"));
+    backgroundCtx.filter = filters[selectedFilter].css;
+    drawPreviewPhoto(backgroundCtx, 0, 0, canvas.width, canvas.height, selectedFrame, activeShotIndex);
+    backgroundCtx.filter = "none";
+
+    const subject = document.createElement("canvas");
+    subject.width = canvas.width; subject.height = canvas.height;
+    const subjectCtx = configureCanvasContext(subject.getContext("2d"));
+    subjectCtx.filter = filters[selectedFilter].css;
+    drawVideoFrame(subjectCtx, subject, crop);
+    subjectCtx.filter = "none";
+
+    const maskCanvas = document.createElement("canvas");
+    maskCanvas.width = canvas.width; maskCanvas.height = canvas.height;
+    const maskCtx = configureCanvasContext(maskCanvas.getContext("2d"));
+    drawSegmentationMask(maskCtx, maskCanvas, mask, crop);
+    subjectCtx.globalCompositeOperation = "destination-in";
+    subjectCtx.drawImage(maskCanvas, 0, 0);
+    subjectCtx.globalCompositeOperation = "source-over";
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(background, 0, 0);
+    ctx.drawImage(subject, 0, 0);
+    cameraComposite.classList.add("ready");
+  }
+
+  function stopLiveSegmentation() {
+    if (liveSegmentationTimer) window.clearTimeout(liveSegmentationTimer);
+    liveSegmentationTimer = null;
+    liveSegmentationBusy = false;
+    cameraComposite?.classList.remove("ready");
+  }
+
+  function scheduleLiveSegmentation() {
+    if (liveSegmentationTimer) window.clearTimeout(liveSegmentationTimer);
+    liveSegmentationTimer = window.setTimeout(async () => {
+      liveSegmentationTimer = null;
+      if (!segmentationModel || !stream || demoMode || busy || body.dataset.flow !== "camera" || !video.videoWidth) return;
+      if (liveSegmentationBusy) return scheduleLiveSegmentation();
+      liveSegmentationBusy = true;
+      try {
+        await segmentationModel.send({ image: video });
+      } catch (error) {
+        cameraComposite?.classList.remove("ready");
+      } finally {
+        liveSegmentationBusy = false;
+        scheduleLiveSegmentation();
+      }
+    }, 140);
   }
 
   async function openCamera() {
@@ -193,6 +262,7 @@
       prepareSegmentation().then((ready) => {
         if (body.dataset.flow !== "camera" || busy) return;
         cameraStatus.textContent = ready ? "실시간 카메라 · 테마 배경 합성 준비 완료" : "실시간 카메라 · 표정 준비 완료";
+        if (ready) scheduleLiveSegmentation();
       });
     } catch (error) {
       demoMode = true;
@@ -212,6 +282,7 @@
 
   function updateFrameSelection() {
     $$(".frame-option").forEach((button) => button.classList.toggle("selected", button.dataset.frame === selectedFrame));
+    if (cameraWindow) cameraWindow.dataset.frame = selectedFrame;
     drawThemePreview();
     updateCameraPoongGuide(activeShotIndex);
   }
@@ -228,11 +299,13 @@
     const height = hasThemedArtwork ? 198 : 176;
     const column = index % 2;
     const row = Math.floor(index / 2);
-    const localX = column === 1 ? photoWidth - width - 18 : 18;
+    // Keep every character on the right edge of its own photo. The same base
+    // coordinates are reused by the final strip and the live camera guide.
+    const localX = photoWidth - width - 18;
     const localY = photoHeight - height - 16;
     const x = padding + column * (photoWidth + gap) + localX;
     const y = header + row * (photoHeight + gap) + localY;
-    return { x, y, localX, localY, width, height, faceRight: false };
+    return { x, y, localX, localY, width, height, faceRight: false, onRight: true };
   }
 
   function getCameraContentRect() {
@@ -276,9 +349,10 @@
     const photoWidth = 360;
     const photoHeight = 270;
     const scale = content.width / photoWidth;
-    const mirroredPreview = facingMode === "user";
-    const localX = layout.localX;
-    const outputX = mirroredPreview ? photoWidth - localX - layout.width : localX;
+    // The live front-camera element is already mirrored in CSS and the saved
+    // frame is mirrored at capture time. Keeping the guide at the final output
+    // coordinate makes the character visibly stay on the right in both views.
+    const outputX = layout.localX;
     const guideWidth = layout.width * scale;
     const guideHeight = layout.height * scale;
     cameraPoongGuide.style.setProperty("--guide-left", `${content.left + outputX * scale}px`);
@@ -751,12 +825,13 @@
       ctx.lineWidth = 1.5; ctx.strokeRect(x, y, photoWidth, photoHeight);
       const expression = getPreferredPoong(index);
       if (expression) {
-        const hasThemedArtwork = Boolean(expressionSheet || themedPoong[selectedFrame]);
-        const badgeWidth = hasThemedArtwork ? Math.min(86, photoHeight * .74) : Math.min(78, photoHeight * .6);
-        const badgeHeight = hasThemedArtwork ? Math.min(92, photoHeight * .84) : Math.min(84, photoHeight * .84);
-        const onRight = column === 1;
-        const badgeX = onRight ? x + photoWidth - badgeWidth - 6 : x + 6;
-        const badgeY = y + photoHeight - badgeHeight - 5;
+        const layout = getFourCutStickerLayout(index);
+        const scaleX = photoWidth / 360;
+        const scaleY = photoHeight / 270;
+        const badgeWidth = layout.width * scaleX;
+        const badgeHeight = layout.height * scaleY;
+        const badgeX = x + photoWidth - badgeWidth - 18 * scaleX;
+        const badgeY = y + photoHeight - badgeHeight - 16 * scaleY;
         ctx.save();
         ctx.filter = filters[selectedFilter].css;
         drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet), false, true);
@@ -1202,14 +1277,10 @@
         ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; ctx.strokeRect(x, y, photoWidth, photoHeight);
         const expression = getPreferredPoong(index);
         if (expression) {
-          const hasThemedArtwork = Boolean(expressionSheet || themedPoong[selectedFrame]);
-          const stickerWidth = hasThemedArtwork ? 178 : 146; const stickerHeight = hasThemedArtwork ? 198 : 176;
-          const onRight = column === 1;
-          const stickerX = onRight ? x + photoWidth - stickerWidth - 18 : x + 18;
-          const stickerY = y + photoHeight - stickerHeight - 16;
+          const layout = getFourCutStickerLayout(index);
           ctx.save();
           ctx.filter = filters[selectedFilter].css;
-          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), false, true);
+          drawExpressionBadge(ctx, expression, selectedFrame, index, layout.x, layout.y, layout.width, layout.height, Boolean(expressionSheet), layout.faceRight, true);
           ctx.restore();
         }
       });
