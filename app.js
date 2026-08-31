@@ -31,7 +31,8 @@
   const countdown = $("#countdown");
   const flash = $("#flash");
   const cameraPoongGuide = $("#cameraPoongGuide");
-  const cameraPoongGuideImage = $("#cameraPoongGuideImage");
+  const cameraPoongGuideCanvas = $("#cameraPoongGuideCanvas");
+  const cameraPoongGuideLabel = $("#cameraPoongGuideLabel");
   const shotCount = $("#shotCount");
   const shotDots = $$("#shotDots i");
   const cameraStatus = $("#cameraStatus");
@@ -63,10 +64,14 @@
   let resultDataUrl = "";
   let demoMode = false;
   let busy = false;
+  let activeShotIndex = 0;
   let previewPoong = null;
   let themedPoong = { market: null, pierrot: null };
   let themedExpressions = { market: null, pierrot: null };
   let expressionPoong = [];
+  let segmentationModel = null;
+  let segmentationSetupPromise = null;
+  let pendingSegmentation = null;
   const expressionModes = ["pink", "dark", "black", "pink"];
   const poongArtworkCache = new WeakMap();
 
@@ -94,6 +99,68 @@
 
   function sleep(ms) { return new Promise((resolve) => window.setTimeout(resolve, ms)); }
 
+  function loadSegmentationScript() {
+    if (window.SelfieSegmentation) return Promise.resolve(true);
+    if (segmentationSetupPromise) return segmentationSetupPromise;
+    segmentationSetupPromise = new Promise((resolve) => {
+      const script = document.createElement("script");
+      let settled = false;
+      const finish = (available) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        resolve(available);
+      };
+      const timeout = window.setTimeout(() => finish(false), 7000);
+      script.src = "https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/selfie_segmentation.js";
+      script.crossOrigin = "anonymous";
+      script.onload = () => finish(Boolean(window.SelfieSegmentation));
+      script.onerror = () => finish(false);
+      document.head.appendChild(script);
+    });
+    return segmentationSetupPromise;
+  }
+
+  async function prepareSegmentation() {
+    if (segmentationModel) return true;
+    const available = await loadSegmentationScript();
+    if (!available) return false;
+    try {
+      const model = new window.SelfieSegmentation({ locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation/${file}` });
+      model.setOptions({ modelSelection: 1 });
+      model.onResults((results) => {
+        if (!pendingSegmentation) return;
+        const resolve = pendingSegmentation;
+        pendingSegmentation = null;
+        resolve(results?.segmentationMask || null);
+      });
+      if (typeof model.initialize === "function") await model.initialize();
+      segmentationModel = model;
+      return true;
+    } catch (error) {
+      console.warn("Person background segmentation is unavailable", error);
+      segmentationModel = null;
+      return false;
+    }
+  }
+
+  function requestSegmentation() {
+    if (!segmentationModel || !video.videoWidth) return Promise.resolve(null);
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (mask) => {
+        if (settled) return;
+        settled = true;
+        if (pendingSegmentation === finish) pendingSegmentation = null;
+        window.clearTimeout(timeout);
+        resolve(mask);
+      };
+      const timeout = window.setTimeout(() => finish(null), 1600);
+      pendingSegmentation = finish;
+      segmentationModel.send({ image: video }).catch(() => finish(null));
+    });
+  }
+
   function stopStream() {
     if (stream) stream.getTracks().forEach((track) => track.stop());
     stream = null;
@@ -119,8 +186,12 @@
       await video.play();
       fallback.classList.add("hidden");
       video.style.transform = facingMode === "user" ? "scaleX(-1)" : "none";
-      cameraStatus.textContent = "실시간 카메라 · 표정 준비 완료";
+      cameraStatus.textContent = "실시간 카메라 · 테마 배경 준비 중";
       actionNote.textContent = "4초 간격으로 네 장을 촬영해요. 포즈 카드를 참고해보세요.";
+      prepareSegmentation().then((ready) => {
+        if (body.dataset.flow !== "camera" || busy) return;
+        cameraStatus.textContent = ready ? "실시간 카메라 · 테마 배경 합성 준비 완료" : "실시간 카메라 · 표정 준비 완료";
+      });
     } catch (error) {
       demoMode = true;
       fallback.classList.remove("hidden");
@@ -133,23 +204,96 @@
   function resetDots() {
     shotDots.forEach((dot) => dot.classList.remove("active", "done"));
     shotCount.textContent = "0 / 4";
+    activeShotIndex = 0;
+    updateCameraPoongGuide(activeShotIndex);
   }
 
   function updateFrameSelection() {
     $$(".frame-option").forEach((button) => button.classList.toggle("selected", button.dataset.frame === selectedFrame));
     drawThemePreview();
-    updateCameraPoongGuide();
+    updateCameraPoongGuide(activeShotIndex);
   }
 
-  function updateCameraPoongGuide() {
-    if (!cameraPoongGuide || !cameraPoongGuideImage) return;
-    const image = themedPoong[selectedFrame];
-    if (!image || !image.naturalWidth) {
+  function getFourCutStickerLayout(index) {
+    const photoWidth = 360;
+    const photoHeight = 270;
+    const padding = 32;
+    const gap = 18;
+    const header = 174;
+    const expressionSheet = themedExpressions[selectedFrame];
+    const width = expressionSheet ? 178 : 146;
+    const height = expressionSheet ? 198 : 176;
+    const column = index % 2;
+    const row = Math.floor(index / 2);
+    const localX = column === 1 ? photoWidth - width - 18 : 18;
+    const localY = photoHeight - height - 16;
+    const x = padding + column * (photoWidth + gap) + localX;
+    const y = header + row * (photoHeight + gap) + localY;
+    return { x, y, localX, localY, width, height, faceRight: column === 0 };
+  }
+
+  function getCameraContentRect() {
+    const cameraWindow = document.querySelector(".camera-window");
+    if (!cameraWindow || !video) return null;
+    const windowRect = cameraWindow.getBoundingClientRect();
+    const videoRect = video.getBoundingClientRect();
+    if (!videoRect.width || !videoRect.height) return null;
+    const sourceRatio = video.videoWidth && video.videoHeight ? video.videoWidth / video.videoHeight : 4 / 3;
+    const targetRatio = 4 / 3;
+    let displayWidth = videoRect.width;
+    let displayHeight = displayWidth / sourceRatio;
+    if (displayHeight > videoRect.height) {
+      displayHeight = videoRect.height;
+      displayWidth = displayHeight * sourceRatio;
+    }
+    let width = displayWidth;
+    let height = displayHeight;
+    let left = videoRect.left - windowRect.left + (videoRect.width - displayWidth) / 2;
+    let top = videoRect.top - windowRect.top + (videoRect.height - displayHeight) / 2;
+    if (sourceRatio > targetRatio) {
+      width = displayHeight * targetRatio;
+      left += (displayWidth - width) / 2;
+    } else if (sourceRatio < targetRatio) {
+      height = displayWidth / targetRatio;
+      top += (displayHeight - height) / 2;
+    }
+    return { left, top, width, height };
+  }
+
+  function updateCameraPoongGuide(index = activeShotIndex) {
+    if (!cameraPoongGuide || !cameraPoongGuideCanvas) return;
+    const expressionSheet = themedExpressions[selectedFrame];
+    const expression = expressionSheet || expressionPoong[index] || themedPoong[selectedFrame] || previewPoong;
+    const content = getCameraContentRect();
+    if (!expression || !expression.naturalWidth || !content) {
       cameraPoongGuide.classList.remove("ready");
       return;
     }
-    cameraPoongGuideImage.src = getPoongArtwork(image, "neutral").toDataURL("image/png");
+    const layout = getFourCutStickerLayout(index);
+    const photoWidth = 360;
+    const photoHeight = 270;
+    const scale = content.width / photoWidth;
+    const mirroredPreview = facingMode === "user";
+    const localX = layout.localX;
+    const outputX = mirroredPreview ? photoWidth - localX - layout.width : localX;
+    const guideWidth = layout.width * scale;
+    const guideHeight = layout.height * scale;
+    cameraPoongGuide.style.setProperty("--guide-left", `${content.left + outputX * scale}px`);
+    cameraPoongGuide.style.setProperty("--guide-top", `${content.top + layout.localY * (content.height / photoHeight)}px`);
+    cameraPoongGuide.style.setProperty("--guide-width", `${guideWidth}px`);
+    cameraPoongGuide.style.setProperty("--guide-height", `${guideHeight}px`);
+    cameraPoongGuideLabel.textContent = `SHOT ${String(index + 1).padStart(2, "0")} · POONG POSITION`;
+    const guideScale = 2;
+    cameraPoongGuideCanvas.width = Math.max(1, Math.round(layout.width * guideScale));
+    cameraPoongGuideCanvas.height = Math.max(1, Math.round(layout.height * guideScale));
+    const ctx = configureCanvasContext(cameraPoongGuideCanvas.getContext("2d"));
+    ctx.setTransform(guideScale, 0, 0, guideScale, 0, 0);
+    ctx.clearRect(0, 0, layout.width, layout.height);
+    ctx.filter = filters[selectedFilter].css;
+    drawExpressionBadge(ctx, expression, selectedFrame, index, 0, 0, layout.width, layout.height, Boolean(expressionSheet), layout.faceRight, true);
+    ctx.filter = "none";
     cameraPoongGuide.dataset.frame = selectedFrame;
+    cameraPoongGuide.dataset.shot = String(index);
     cameraPoongGuide.classList.add("ready");
   }
 
@@ -157,6 +301,7 @@
     $$(".filter-option").forEach((button) => button.classList.toggle("selected", button.dataset.filter === selectedFilter));
     video.style.filter = filters[selectedFilter].css;
     drawThemePreview();
+    updateCameraPoongGuide(activeShotIndex);
   }
 
   function updatePose() {
@@ -181,6 +326,7 @@
     setFlow("camera");
     actionNote.textContent = "카메라 권한을 허용하면 실시간 촬영, 아니면 데모 촬영으로 진행돼요.";
     await openCamera();
+    updateCameraPoongGuide(activeShotIndex);
   }
 
   function backToTheme() {
@@ -195,18 +341,16 @@
     canvas.width = 1440;
     canvas.height = 1080;
     const ctx = configureCanvasContext(canvas.getContext("2d"));
+    ctx.filter = filters[selectedFilter].css;
     drawPreviewPhoto(ctx, 0, 0, canvas.width, canvas.height, selectedFrame, index);
+    ctx.filter = "none";
     const vignette = ctx.createRadialGradient(720, 320, 160, 720, 400, 800);
     vignette.addColorStop(0, "rgba(255,255,255,.05)"); vignette.addColorStop(1, "rgba(18,12,28,.28)");
     ctx.fillStyle = vignette; ctx.fillRect(0, 0, canvas.width, canvas.height);
     return canvas;
   }
 
-  function captureCanvas(index) {
-    if (demoMode || !video.videoWidth) return makeDemoShot(index);
-    const canvas = document.createElement("canvas");
-    canvas.width = 1440; canvas.height = 1080;
-    const ctx = configureCanvasContext(canvas.getContext("2d"));
+  function getVideoCrop() {
     const videoRatio = video.videoWidth / video.videoHeight;
     const targetRatio = 4 / 3;
     let sourceWidth = video.videoWidth;
@@ -215,11 +359,62 @@
     let sourceY = 0;
     if (videoRatio > targetRatio) { sourceWidth = video.videoHeight * targetRatio; sourceX = (video.videoWidth - sourceWidth) / 2; }
     else { sourceHeight = video.videoWidth / targetRatio; sourceY = (video.videoHeight - sourceHeight) / 2; }
-    ctx.filter = filters[selectedFilter].css;
+    return { sourceX, sourceY, sourceWidth, sourceHeight };
+  }
+
+  function drawVideoFrame(ctx, canvas, crop) {
     if (facingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
-    ctx.drawImage(video, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, canvas.width, canvas.height);
+    ctx.drawImage(video, crop.sourceX, crop.sourceY, crop.sourceWidth, crop.sourceHeight, 0, 0, canvas.width, canvas.height);
     ctx.setTransform(1, 0, 0, 1, 0, 0);
-    ctx.filter = "none";
+  }
+
+  function drawSegmentationMask(ctx, canvas, mask, crop) {
+    if (facingMode === "user") { ctx.translate(canvas.width, 0); ctx.scale(-1, 1); }
+    ctx.drawImage(mask, crop.sourceX, crop.sourceY, crop.sourceWidth, crop.sourceHeight, 0, 0, canvas.width, canvas.height);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+  }
+
+  async function captureCanvas(index) {
+    if (demoMode || !video.videoWidth) return makeDemoShot(index);
+    const canvas = document.createElement("canvas");
+    canvas.width = 1440; canvas.height = 1080;
+    const ctx = configureCanvasContext(canvas.getContext("2d"));
+    const crop = getVideoCrop();
+    let mask = null;
+    if (!segmentationModel) {
+      const ready = await Promise.race([prepareSegmentation(), sleep(3200).then(() => false)]);
+      if (ready) cameraStatus.textContent = "촬영 중 · 테마 배경을 합성하고 있어요";
+    }
+    if (segmentationModel) mask = await requestSegmentation();
+    if (mask) {
+      const background = document.createElement("canvas");
+      background.width = canvas.width; background.height = canvas.height;
+      const backgroundCtx = configureCanvasContext(background.getContext("2d"));
+      backgroundCtx.filter = filters[selectedFilter].css;
+      drawPreviewPhoto(backgroundCtx, 0, 0, canvas.width, canvas.height, selectedFrame, index);
+      backgroundCtx.filter = "none";
+
+      const subject = document.createElement("canvas");
+      subject.width = canvas.width; subject.height = canvas.height;
+      const subjectCtx = configureCanvasContext(subject.getContext("2d"));
+      subjectCtx.filter = filters[selectedFilter].css;
+      drawVideoFrame(subjectCtx, subject, crop);
+      subjectCtx.filter = "none";
+
+      const maskCanvas = document.createElement("canvas");
+      maskCanvas.width = canvas.width; maskCanvas.height = canvas.height;
+      const maskCtx = configureCanvasContext(maskCanvas.getContext("2d"));
+      drawSegmentationMask(maskCtx, maskCanvas, mask, crop);
+      subjectCtx.globalCompositeOperation = "destination-in";
+      subjectCtx.drawImage(maskCanvas, 0, 0);
+      subjectCtx.globalCompositeOperation = "source-over";
+      ctx.drawImage(background, 0, 0);
+      ctx.drawImage(subject, 0, 0);
+    } else {
+      ctx.filter = filters[selectedFilter].css;
+      drawVideoFrame(ctx, canvas, crop);
+      ctx.filter = "none";
+    }
     if (autoEnhance) applyAutoEnhance(ctx, canvas.width, canvas.height);
     if (selectedFilter === "soft") {
       const glow = ctx.createRadialGradient(720, 360, 20, 720, 360, 760);
@@ -269,6 +464,8 @@
   }
 
   async function countdownAndCapture(index) {
+    activeShotIndex = index;
+    updateCameraPoongGuide(activeShotIndex);
     for (const number of [3, 2, 1]) {
       countdown.textContent = number;
       countdown.style.opacity = "1";
@@ -278,9 +475,11 @@
     flash.style.transition = "none"; flash.style.opacity = ".9";
     await sleep(50);
     flash.style.transition = "opacity .35s ease"; flash.style.opacity = "0";
-    shots.push(captureCanvas(index));
+    shots.push(await captureCanvas(index));
     shotDots[index].classList.remove("active"); shotDots[index].classList.add("done");
     shotCount.textContent = `${index + 1} / 4`;
+    activeShotIndex = Math.min(index + 1, 3);
+    updateCameraPoongGuide(activeShotIndex);
   }
 
   function drawText(ctx, text, x, y, size, color, font = "600 20px 'IBM Plex Mono'", align = "center") {
@@ -1055,6 +1254,9 @@
   $("#btnTopReset").addEventListener("click", resetAll);
   $("#btnRetake").addEventListener("click", resetAll);
   $("#btnSave").addEventListener("click", saveResult);
+  window.addEventListener("resize", () => {
+    if (body.dataset.flow === "camera") updateCameraPoongGuide(activeShotIndex);
+  });
   autoEnhanceToggle?.addEventListener("change", () => {
     autoEnhance = autoEnhanceToggle.checked;
     showToast(autoEnhance ? "AUTO BEAUTY 보정을 켰어요." : "AUTO BEAUTY 보정을 껐어요.");
