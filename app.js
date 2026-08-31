@@ -1146,7 +1146,9 @@
     }
     const copyX = markX + markSize + (compact ? 8 : 12);
     drawText(ctx, "CAU SEOUL CAMPUS", copyX, compact ? 25 : 45, compact ? 6 : 10, "rgba(255, 239, 213, .82)", `700 ${compact ? 6 : 10}px 'IBM Plex Mono'`, "left");
-    drawText(ctx, isPierrot ? "2026  ·  PIERROT THEATRE" : "2026  ·  MARKET NIGHT", width - (compact ? 18 : 34), compact ? 25 : 45, compact ? 6 : 10, accent, `700 ${compact ? 6 : 10}px 'IBM Plex Mono'`, "right");
+    // Keep the top line purely informational. The old "PIERROT / LIVE"
+    // marquee competed with the bulbs and made the header feel crowded.
+    drawText(ctx, "2026  /  FALL FESTIVAL", width - (compact ? 18 : 34), compact ? 25 : 45, compact ? 6 : 10, accent, `700 ${compact ? 6 : 10}px 'IBM Plex Mono'`, "right");
 
     const titleSize = compact ? 27 : 56;
     const titleY = compact ? 64 : 126;
@@ -1166,7 +1168,7 @@
     ctx.moveTo(width * .25, compact ? 72 : 140);
     ctx.lineTo(width * .75, compact ? 72 : 140);
     ctx.stroke();
-    drawText(ctx, isPierrot ? "PIERROT THEATRE  /  LIGHTS ON" : "MARKET NIGHT  /  GATHER & GLOW", width / 2, compact ? 83 : 160, compact ? 5 : 9, "rgba(255, 235, 201, .74)", `600 ${compact ? 5 : 9}px 'IBM Plex Mono'`);
+    drawText(ctx, isPierrot ? "PIERROT THEATRE  /  STAGE LIGHTS" : "MARKET NIGHT  /  GATHER & GLOW", width / 2, compact ? 83 : 160, compact ? 5 : 9, "rgba(255, 235, 201, .74)", `600 ${compact ? 5 : 9}px 'IBM Plex Mono'`);
     ctx.restore();
   }
 
