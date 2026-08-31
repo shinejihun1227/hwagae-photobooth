@@ -554,9 +554,9 @@ body:not([data-flow="home"]) .studio-layout { padding-top: 36px; }
 .frame-option:hover, .filter-option:hover { border-color: rgba(244, 196, 93, .5); color: #fff2dc; }
 .frame-option.selected, .filter-option.selected { border-color: var(--coral); background: rgba(214, 66, 62, .17); color: #fff2dc; box-shadow: inset 0 0 0 1px rgba(244, 196, 93, .14); }
 .frame-option small { color: #a98278; }
-.swatch-market { background: linear-gradient(90deg, rgba(120, 31, 36, .35), rgba(244, 196, 93, .06)), url("festival-key-visual.png") left center / auto 160% no-repeat, #6e2a2e; }
+.swatch-market { background: linear-gradient(90deg, rgba(120, 31, 36, .35), rgba(244, 196, 93, .06)), url("festival-key-visual-v2.png") left center / auto 160% no-repeat, #6e2a2e; }
 .swatch-market::before { background: repeating-linear-gradient(90deg, #c93631 0 15px, #ffd05d 15px 28px); }
-.swatch-pierrot { background: linear-gradient(90deg, rgba(31, 17, 43, .12), rgba(43, 19, 38, .44)), url("festival-key-visual.png") right center / auto 160% no-repeat, #3a1d3f; }
+.swatch-pierrot { background: linear-gradient(90deg, rgba(31, 17, 43, .12), rgba(43, 19, 38, .44)), url("festival-key-visual-v2.png") right center / auto 160% no-repeat, #3a1d3f; }
 .swatch-pierrot::before { color: #fff0c5; text-shadow: 15px 7px 0 #fff0c5, -15px 10px 0 #fff0c5; }
 .secondary-action { border-color: rgba(255, 239, 213, .19); color: #c5a493; background: rgba(255, 255, 255, .04); }
 .secondary-action:hover { color: #fff1da; background: rgba(255, 255, 255, .09); }
@@ -731,7 +731,7 @@ body[data-flow="home"] h1 { margin: 16px 0 12px; font-size: clamp(48px, 6.5vw, 8
 .swatch-market::after { content: ""; top: 10px; right: 13px; width: 13px; height: 17px; clip-path: polygon(50% 0, 68% 32%, 100% 21%, 76% 51%, 91% 83%, 56% 66%, 35% 100%, 30% 63%, 0 70%, 27% 43%, 7% 17%, 42% 28%); background: linear-gradient(145deg, #f3bd55, #c8403d 72%); filter: drop-shadow(0 2px 2px rgba(0, 0, 0, .28)); }
 .swatch-pierrot::after { content: "◆"; top: 34px; right: 14px; color: #e9574b; font-size: 18px; text-shadow: -13px -8px 0 #ffd05d, 13px 8px 0 #fff0d1; }
 .frame-swatch.swatch-market { background: linear-gradient(90deg, rgba(77, 24, 31, .15), rgba(244, 196, 93, .04)), url("market-scene.png") center / cover no-repeat; }
-.frame-swatch.swatch-pierrot { background: linear-gradient(90deg, rgba(31, 17, 43, .08), rgba(43, 19, 38, .22)), url("festival-key-visual.png") 88% center / auto 245% no-repeat, #3a1d3f; }
+.frame-swatch.swatch-pierrot { background: linear-gradient(90deg, rgba(31, 17, 43, .08), rgba(43, 19, 38, .22)), url("festival-key-visual-v2.png") 88% center / auto 245% no-repeat, #3a1d3f; }
 .frame-swatch.swatch-market::before, .frame-swatch.swatch-market::after, .frame-swatch.swatch-pierrot::before, .frame-swatch.swatch-pierrot::after { display: none; }
 .filter-list { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px; }
 .filter-option { min-height: 55px; padding: 9px 10px 7px; border-radius: 12px; background: rgba(255, 255, 255, .045); }
@@ -1467,6 +1467,321 @@ body[data-flow="home"] .cau-festival-year small {
     grid-template-columns: minmax(290px, .92fr) minmax(0, 1.08fr);
     gap: 14px;
   }
+}
+
+/* Home refresh: turn the landing screen into a calm festival editorial cover. */
+body[data-flow="home"] {
+  background:
+    radial-gradient(circle at 50% 8%, rgba(112, 33, 45, .34), transparent 28%),
+    radial-gradient(circle at 10% 82%, rgba(244, 196, 93, .1), transparent 24%),
+    var(--canvas-deep);
+}
+
+body[data-flow="home"] .studio-layout {
+  width: min(100%, 1120px);
+  max-width: none;
+  padding: 42px 0 72px;
+}
+
+body[data-flow="home"] .intro-panel {
+  align-items: center;
+  padding-bottom: 0;
+}
+
+body[data-flow="home"] .cau-festival-lockup {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  width: min(100%, 560px);
+  min-height: 84px;
+  margin: 0;
+  padding: 10px 20px 10px 14px;
+  border: 1px solid rgba(255, 226, 176, .16);
+  border-radius: 22px;
+  background: linear-gradient(135deg, rgba(66, 23, 35, .88), rgba(24, 10, 17, .72));
+  box-shadow: 0 18px 34px rgba(6, 2, 8, .22), inset 0 1px 0 rgba(255, 247, 218, .08);
+}
+
+body[data-flow="home"] .cau-anniversary-mark {
+  width: 64px;
+  height: 64px;
+}
+
+body[data-flow="home"] .cau-festival-copy strong {
+  font-size: 20px;
+}
+
+body[data-flow="home"] .cau-festival-year b {
+  font-size: 20px;
+}
+
+body[data-flow="home"] h1 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  align-items: center;
+  width: min(100%, 1040px);
+  margin: 28px 0 14px;
+  padding: 22px clamp(18px, 4vw, 54px) 27px;
+  border: 1px solid rgba(255, 226, 176, .16);
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(47, 17, 27, .9), rgba(24, 10, 17, .84));
+  box-shadow: 0 18px 42px rgba(5, 2, 7, .24), inset 0 1px 0 rgba(255, 247, 218, .07);
+}
+
+body[data-flow="home"] .title-market,
+body[data-flow="home"] .title-pierrot {
+  min-width: 0;
+  text-align: center;
+  white-space: nowrap;
+}
+
+body[data-flow="home"] .title-market::before,
+body[data-flow="home"] .title-pierrot::before {
+  display: none;
+}
+
+body[data-flow="home"] .title-market::after,
+body[data-flow="home"] .title-pierrot::after {
+  width: 72%;
+  height: 3px;
+  margin: 10px auto 0;
+  transform: none;
+  box-shadow: none;
+}
+
+body[data-flow="home"] .title-x {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  margin: 0 18px;
+  border: 1px solid rgba(255, 208, 93, .42);
+  border-radius: 50%;
+  background: rgba(255, 208, 93, .06);
+  font-size: 22px;
+  letter-spacing: 0;
+  box-shadow: 0 0 0 7px rgba(255, 208, 93, .035);
+}
+
+body[data-flow="home"] .intro-copy {
+  margin: 0;
+  color: #e6cbb8;
+  font-size: 15px;
+  line-height: 1.65;
+  text-align: center;
+}
+
+body[data-flow="home"] .festival-key-visual {
+  display: grid;
+  grid-template-rows: auto auto;
+  width: 100%;
+  max-width: 1080px;
+  height: auto;
+  aspect-ratio: auto;
+  margin: 30px auto 22px;
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+body[data-flow="home"] .festival-key-visual-art {
+  position: relative;
+  overflow: hidden;
+  aspect-ratio: 1.88 / 1;
+  border: 1px solid rgba(255, 224, 160, .38);
+  border-radius: 26px 26px 18px 18px;
+  background: #24101a;
+  box-shadow: 0 25px 56px rgba(4, 2, 7, .42), 0 0 0 7px rgba(255, 208, 93, .035);
+}
+
+body[data-flow="home"] .festival-key-visual-art::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(18, 7, 12, .02), rgba(18, 7, 12, .08));
+}
+
+body[data-flow="home"] .festival-key-visual img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+body[data-flow="home"] .festival-key-visual figcaption {
+  position: relative;
+  left: auto;
+  right: auto;
+  top: auto;
+  bottom: auto;
+  z-index: 2;
+  display: grid;
+  justify-items: center;
+  width: min(68%, 610px);
+  margin: 14px auto 0;
+  padding: 14px 22px 15px;
+  transform: none;
+  border: 1px solid rgba(255, 220, 142, .46);
+  border-radius: 16px;
+  background: linear-gradient(135deg, rgba(48, 18, 27, .98), rgba(27, 10, 17, .97));
+  box-shadow: 0 14px 28px rgba(12, 3, 9, .34), inset 0 1px 0 rgba(255, 242, 213, .1);
+  text-align: center;
+}
+
+body[data-flow="home"] .festival-key-visual figcaption span {
+  color: #f6c85d;
+  font-size: 8px;
+  line-height: 1.2;
+  letter-spacing: .18em;
+}
+
+body[data-flow="home"] .festival-key-visual figcaption strong {
+  position: static !important;
+  display: block;
+  color: #fff2d8;
+  font: 600 clamp(17px, 2vw, 22px)/1.25 "Noto Sans KR", sans-serif;
+  letter-spacing: -.055em;
+  white-space: nowrap;
+}
+
+body[data-flow="home"] .intro-meta {
+  width: min(100%, 760px);
+  max-width: none;
+  margin: 0 auto 22px;
+  gap: 12px;
+  border: 0;
+  padding: 0;
+}
+
+body[data-flow="home"] .intro-meta div {
+  gap: 6px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 235, 201, .13);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, .035);
+}
+
+body[data-flow="home"] .intro-meta span {
+  color: #f0bc69;
+}
+
+body[data-flow="home"] .intro-meta strong {
+  color: #ead5c2;
+  font-size: 12px;
+}
+
+body[data-flow="home"] .intro-note {
+  margin: 0 auto;
+  color: #d0ad99;
+}
+
+body[data-flow="home"] .home-action-stack {
+  width: min(100%, 760px);
+}
+
+body[data-flow="home"] .home-start {
+  width: 100%;
+  min-height: 62px;
+  margin-top: 22px;
+  border-radius: 16px;
+  font-size: 14px;
+}
+
+body[data-flow="home"] .home-qr {
+  justify-content: center;
+  margin-top: 16px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 235, 201, .12);
+}
+
+@media (max-width: 650px) {
+  body[data-flow="home"] .studio-layout {
+    width: 100%;
+    padding: 24px 0 48px;
+  }
+
+  body[data-flow="home"] .cau-festival-lockup {
+    width: 100%;
+    min-height: 72px;
+    padding: 8px 12px 8px 9px;
+    border-radius: 18px;
+  }
+
+  body[data-flow="home"] .cau-anniversary-mark {
+    width: 54px;
+    height: 54px;
+  }
+
+  body[data-flow="home"] .cau-festival-copy strong { font-size: 16px; }
+  body[data-flow="home"] .cau-festival-copy small { font-size: 6px; }
+  body[data-flow="home"] .cau-festival-year b { font-size: 16px; }
+  body[data-flow="home"] .cau-festival-year small { font-size: 6px; }
+
+  body[data-flow="home"] h1 {
+    width: 100%;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    grid-template-areas: "market" "cross" "pierrot";
+    row-gap: 3px;
+    margin: 20px 0 12px;
+    padding: 17px 12px 20px;
+    border-radius: 20px;
+    font-size: clamp(40px, 13vw, 62px);
+  }
+
+  body[data-flow="home"] .title-market { grid-area: market; }
+  body[data-flow="home"] .title-x {
+    grid-area: cross;
+    width: 32px;
+    height: 32px;
+    margin: 2px auto;
+    font-size: 17px;
+  }
+  body[data-flow="home"] .title-pierrot { grid-area: pierrot; }
+  body[data-flow="home"] .title-market::after,
+  body[data-flow="home"] .title-pierrot::after { width: min(48%, 190px); height: 3px; margin-top: 6px; }
+
+  body[data-flow="home"] .intro-copy { font-size: 13px; }
+
+  body[data-flow="home"] .festival-key-visual {
+    margin-top: 22px;
+  }
+
+  body[data-flow="home"] .festival-key-visual-art {
+    aspect-ratio: 1.35 / 1;
+    border-radius: 20px 20px 15px 15px;
+  }
+
+  body[data-flow="home"] .festival-key-visual img {
+    object-fit: contain;
+    background: #170b12;
+  }
+
+  body[data-flow="home"] .festival-key-visual figcaption {
+    width: calc(100% - 24px);
+    margin-top: 10px;
+    padding: 11px 12px 12px;
+    border-radius: 13px;
+  }
+
+  body[data-flow="home"] .festival-key-visual figcaption span { font-size: 6px; }
+  body[data-flow="home"] .festival-key-visual figcaption strong {
+    max-width: 100%;
+    font-size: 15px;
+    white-space: normal;
+  }
+
+  body[data-flow="home"] .intro-meta {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  body[data-flow="home"] .intro-meta div { padding: 12px 14px; }
+  body[data-flow="home"] .home-start { min-height: 56px; }
 }
 
 @media (max-width: 650px) {
