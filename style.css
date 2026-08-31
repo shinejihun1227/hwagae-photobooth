@@ -1511,3 +1511,64 @@ body[data-flow="home"] .cau-festival-year small {
   bottom: 0;
   left: 6%;
 }
+
+/* Keep the masthead readable on narrow screens and replace the repetitive dotted rules with a single editorial underline. */
+body[data-flow="home"] .title-market::after,
+body[data-flow="home"] .title-pierrot::after {
+  right: auto;
+  bottom: 0;
+  width: 76%;
+  height: 3px;
+  margin: 0;
+  border-radius: 999px;
+  opacity: 1;
+  background: linear-gradient(90deg, #f7d477 0%, #e8975e 48%, #b83f42 100%);
+  box-shadow: 0 4px 0 -2px rgba(255, 208, 93, .5);
+}
+
+body[data-flow="home"] .title-pierrot::after {
+  background: linear-gradient(90deg, #ffd36f 0%, #f18a62 55%, #d74856 100%);
+}
+
+@media (max-width: 650px) {
+  body[data-flow="home"] h1 {
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto auto auto;
+    grid-template-areas: "market" "cross" "pierrot";
+    row-gap: 2px;
+    margin-top: 22px;
+    font-size: clamp(38px, 12.5vw, 62px);
+    letter-spacing: -.08em;
+    overflow: visible;
+  }
+
+  body[data-flow="home"] .title-market,
+  body[data-flow="home"] .title-pierrot {
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+  }
+
+  body[data-flow="home"] .title-market { grid-area: market; }
+  body[data-flow="home"] .title-x {
+    grid-area: cross;
+    justify-self: center;
+    margin: 0;
+    padding: 0;
+    font-size: clamp(16px, 4.6vw, 24px);
+  }
+  body[data-flow="home"] .title-pierrot { grid-area: pierrot; }
+
+  body[data-flow="home"] .title-market::before,
+  body[data-flow="home"] .title-pierrot::before {
+    display: none;
+  }
+
+  body[data-flow="home"] .title-market::after,
+  body[data-flow="home"] .title-pierrot::after {
+    left: 50%;
+    width: min(46%, 180px);
+    height: 3px;
+    transform: translateX(-50%);
+  }
+}
