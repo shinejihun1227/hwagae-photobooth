@@ -1294,8 +1294,8 @@
     loadImage("poong-expression-2.png"),
     loadImage("poong-expression-3.png"),
     loadImage("poong-expression-4.png"),
-    loadImage("market-background-v2.png"),
-    loadImage("pierrot-background-v2.png"),
+    loadImage("market-campus-background.png"),
+    loadImage("pierrot-campus-background.png"),
   ]).then(([anniversaryMark, market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour, marketBackgroundImage, pierrotBackgroundImage]) => {
     if (anniversaryMark && cauAnniversaryMark) {
       cauAnniversaryMark.src = getTransparentLogo(anniversaryMark).toDataURL("image/png");
