@@ -956,14 +956,16 @@ body[data-flow="home"] .intro-copy {
 body[data-flow="home"] .festival-key-visual figcaption {
   left: 50%;
   right: auto;
-  bottom: 18px;
-  width: min(82%, 680px);
+  top: 50%;
+  bottom: auto;
+  width: min(68%, 560px);
+  grid-template-columns: minmax(0, 1fr);
   display: grid;
   align-items: center;
   justify-items: center;
   gap: 5px;
   padding: 14px 22px 15px;
-  transform: translateX(-50%);
+  transform: translate(-50%, -50%);
   border: 1px solid rgba(255, 220, 142, .46);
   border-radius: 14px;
   background: linear-gradient(180deg, rgba(44, 17, 24, .94), rgba(31, 10, 17, .9));
@@ -982,6 +984,9 @@ body[data-flow="home"] .festival-key-visual figcaption span {
 }
 
 body[data-flow="home"] .festival-key-visual figcaption strong {
+  position: static !important;
+  display: block;
+  justify-self: center;
   color: #fff2d8;
   font: 600 clamp(16px, 1.7vw, 20px)/1.2 "Noto Sans KR", sans-serif;
   letter-spacing: -.055em;
@@ -990,11 +995,13 @@ body[data-flow="home"] .festival-key-visual figcaption strong {
 
 @media (max-width: 650px) {
   body[data-flow="home"] .festival-key-visual figcaption {
-    bottom: 12px;
+    top: 50%;
+    bottom: auto;
     width: calc(100% - 24px);
     gap: 4px;
     padding: 10px 12px 11px;
     border-radius: 11px;
+    transform: translate(-50%, -50%);
   }
 
   body[data-flow="home"] .festival-key-visual figcaption span {
