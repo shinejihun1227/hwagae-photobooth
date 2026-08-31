@@ -223,8 +223,9 @@
     const gap = 18;
     const header = 174;
     const expressionSheet = themedExpressions[selectedFrame];
-    const width = expressionSheet ? 178 : 146;
-    const height = expressionSheet ? 198 : 176;
+    const hasThemedArtwork = Boolean(expressionSheet || themedPoong[selectedFrame]);
+    const width = hasThemedArtwork ? 178 : 146;
+    const height = hasThemedArtwork ? 198 : 176;
     const column = index % 2;
     const row = Math.floor(index / 2);
     const localX = column === 1 ? photoWidth - width - 18 : 18;
@@ -265,7 +266,7 @@
   function updateCameraPoongGuide(index = activeShotIndex) {
     if (!cameraPoongGuide || !cameraPoongGuideCanvas) return;
     const expressionSheet = themedExpressions[selectedFrame];
-    const expression = expressionSheet || expressionPoong[index] || themedPoong[selectedFrame] || previewPoong;
+    const expression = getPreferredPoong(index);
     const content = getCameraContentRect();
     if (!expression || !expression.naturalWidth || !content) {
       cameraPoongGuide.classList.remove("ready");
@@ -699,6 +700,10 @@
     ctx.restore();
   }
 
+  function getPreferredPoong(index) {
+    return themedExpressions[selectedFrame] || themedPoong[selectedFrame] || expressionPoong[index] || previewPoong;
+  }
+
   function roundedRect(ctx, x, y, width, height, radius) {
     const r = Math.min(radius, width / 2, height / 2);
     ctx.beginPath();
@@ -744,10 +749,11 @@
       ctx.restore();
       ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.58)" : "rgba(255,248,218,.68)";
       ctx.lineWidth = 1.5; ctx.strokeRect(x, y, photoWidth, photoHeight);
-      const expression = expressionSheet || expressionPoong[index] || poong;
+      const expression = getPreferredPoong(index);
       if (expression) {
-        const badgeWidth = expressionSheet ? Math.min(86, photoHeight * .74) : Math.min(78, photoHeight * .6);
-        const badgeHeight = expressionSheet ? Math.min(92, photoHeight * .84) : Math.min(84, photoHeight * .84);
+        const hasThemedArtwork = Boolean(expressionSheet || themedPoong[selectedFrame]);
+        const badgeWidth = hasThemedArtwork ? Math.min(86, photoHeight * .74) : Math.min(78, photoHeight * .6);
+        const badgeHeight = hasThemedArtwork ? Math.min(92, photoHeight * .84) : Math.min(84, photoHeight * .84);
         const onRight = column === 1;
         const badgeX = onRight ? x + photoWidth - badgeWidth - 6 : x + 6;
         const badgeY = y + photoHeight - badgeHeight - 5;
@@ -775,7 +781,7 @@
       image.onload = () => finish(image);
       image.onerror = () => finish(null);
       image.src = source;
-      window.setTimeout(() => finish(null), 5000);
+      window.setTimeout(() => finish(null), 15000);
     });
   }
 
@@ -1194,9 +1200,10 @@
         const y = header + row * (photoHeight + gap);
         ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; drawCover(ctx, shot, x, y, photoWidth, photoHeight); ctx.restore();
         ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; ctx.strokeRect(x, y, photoWidth, photoHeight);
-        const expression = expressionSheet || expressionPoong[index] || poong;
+        const expression = getPreferredPoong(index);
         if (expression) {
-          const stickerWidth = expressionSheet ? 178 : 146; const stickerHeight = expressionSheet ? 198 : 176;
+          const hasThemedArtwork = Boolean(expressionSheet || themedPoong[selectedFrame]);
+          const stickerWidth = hasThemedArtwork ? 178 : 146; const stickerHeight = hasThemedArtwork ? 198 : 176;
           const onRight = column === 1;
           const stickerX = onRight ? x + photoWidth - stickerWidth - 18 : x + 18;
           const stickerY = y + photoHeight - stickerHeight - 16;
