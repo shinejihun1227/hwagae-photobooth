@@ -68,6 +68,7 @@
   let previewPoong = null;
   let themedPoong = { market: null, pierrot: null };
   let themedExpressions = { market: null, pierrot: null };
+  let marketBackground = null;
   let expressionPoong = [];
   let segmentationModel = null;
   let segmentationSetupPromise = null;
@@ -229,7 +230,7 @@
     const localY = photoHeight - height - 16;
     const x = padding + column * (photoWidth + gap) + localX;
     const y = header + row * (photoHeight + gap) + localY;
-    return { x, y, localX, localY, width, height, faceRight: column === 0 };
+    return { x, y, localX, localY, width, height, faceRight: false };
   }
 
   function getCameraContentRect() {
@@ -290,7 +291,7 @@
     ctx.setTransform(guideScale, 0, 0, guideScale, 0, 0);
     ctx.clearRect(0, 0, layout.width, layout.height);
     ctx.filter = filters[selectedFilter].css;
-    drawExpressionBadge(ctx, expression, selectedFrame, index, 0, 0, layout.width, layout.height, Boolean(expressionSheet), layout.faceRight, true);
+    drawExpressionBadge(ctx, expression, selectedFrame, index, 0, 0, layout.width, layout.height, Boolean(expressionSheet), false, true);
     ctx.filter = "none";
     cameraPoongGuide.dataset.frame = selectedFrame;
     cameraPoongGuide.dataset.shot = String(index);
@@ -751,7 +752,7 @@
         const badgeY = y + photoHeight - badgeHeight - 5;
         ctx.save();
         ctx.filter = filters[selectedFilter].css;
-        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet), !onRight, true);
+        drawExpressionBadge(ctx, expression, selectedFrame, index, badgeX, badgeY, badgeWidth, badgeHeight, Boolean(expressionSheet), false, true);
         ctx.restore();
       }
     }
@@ -1008,6 +1009,16 @@
 
   function drawPreviewPhoto(ctx, x, y, width, height, frame, index) {
     ctx.save();
+    if (frame === "market" && marketBackground?.naturalWidth) {
+      drawCover(ctx, marketBackground, x, y, width, height);
+      const atmosphere = ctx.createLinearGradient(x, y, x, y + height);
+      atmosphere.addColorStop(0, "rgba(21, 16, 25, .04)");
+      atmosphere.addColorStop(1, "rgba(38, 12, 18, .18)");
+      ctx.fillStyle = atmosphere;
+      ctx.fillRect(x, y, width, height);
+      ctx.restore();
+      return;
+    }
     if (frame === "pierrot") {
       const gradient = ctx.createLinearGradient(x, y, x, y + height);
       gradient.addColorStop(0, "#352044"); gradient.addColorStop(.52, "#17152d"); gradient.addColorStop(1, "#6c304f");
@@ -1189,7 +1200,7 @@
           const stickerY = y + photoHeight - stickerHeight - 16;
           ctx.save();
           ctx.filter = filters[selectedFilter].css;
-          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), !onRight, true);
+          drawExpressionBadge(ctx, expression, selectedFrame, index, stickerX, stickerY, stickerWidth, stickerHeight, Boolean(expressionSheet), false, true);
           ctx.restore();
         }
       });
@@ -1274,13 +1285,15 @@
     loadImage("poong-expression-2.png"),
     loadImage("poong-expression-3.png"),
     loadImage("poong-expression-4.png"),
-  ]).then(([anniversaryMark, market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour]) => {
+    loadImage("market-background-v2.png"),
+  ]).then(([anniversaryMark, market, pierrot, marketExpressions, pierrotExpressions, fallbackPoong, expressionOne, expressionTwo, expressionThree, expressionFour, marketBackgroundImage]) => {
     if (anniversaryMark && cauAnniversaryMark) {
       cauAnniversaryMark.src = getTransparentLogo(anniversaryMark).toDataURL("image/png");
       cauAnniversaryMark.classList.add("ready");
     }
     themedPoong = { market, pierrot };
     themedExpressions = { market: marketExpressions, pierrot: pierrotExpressions };
+    marketBackground = marketBackgroundImage;
     expressionPoong = [expressionOne, expressionTwo, expressionThree, expressionFour];
     previewPoong = market || pierrot || fallbackPoong;
     Object.entries(themedPoong).forEach(([theme, image]) => {
