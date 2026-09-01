@@ -56,6 +56,12 @@
   const actionNote = $("#actionNote");
   const toast = $("#toast");
   const downloadLink = $("#downloadLink");
+  const accessoryPreviewModal = $("#accessoryPreviewModal");
+  const accessoryModalCanvas = $("#accessoryModalCanvas");
+  const accessoryModalTitle = $("#accessoryModalTitle");
+  const accessoryModalDescription = $("#accessoryModalDescription");
+  const accessoryModalClose = $("#accessoryModalClose");
+  const accessoryModalConfirm = $("#accessoryModalConfirm");
 
   let selectedFrame = "market";
   let selectedFilter = "soft";
@@ -89,6 +95,12 @@
   let latestFaceDetections = [];
   const expressionModes = ["pink", "dark", "black", "pink"];
   const poongArtworkCache = new WeakMap();
+  const accessoryLabels = {
+    "poong-band": { title: "푸앙 머리띠", description: "푸앙이 얼굴을 기준으로 머리띠가 이렇게 씌워져요." },
+    "maple-pin": { title: "낙엽 핀", description: "푸앙이 얼굴 옆에 낙엽 핀이 이렇게 꽂혀요." },
+    none: { title: "액세서리 없음", description: "푸앙이 얼굴에 아무 액세서리도 없이 깔끔하게 보여요." },
+  };
+  let accessoryModalTrigger = null;
 
   function setFlow(flow) {
     const mode = flow === "camera" ? "camera" : flow === "result" ? "result" : "home";
@@ -378,38 +390,70 @@
     $$('[data-accessory-preview]').forEach((canvas) => {
       const ctx = configureCanvasContext(canvas.getContext("2d"));
       if (!ctx) return;
-      const width = canvas.width;
-      const height = canvas.height;
-      const faceWidth = 45;
-
-      ctx.clearRect(0, 0, width, height);
-      ctx.save();
-      ctx.translate(width / 2, height * .64);
-
-      const faceGradient = ctx.createLinearGradient(0, -height * .28, 0, height * .1);
-      faceGradient.addColorStop(0, "rgba(111, 207, 235, .92)");
-      faceGradient.addColorStop(1, "rgba(49, 139, 190, .92)");
-      ctx.fillStyle = faceGradient;
-      ctx.beginPath();
-      ctx.ellipse(0, 2, faceWidth * .4, height * .3, 0, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = "rgba(14, 44, 73, .78)";
-      ctx.lineWidth = 1.4;
-      ctx.stroke();
-      ctx.fillStyle = "rgba(247, 253, 245, .88)";
-      ctx.beginPath();
-      ctx.ellipse(-faceWidth * .14, -height * .09, faceWidth * .08, height * .1, -.25, 0, Math.PI * 2);
-      ctx.ellipse(faceWidth * .14, -height * .09, faceWidth * .08, height * .1, .25, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#163451";
-      ctx.beginPath();
-      ctx.arc(-faceWidth * .14, 1, 2.1, 0, Math.PI * 2);
-      ctx.arc(faceWidth * .14, 1, 2.1, 0, Math.PI * 2);
-      ctx.fill();
-
-      drawAccessory(ctx, canvas.dataset.accessoryPreview, faceWidth);
-      ctx.restore();
+      drawAccessoryPreviewScene(ctx, canvas.dataset.accessoryPreview, canvas.width, canvas.height);
     });
+  }
+
+  function drawAccessoryPreviewScene(ctx, accessory, width, height) {
+    const faceWidth = Math.min(width * .48, height * .58);
+    ctx.clearRect(0, 0, width, height);
+    ctx.save();
+    ctx.translate(width / 2, height * .64);
+
+    const faceGradient = ctx.createLinearGradient(0, -height * .28, 0, height * .1);
+    faceGradient.addColorStop(0, "rgba(111, 207, 235, .98)");
+    faceGradient.addColorStop(1, "rgba(49, 139, 190, .98)");
+    ctx.fillStyle = faceGradient;
+    ctx.beginPath();
+    ctx.ellipse(0, 2, faceWidth * .4, height * .3, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(14, 44, 73, .78)";
+    ctx.lineWidth = Math.max(1.4, width * .0022);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(247, 253, 245, .9)";
+    ctx.beginPath();
+    ctx.ellipse(-faceWidth * .14, -height * .09, faceWidth * .08, height * .1, -.25, 0, Math.PI * 2);
+    ctx.ellipse(faceWidth * .14, -height * .09, faceWidth * .08, height * .1, .25, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#163451";
+    ctx.beginPath();
+    ctx.arc(-faceWidth * .14, 1, Math.max(2, width * .022), 0, Math.PI * 2);
+    ctx.arc(faceWidth * .14, 1, Math.max(2, width * .022), 0, Math.PI * 2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(22, 52, 81, .9)";
+    ctx.lineWidth = Math.max(1.2, width * .002);
+    ctx.beginPath();
+    ctx.arc(0, height * .07, faceWidth * .13, .15, Math.PI - .15);
+    ctx.stroke();
+    ctx.fillStyle = "rgba(255, 159, 168, .7)";
+    ctx.beginPath();
+    ctx.arc(-faceWidth * .31, height * .06, faceWidth * .07, 0, Math.PI * 2);
+    ctx.arc(faceWidth * .31, height * .06, faceWidth * .07, 0, Math.PI * 2);
+    ctx.fill();
+
+    drawAccessory(ctx, accessory, faceWidth);
+    ctx.restore();
+  }
+
+  function openAccessoryPreview(accessory, trigger) {
+    if (!accessoryPreviewModal || !accessoryModalCanvas) return;
+    const copy = accessoryLabels[accessory] || accessoryLabels.none;
+    accessoryModalTrigger = trigger || null;
+    accessoryModalTitle.textContent = copy.title;
+    accessoryModalDescription.textContent = copy.description;
+    const ctx = configureCanvasContext(accessoryModalCanvas.getContext("2d"));
+    if (ctx) drawAccessoryPreviewScene(ctx, accessory, accessoryModalCanvas.width, accessoryModalCanvas.height);
+    accessoryPreviewModal.hidden = false;
+    document.body.classList.add("accessory-modal-open");
+    accessoryModalClose?.focus();
+  }
+
+  function closeAccessoryPreview() {
+    if (!accessoryPreviewModal) return;
+    accessoryPreviewModal.hidden = true;
+    document.body.classList.remove("accessory-modal-open");
+    accessoryModalTrigger?.focus();
+    accessoryModalTrigger = null;
   }
 
   function renderLiveCamera(mask, detections = latestFaceDetections) {
@@ -1682,7 +1726,7 @@
 
   $$(".frame-option").forEach((button) => button.addEventListener("click", () => { selectedFrame = button.dataset.frame; updateFrameSelection(); }));
   $$(".filter-option").forEach((button) => button.addEventListener("click", () => { selectedFilter = button.dataset.filter; updateFilterSelection(); }));
-  $$(".accessory-option").forEach((button) => button.addEventListener("click", () => { selectedAccessory = button.dataset.accessory; updateAccessorySelection(); }));
+  $$(".accessory-option").forEach((button) => button.addEventListener("click", () => { selectedAccessory = button.dataset.accessory; updateAccessorySelection(); openAccessoryPreview(selectedAccessory, button); }));
   $("#btnPose").addEventListener("click", () => { currentPose = (currentPose + 1) % poses.length; updatePose(); });
   enterButton.addEventListener("click", beginBooth);
   $("#btnStart").addEventListener("click", enterCamera);
@@ -1699,6 +1743,12 @@
     autoEnhance = autoEnhanceToggle.checked;
     updateCameraPreviewFilter();
     showToast(autoEnhance ? "AUTO BEAUTY 보정을 켰어요." : "AUTO BEAUTY 보정을 껐어요.");
+  });
+  accessoryModalClose?.addEventListener("click", closeAccessoryPreview);
+  accessoryModalConfirm?.addEventListener("click", closeAccessoryPreview);
+  $$("[data-accessory-modal-close]").forEach((element) => element.addEventListener("click", closeAccessoryPreview));
+  document.addEventListener("keydown", (event) => {
+    if (event.key === "Escape" && accessoryPreviewModal && !accessoryPreviewModal.hidden) closeAccessoryPreview();
   });
 
   updateFrameSelection(); updateFilterSelection(); updatePose(); drawAccessoryPreviews(); setFlow("home");

@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=20260901-accessory-previews-1" />
+    <link rel="stylesheet" href="style.css?v=20260901-accessory-previews-2" />
   </head>
   <body data-flow="home">
     <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -194,7 +194,7 @@
               </div>
 
               <div class="control-group accessory-group">
-                <div class="control-heading"><span>ACCESSORY</span><small>얼굴을 인식해 촬영 중에도 따라와요</small></div>
+                <div class="control-heading"><span>ACCESSORY</span><small>눌러서 푸앙이 얼굴에 씌운 모습을 크게 확인해요</small></div>
                 <div class="accessory-list" id="accessoryList">
                   <button class="accessory-option selected" data-accessory="poong-band" type="button">
                     <span class="accessory-preview"><canvas data-accessory-preview="poong-band" width="96" height="72" aria-hidden="true"></canvas></span>
@@ -235,7 +235,20 @@
     </div>
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <div class="accessory-modal" id="accessoryPreviewModal" hidden>
+      <div class="accessory-modal-backdrop" data-accessory-modal-close></div>
+      <section class="accessory-modal-card" role="dialog" aria-modal="true" aria-labelledby="accessoryModalTitle" aria-describedby="accessoryModalDescription">
+        <button class="accessory-modal-close" id="accessoryModalClose" type="button" aria-label="액세서리 미리보기 닫기">×</button>
+        <span class="accessory-modal-kicker">ACCESSORY PREVIEW</span>
+        <h2 id="accessoryModalTitle">푸앙 머리띠</h2>
+        <div class="accessory-modal-art">
+          <canvas id="accessoryModalCanvas" width="640" height="480" aria-label="액세서리를 착용한 푸앙이 미리보기"></canvas>
+        </div>
+        <p id="accessoryModalDescription">푸앙이 얼굴을 기준으로 촬영 화면과 사진에 이렇게 보여요.</p>
+        <button class="accessory-modal-confirm" id="accessoryModalConfirm" type="button">확인했어요</button>
+      </section>
+    </div>
     <a id="downloadLink" class="download-link" download="cau-hwagae-4cut.png"></a>
-    <script src="app.js?v=20260901-accessory-previews-1"></script>
+    <script src="app.js?v=20260901-accessory-previews-2"></script>
   </body>
 </html>
