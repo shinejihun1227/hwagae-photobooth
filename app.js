@@ -1289,6 +1289,8 @@
       const x = padding + column * (photoWidth + gap);
       const y = header + row * (photoHeight + gap);
       ctx.save();
+      roundedRect(ctx, x, y, photoWidth, photoHeight, 8);
+      ctx.clip();
       ctx.filter = filters[selectedFilter].css;
       drawPreviewPhoto(ctx, x, y, photoWidth, photoHeight, selectedFrame, index);
       ctx.restore();
@@ -1311,6 +1313,7 @@
     }
     const footerY = height - footer;
     drawFrameFooter(ctx, width, footerY, footer, selectedFrame, poong);
+    drawFrameEdgeSeal(ctx, width, height, selectedFrame);
     themePreviewLabel.textContent = selectedFrame === "pierrot" ? "삐에로 테마" : "화개장터 테마";
     themePreview.setAttribute("aria-label", `${themePreviewLabel.textContent} 프레임 미리보기`);
   }
@@ -1411,12 +1414,16 @@
     const queue = new Int32Array(width * height);
     let head = 0; let tail = 0;
     const isBackdrop = (offset) => {
+      if (pixels.data[offset + 3] < 24) return true;
       const red = pixels.data[offset]; const green = pixels.data[offset + 1]; const blue = pixels.data[offset + 2];
       const max = Math.max(red, green, blue); const min = Math.min(red, green, blue);
       if (mode === "pink") return (red > 145 && red - green > 20 && red - blue > 4) || (min > 215 && max - min < 36);
       if (mode === "dark") return (max - min < 46 && max < 150) || (min > 175 && max - min < 32);
       if (mode === "black") return max < 76;
-      return max - min < 30 && min > 140;
+      // The supplied Poong PNGs use a white/gray checkerboard instead of
+      // alpha. Remove the whole connected backdrop so no rectangular patch
+      // can appear inside a photo cell at a different device scale.
+      return max - min < 80 && min > 140;
     };
     const enqueue = (pixel) => {
       if (pixel < 0 || pixel >= width * height || visited[pixel] || !isBackdrop(pixel * 4)) return;
@@ -1574,6 +1581,19 @@
     ctx.strokeStyle = accent;
     ctx.globalAlpha = .58;
     ctx.lineWidth = compact ? 1 : 1.5;
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFrameEdgeSeal(ctx, width, height, frame) {
+    // Keep the exported strip visually closed at the device's outermost pixels.
+    // This is intentionally subtle: it masks sub-pixel seams without stealing
+    // attention from the photo cells or the themed header/footer.
+    const accent = frame === "pierrot" ? "rgba(255, 221, 153, .48)" : "rgba(255, 244, 218, .58)";
+    ctx.save();
+    roundedRect(ctx, 2.5, 2.5, width - 5, height - 5, 13);
+    ctx.strokeStyle = accent;
+    ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.restore();
   }
@@ -1783,6 +1803,7 @@
         }
       });
       drawFrameFooter(ctx, width, height - footer, footer, selectedFrame, poong);
+      drawFrameEdgeSeal(ctx, width, height, selectedFrame);
       resultDataUrl = canvas.toDataURL("image/png");
       resultImage.src = resultDataUrl;
       resultFrameLabel.textContent = frameLabels[selectedFrame];
