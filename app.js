@@ -35,6 +35,7 @@
   const cameraPoongGuide = $("#cameraPoongGuide");
   const cameraPoongGuideCanvas = $("#cameraPoongGuideCanvas");
   const cameraPoongGuideLabel = $("#cameraPoongGuideLabel");
+  const accessoryList = $("#accessoryList");
   const shotCount = $("#shotCount");
   const shotDots = $$("#shotDots i");
   const cameraStatus = $("#cameraStatus");
@@ -58,6 +59,7 @@
 
   let selectedFrame = "market";
   let selectedFilter = "soft";
+  let selectedAccessory = "poong-band";
   let autoEnhance = true;
   let currentPose = 0;
   let facingMode = "user";
@@ -78,6 +80,13 @@
   let pendingSegmentation = null;
   let liveSegmentationTimer = null;
   let liveSegmentationBusy = false;
+  let faceDetector = null;
+  let faceDetectionSetupPromise = null;
+  let pendingFaceDetection = null;
+  let liveFaceDetectionTimer = null;
+  let liveFaceDetectionBusy = false;
+  let latestLiveMask = null;
+  let latestFaceDetections = [];
   const expressionModes = ["pink", "dark", "black", "pink"];
   const poongArtworkCache = new WeakMap();
 
@@ -127,6 +136,28 @@
     return segmentationSetupPromise;
   }
 
+  function loadFaceDetectionScript() {
+    if (window.FaceDetection) return Promise.resolve(true);
+    if (faceDetectionSetupPromise) return faceDetectionSetupPromise;
+    faceDetectionSetupPromise = new Promise((resolve) => {
+      const script = document.createElement("script");
+      let settled = false;
+      const finish = (available) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        resolve(available);
+      };
+      const timeout = window.setTimeout(() => finish(false), 7000);
+      script.src = "https://cdn.jsdelivr.net/npm/@mediapipe/face_detection/face_detection.js";
+      script.crossOrigin = "anonymous";
+      script.onload = () => finish(Boolean(window.FaceDetection));
+      script.onerror = () => finish(false);
+      document.head.appendChild(script);
+    });
+    return faceDetectionSetupPromise;
+  }
+
   async function prepareSegmentation() {
     if (segmentationModel) return true;
     const available = await loadSegmentationScript();
@@ -136,13 +167,14 @@
       model.setOptions({ modelSelection: 1 });
       model.onResults((results) => {
         const mask = results?.segmentationMask || null;
+        latestLiveMask = mask;
         if (pendingSegmentation) {
           const resolve = pendingSegmentation;
           pendingSegmentation = null;
           resolve(mask);
         }
         if (mask && !busy && !demoMode && body.dataset.flow === "camera") {
-          renderLiveCamera(mask);
+          renderLiveCamera(mask, latestFaceDetections);
         }
       });
       if (typeof model.initialize === "function") await model.initialize();
@@ -151,6 +183,37 @@
     } catch (error) {
       console.warn("Person background segmentation is unavailable", error);
       segmentationModel = null;
+      return false;
+    }
+  }
+
+  async function prepareFaceDetection() {
+    if (faceDetector) return true;
+    const available = await loadFaceDetectionScript();
+    if (!available) return false;
+    try {
+      const detector = new window.FaceDetection({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/face_detection@0.0/${file}`,
+      });
+      detector.setOptions({ model: "short", minDetectionConfidence: 0.55 });
+      detector.onResults((results) => {
+        const detections = results?.detections || [];
+        latestFaceDetections = detections;
+        if (pendingFaceDetection) {
+          const resolve = pendingFaceDetection;
+          pendingFaceDetection = null;
+          resolve(detections);
+        }
+        if (!busy && !demoMode && body.dataset.flow === "camera") {
+          if (latestLiveMask) renderLiveCamera(latestLiveMask, detections);
+          else renderLiveAccessories(detections);
+        }
+      });
+      faceDetector = detector;
+      return true;
+    } catch (error) {
+      console.warn("Face accessory detection is unavailable", error);
+      faceDetector = null;
       return false;
     }
   }
@@ -172,6 +235,23 @@
     });
   }
 
+  function requestFaceDetections() {
+    if (!faceDetector || !video.videoWidth) return Promise.resolve([]);
+    return new Promise((resolve) => {
+      let settled = false;
+      const finish = (detections) => {
+        if (settled) return;
+        settled = true;
+        if (pendingFaceDetection === finish) pendingFaceDetection = null;
+        window.clearTimeout(timeout);
+        resolve(detections || []);
+      };
+      const timeout = window.setTimeout(() => finish([]), 1400);
+      pendingFaceDetection = finish;
+      faceDetector.send({ image: video }).catch(() => finish([]));
+    });
+  }
+
   function stopStream() {
     stopLiveSegmentation();
     if (stream) stream.getTracks().forEach((track) => track.stop());
@@ -179,7 +259,118 @@
     video.srcObject = null;
   }
 
-  function renderLiveCamera(mask) {
+  function mapFacePoint(point, crop, width, height) {
+    if (!point || !crop?.sourceWidth || !crop?.sourceHeight) return null;
+    const rawX = point.x * video.videoWidth;
+    const rawY = point.y * video.videoHeight;
+    const croppedX = (rawX - crop.sourceX) / crop.sourceWidth;
+    const croppedY = (rawY - crop.sourceY) / crop.sourceHeight;
+    const outputX = facingMode === "user" ? 1 - croppedX : croppedX;
+    return { x: outputX * width, y: croppedY * height };
+  }
+
+  function getFaceGeometry(detection, crop, width, height) {
+    const landmarks = detection?.landmarks || [];
+    const mapped = landmarks.map((point) => mapFacePoint(point, crop, width, height));
+    const eyeOne = mapped[0];
+    const eyeTwo = mapped[1];
+    if (eyeOne && eyeTwo) {
+      const eyeDistance = Math.hypot(eyeTwo.x - eyeOne.x, eyeTwo.y - eyeOne.y);
+      const earOne = mapped[4];
+      const earTwo = mapped[5];
+      const earDistance = earOne && earTwo ? Math.hypot(earTwo.x - earOne.x, earTwo.y - earOne.y) : 0;
+      const faceWidth = Math.max(eyeDistance * 2.2, earDistance * 1.08);
+      return {
+        x: (eyeOne.x + eyeTwo.x) / 2,
+        y: (eyeOne.y + eyeTwo.y) / 2 - eyeDistance * .9,
+        width: faceWidth,
+        angle: Math.atan2(eyeTwo.y - eyeOne.y, eyeTwo.x - eyeOne.x),
+      };
+    }
+    const box = detection?.locationData?.relativeBoundingBox || detection?.boundingBox;
+    if (!box) return null;
+    const x = box.xMin != null ? box.xMin + box.width / 2 : box.xCenter;
+    const y = box.yMin != null ? box.yMin : box.yCenter - box.height / 2;
+    if (![x, y, box.width, box.height].every(Number.isFinite)) return null;
+    const boxX = (facingMode === "user" ? 1 - x : x) * width;
+    return { x: boxX, y: y * height, width: box.width * width * 1.08, angle: 0 };
+  }
+
+  function drawPoongHeadband(ctx, width) {
+    const bandWidth = width * 1.08;
+    const bandHeight = Math.max(17, width * .13);
+    const bandGradient = ctx.createLinearGradient(-bandWidth / 2, 0, bandWidth / 2, bandHeight);
+    bandGradient.addColorStop(0, "#ffd76a");
+    bandGradient.addColorStop(.48, "#ef9c58");
+    bandGradient.addColorStop(1, "#d34b53");
+    ctx.save();
+    ctx.shadowColor = "rgba(23, 7, 15, .36)";
+    ctx.shadowBlur = Math.max(5, width * .04);
+    roundedRect(ctx, -bandWidth / 2, 0, bandWidth, bandHeight, bandHeight / 2);
+    ctx.fillStyle = bandGradient;
+    ctx.fill();
+    ctx.strokeStyle = "rgba(255, 244, 207, .86)";
+    ctx.lineWidth = Math.max(2, width * .012);
+    ctx.stroke();
+    ctx.shadowColor = "transparent";
+    ctx.fillStyle = "rgba(255, 246, 210, .9)";
+    for (let x = -bandWidth * .34; x <= bandWidth * .34; x += bandWidth * .22) {
+      ctx.beginPath();
+      ctx.arc(x, bandHeight / 2, Math.max(2, width * .018), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const poongRadius = Math.max(16, width * .14);
+    const poongY = -poongRadius * .82;
+    ctx.fillStyle = "#5cc3e8";
+    ctx.beginPath(); ctx.arc(0, poongY, poongRadius, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#173451";
+    ctx.lineWidth = Math.max(1.5, width * .01);
+    ctx.stroke();
+    ctx.fillStyle = "#f5fbf5";
+    ctx.beginPath(); ctx.ellipse(-poongRadius * .36, poongY - poongRadius * .35, poongRadius * .2, poongRadius * .28, -.35, 0, Math.PI * 2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(poongRadius * .36, poongY - poongRadius * .35, poongRadius * .2, poongRadius * .28, .35, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#163451";
+    ctx.beginPath(); ctx.arc(-poongRadius * .34, poongY - poongRadius * .02, poongRadius * .11, 0, Math.PI * 2); ctx.arc(poongRadius * .34, poongY - poongRadius * .02, poongRadius * .11, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = "#173451";
+    ctx.lineWidth = Math.max(1.3, width * .008);
+    ctx.beginPath(); ctx.arc(0, poongY + poongRadius * .12, poongRadius * .22, .15, Math.PI - .15); ctx.stroke();
+    ctx.strokeStyle = "#5cc3e8";
+    ctx.lineWidth = Math.max(2, width * .012);
+    ctx.beginPath(); ctx.moveTo(-poongRadius * .6, poongY - poongRadius * .62); ctx.lineTo(-poongRadius * .98, poongY - poongRadius * 1.22); ctx.moveTo(poongRadius * .6, poongY - poongRadius * .62); ctx.lineTo(poongRadius * .98, poongY - poongRadius * 1.22); ctx.stroke();
+    ctx.fillStyle = "#ffd76a";
+    ctx.beginPath(); ctx.arc(-poongRadius * .98, poongY - poongRadius * 1.22, poongRadius * .12, 0, Math.PI * 2); ctx.arc(poongRadius * .98, poongY - poongRadius * 1.22, poongRadius * .12, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawMapleHairpin(ctx, width) {
+    ctx.save();
+    ctx.translate(width * .42, -width * .16);
+    ctx.rotate(.22);
+    drawMapleLeaf(ctx, 0, 0, Math.max(7, width * .075), -.18, "#e45a4f");
+    ctx.strokeStyle = "#ffd76a";
+    ctx.lineWidth = Math.max(2, width * .012);
+    ctx.beginPath(); ctx.moveTo(0, width * .07); ctx.lineTo(0, width * .3); ctx.stroke();
+    ctx.fillStyle = "#ffd76a";
+    ctx.beginPath(); ctx.arc(0, width * .33, Math.max(3, width * .025), 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawFaceAccessories(ctx, detections, crop, width, height) {
+    if (selectedAccessory === "none" || !detections?.length) return;
+    detections.slice(0, 4).forEach((detection) => {
+      const face = getFaceGeometry(detection, crop, width, height);
+      if (!face || face.width < width * .035) return;
+      ctx.save();
+      ctx.translate(face.x, face.y);
+      ctx.rotate(face.angle);
+      if (selectedAccessory === "maple-pin") drawMapleHairpin(ctx, face.width);
+      else drawPoongHeadband(ctx, face.width);
+      ctx.restore();
+    });
+  }
+
+  function renderLiveCamera(mask, detections = latestFaceDetections) {
     if (!cameraComposite || !mask || !video.videoWidth || !cameraComposite.getContext("2d")) return;
     const canvas = cameraComposite;
     const ctx = configureCanvasContext(canvas.getContext("2d"));
@@ -210,13 +401,29 @@
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(background, 0, 0);
     ctx.drawImage(subject, 0, 0);
+    drawFaceAccessories(ctx, detections, crop, canvas.width, canvas.height);
     cameraComposite.classList.add("ready");
+  }
+
+  function renderLiveAccessories(detections = latestFaceDetections) {
+    if (!cameraComposite || !video.videoWidth || !cameraComposite.getContext("2d")) return;
+    const ctx = configureCanvasContext(cameraComposite.getContext("2d"));
+    if (!ctx) return;
+    const crop = getVideoCrop();
+    ctx.clearRect(0, 0, cameraComposite.width, cameraComposite.height);
+    drawFaceAccessories(ctx, detections, crop, cameraComposite.width, cameraComposite.height);
+    cameraComposite.classList.toggle("ready", selectedAccessory !== "none" && detections.length > 0);
   }
 
   function stopLiveSegmentation() {
     if (liveSegmentationTimer) window.clearTimeout(liveSegmentationTimer);
+    if (liveFaceDetectionTimer) window.clearTimeout(liveFaceDetectionTimer);
     liveSegmentationTimer = null;
+    liveFaceDetectionTimer = null;
     liveSegmentationBusy = false;
+    liveFaceDetectionBusy = false;
+    latestLiveMask = null;
+    latestFaceDetections = [];
     cameraComposite?.classList.remove("ready");
   }
 
@@ -236,6 +443,25 @@
         scheduleLiveSegmentation();
       }
     }, 140);
+  }
+
+  function scheduleLiveFaceDetection() {
+    if (liveFaceDetectionTimer) window.clearTimeout(liveFaceDetectionTimer);
+    liveFaceDetectionTimer = window.setTimeout(async () => {
+      liveFaceDetectionTimer = null;
+      if (!faceDetector || !stream || demoMode || busy || body.dataset.flow !== "camera" || !video.videoWidth) return;
+      if (liveFaceDetectionBusy) return scheduleLiveFaceDetection();
+      liveFaceDetectionBusy = true;
+      try {
+        await faceDetector.send({ image: video });
+      } catch (error) {
+        latestFaceDetections = [];
+        renderLiveAccessories([]);
+      } finally {
+        liveFaceDetectionBusy = false;
+        scheduleLiveFaceDetection();
+      }
+    }, 180);
   }
 
   async function openCamera() {
@@ -259,10 +485,17 @@
       video.style.transform = facingMode === "user" ? "scaleX(-1)" : "none";
       cameraStatus.textContent = "실시간 카메라 · 테마 배경 준비 중";
       actionNote.textContent = "4초 간격으로 네 장을 촬영해요. 포즈 카드를 참고해보세요.";
-      prepareSegmentation().then((ready) => {
+      Promise.all([prepareSegmentation(), prepareFaceDetection()]).then(([segmentationReady, faceReady]) => {
         if (body.dataset.flow !== "camera" || busy) return;
-        cameraStatus.textContent = ready ? "실시간 카메라 · 테마 배경 합성 준비 완료" : "실시간 카메라 · 표정 준비 완료";
-        if (ready) scheduleLiveSegmentation();
+        cameraStatus.textContent = segmentationReady && faceReady
+          ? "실시간 카메라 · 테마 배경과 푸앙 액세서리 준비 완료"
+          : faceReady
+            ? "실시간 카메라 · 푸앙 액세서리 준비 완료"
+            : segmentationReady
+              ? "실시간 카메라 · 테마 배경 합성 준비 완료"
+              : "실시간 카메라 · 표정 준비 완료";
+        if (segmentationReady) scheduleLiveSegmentation();
+        if (faceReady) scheduleLiveFaceDetection();
       });
     } catch (error) {
       demoMode = true;
@@ -376,9 +609,17 @@
 
   function updateFilterSelection() {
     $$(".filter-option").forEach((button) => button.classList.toggle("selected", button.dataset.filter === selectedFilter));
-    video.style.filter = filters[selectedFilter].css;
+    updateCameraPreviewFilter();
     drawThemePreview();
     updateCameraPoongGuide(activeShotIndex);
+  }
+
+  function updateAccessorySelection() {
+    $$(".accessory-option").forEach((button) => button.classList.toggle("selected", button.dataset.accessory === selectedAccessory));
+    if (body.dataset.flow === "camera") {
+      if (latestLiveMask) renderLiveCamera(latestLiveMask, latestFaceDetections);
+      else renderLiveAccessories(latestFaceDetections);
+    }
   }
 
   function updatePose() {
@@ -458,11 +699,18 @@
     const ctx = configureCanvasContext(canvas.getContext("2d"));
     const crop = getVideoCrop();
     let mask = null;
+    let faceDetections = [];
     if (!segmentationModel) {
       const ready = await Promise.race([prepareSegmentation(), sleep(3200).then(() => false)]);
       if (ready) cameraStatus.textContent = "촬영 중 · 테마 배경을 합성하고 있어요";
     }
+    if (!faceDetector) await Promise.race([prepareFaceDetection(), sleep(2600).then(() => false)]);
     if (segmentationModel) mask = await requestSegmentation();
+    if (faceDetector) {
+      // Reuse the latest live result when available so capture never sends a
+      // second frame while the detector is still processing the preview.
+      faceDetections = latestFaceDetections.length ? latestFaceDetections : await requestFaceDetections();
+    }
     if (mask) {
       const background = document.createElement("canvas");
       background.width = canvas.width; background.height = canvas.height;
@@ -491,6 +739,12 @@
       ctx.filter = filters[selectedFilter].css;
       drawVideoFrame(ctx, canvas, crop);
       ctx.filter = "none";
+    }
+    if (faceDetections.length && selectedAccessory !== "none") {
+      ctx.save();
+      ctx.filter = filters[selectedFilter].css;
+      drawFaceAccessories(ctx, faceDetections, crop, canvas.width, canvas.height);
+      ctx.restore();
     }
     if (autoEnhance) applyAutoEnhance(ctx, canvas.width, canvas.height);
     if (selectedFilter === "soft") {
@@ -538,6 +792,12 @@
       image.data[i] += amount; image.data[i + 1] += amount; image.data[i + 2] += amount;
     }
     ctx.putImageData(image, 0, 0);
+  }
+
+  function updateCameraPreviewFilter() {
+    const beautyFilter = autoEnhance ? " brightness(1.025) contrast(.985) saturate(1.025)" : "";
+    video.style.filter = `${filters[selectedFilter].css}${beautyFilter}`;
+    if (cameraComposite) cameraComposite.style.filter = autoEnhance ? "brightness(1.025) contrast(.985) saturate(1.025)" : "none";
   }
 
   async function countdownAndCapture(index) {
@@ -1380,6 +1640,7 @@
 
   $$(".frame-option").forEach((button) => button.addEventListener("click", () => { selectedFrame = button.dataset.frame; updateFrameSelection(); }));
   $$(".filter-option").forEach((button) => button.addEventListener("click", () => { selectedFilter = button.dataset.filter; updateFilterSelection(); }));
+  $$(".accessory-option").forEach((button) => button.addEventListener("click", () => { selectedAccessory = button.dataset.accessory; updateAccessorySelection(); }));
   $("#btnPose").addEventListener("click", () => { currentPose = (currentPose + 1) % poses.length; updatePose(); });
   enterButton.addEventListener("click", beginBooth);
   $("#btnStart").addEventListener("click", enterCamera);
@@ -1394,6 +1655,7 @@
   });
   autoEnhanceToggle?.addEventListener("change", () => {
     autoEnhance = autoEnhanceToggle.checked;
+    updateCameraPreviewFilter();
     showToast(autoEnhance ? "AUTO BEAUTY 보정을 켰어요." : "AUTO BEAUTY 보정을 껐어요.");
   });
 

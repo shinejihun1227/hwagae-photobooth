@@ -11,7 +11,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=DM+Sans:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Sans+KR:wght@400;500;600;700;800;900&family=Noto+Serif+KR:wght@500;600;700&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="style.css?v=20260901-capture-sync-1" />
+    <link rel="stylesheet" href="style.css?v=20260901-accessories-1" />
   </head>
   <body data-flow="home">
     <div class="ambient ambient-one" aria-hidden="true"></div>
@@ -188,9 +188,18 @@
                 </div>
                 <label class="enhance-toggle" for="autoEnhance">
                   <input id="autoEnhance" type="checkbox" checked />
-                  <span class="enhance-toggle-copy"><strong>AUTO BEAUTY</strong><small>밝기·피부톤·색감을 촬영할 때 자동 보정해요</small></span>
+                  <span class="enhance-toggle-copy"><strong>AUTO BEAUTY</strong><small>켜져 있으면 최종 사진에 밝기·피부톤·색감을 실제 보정해요</small></span>
                   <i aria-hidden="true"></i>
                 </label>
+              </div>
+
+              <div class="control-group accessory-group">
+                <div class="control-heading"><span>ACCESSORY</span><small>얼굴을 인식해 촬영 중에도 따라와요</small></div>
+                <div class="accessory-list" id="accessoryList">
+                  <button class="accessory-option selected" data-accessory="poong-band" type="button"><strong>푸앙 머리띠</strong><small>POONG BAND</small></button>
+                  <button class="accessory-option" data-accessory="maple-pin" type="button"><strong>낙엽 핀</strong><small>MAPLE PIN</small></button>
+                  <button class="accessory-option" data-accessory="none" type="button"><strong>없음</strong><small>NO ACCESSORY</small></button>
+                </div>
               </div>
 
               <div class="booth-actions" id="boothActions">
@@ -218,6 +227,6 @@
 
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <a id="downloadLink" class="download-link" download="cau-hwagae-4cut.png"></a>
-    <script src="app.js?v=20260901-frame-header-2"></script>
+    <script src="app.js?v=20260901-accessories-1"></script>
   </body>
 </html>
