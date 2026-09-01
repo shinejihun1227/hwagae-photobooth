@@ -736,7 +736,7 @@
     const photoHeight = 270;
     const padding = 32;
     const gap = 18;
-    const header = 132;
+    const header = 124;
     const expressionSheet = themedExpressions[selectedFrame];
     const hasThemedArtwork = Boolean(expressionSheet || themedPoong[selectedFrame]);
     const width = hasThemedArtwork ? 178 : 146;
@@ -1293,7 +1293,7 @@
       drawPreviewPhoto(ctx, x, y, photoWidth, photoHeight, selectedFrame, index);
       ctx.restore();
       ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.58)" : "rgba(255,248,218,.68)";
-      ctx.lineWidth = 1.5; ctx.strokeRect(x, y, photoWidth, photoHeight);
+      ctx.lineWidth = 1.5; roundedRect(ctx, x, y, photoWidth, photoHeight, 8); ctx.stroke();
       const expression = getPreferredPoong(index);
       if (expression) {
         const layout = getFourCutStickerLayout(index);
@@ -1538,13 +1538,13 @@
       }
     } else {
       const railGradient = ctx.createLinearGradient(0, header, 0, height - footer);
-      railGradient.addColorStop(0, "#5b302d");
-      railGradient.addColorStop(.5, "#3c2529");
-      railGradient.addColorStop(1, "#6a352f");
+      railGradient.addColorStop(0, "#f2e4ce");
+      railGradient.addColorStop(.5, "#e4cdb0");
+      railGradient.addColorStop(1, "#f0dfc3");
       ctx.fillStyle = railGradient;
       ctx.fillRect(0, header, padding, railHeight);
       ctx.fillRect(width - padding, header, padding, railHeight);
-      ctx.strokeStyle = "rgba(255,208,93,.7)";
+      ctx.strokeStyle = "rgba(88, 49, 45, .38)";
       ctx.lineWidth = compact ? 1 : 2;
       ctx.beginPath();
       ctx.moveTo(padding - (compact ? 2 : 4), header);
@@ -1552,9 +1552,9 @@
       ctx.moveTo(width - padding + (compact ? 2 : 4), header);
       ctx.lineTo(width - padding + (compact ? 2 : 4), height - footer);
       ctx.stroke();
-      for (let y = header + (compact ? 52 : 150); y < height - footer - 20; y += compact ? 78 : 220) {
-        drawMapleLeaf(ctx, padding / 2, y, compact ? 2.8 : 6.5, -.35, y % 2 ? "#d86d43" : "#e8ae55");
-        drawMapleLeaf(ctx, width - padding / 2, y + (compact ? 18 : 40), compact ? 2.6 : 6, .35, y % 2 ? "#e8ae55" : "#c84d3d");
+      for (let y = header + (compact ? 44 : 88); y < height - footer - 18; y += compact ? 92 : 184) {
+        drawMapleLeaf(ctx, padding / 2, y, compact ? 2.6 : 5.5, -.35, y % 2 ? "#c84d3d" : "#e1a45f");
+        drawMapleLeaf(ctx, width - padding / 2, y + (compact ? 22 : 42), compact ? 2.4 : 5, .35, y % 2 ? "#e1a45f" : "#c84d3d");
       }
     }
     ctx.restore();
@@ -1580,65 +1580,55 @@
 
   function drawModernFestivalHeader(ctx, width, header, frame, compact) {
     const isPierrot = frame === "pierrot";
-    const inset = compact ? 10 : 18;
-    const panelY = compact ? 8 : 10;
-    const panelHeight = header - panelY * 2;
-    const accent = isPierrot ? "#ffd36f" : "#f3c66f";
-    const panelGradient = ctx.createLinearGradient(0, panelY, width, panelY + panelHeight);
+    const accent = isPierrot ? "#ffd36f" : "#b14b3f";
+    const ink = isPierrot ? "#fff1dd" : "#3e2025";
+    const headerGradient = ctx.createLinearGradient(0, 0, width, header);
     if (isPierrot) {
-      panelGradient.addColorStop(0, "rgba(30, 16, 48, .94)");
-      panelGradient.addColorStop(.54, "rgba(42, 21, 55, .78)");
-      panelGradient.addColorStop(1, "rgba(17, 12, 29, .96)");
+      headerGradient.addColorStop(0, "#241532");
+      headerGradient.addColorStop(.62, "#302044");
+      headerGradient.addColorStop(1, "#171020");
     } else {
-      panelGradient.addColorStop(0, "rgba(39, 18, 30, .96)");
-      panelGradient.addColorStop(.56, "rgba(55, 24, 35, .82)");
-      panelGradient.addColorStop(1, "rgba(22, 11, 19, .97)");
+      headerGradient.addColorStop(0, "#f6ead6");
+      headerGradient.addColorStop(.64, "#edddc3");
+      headerGradient.addColorStop(1, "#dbc4a4");
     }
     ctx.save();
-    ctx.fillStyle = panelGradient;
+    ctx.fillStyle = headerGradient;
     ctx.fillRect(0, 0, width, header);
-    const glow = ctx.createRadialGradient(width / 2, header * .66, 3, width / 2, header * .66, width * .62);
-    glow.addColorStop(0, isPierrot ? "rgba(180, 122, 255, .16)" : "rgba(255, 181, 98, .16)");
-    glow.addColorStop(1, "rgba(0, 0, 0, 0)");
-    ctx.fillStyle = glow;
-    ctx.fillRect(0, 0, width, header);
-    roundedRect(ctx, inset, panelY, width - inset * 2, panelHeight, compact ? 10 : 20);
-    ctx.strokeStyle = isPierrot ? "rgba(255, 211, 111, .42)" : "rgba(255, 221, 150, .46)";
-    ctx.lineWidth = compact ? 1 : 1.5;
-    ctx.stroke();
+    ctx.fillStyle = isPierrot ? "rgba(255, 208, 93, .1)" : "rgba(122, 57, 49, .06)";
+    ctx.fillRect(0, header - (compact ? 4 : 6), width, compact ? 4 : 6);
 
-    const markSize = compact ? 24 : 42;
+    const markSize = compact ? 24 : 38;
     const markX = compact ? 18 : 28;
-    const markY = compact ? 14 : 13;
-    if (cauAnniversaryMark?.naturalWidth) {
-      drawContain(ctx, cauAnniversaryMark, markX, markY, markSize, markSize);
-    } else {
-      drawCauSeal(ctx, markX + markSize / 2, markY + markSize / 2, markSize * .38, accent);
-    }
-    const copyX = markX + markSize + (compact ? 8 : 12);
-    const topY = compact ? 25 : 34;
+    const markY = compact ? 13 : 10;
+    if (cauAnniversaryMark?.naturalWidth) drawContain(ctx, cauAnniversaryMark, markX, markY, markSize, markSize);
+    else drawCauSeal(ctx, markX + markSize / 2, markY + markSize / 2, markSize * .38, accent);
+
+    const copyX = markX + markSize + (compact ? 8 : 11);
+    const topY = compact ? 24 : 29;
     const topSize = compact ? 6 : 11;
-    drawText(ctx, "CAU  ·  SEOUL CAMPUS", copyX, topY, topSize, "rgba(255, 239, 213, .88)", `700 ${topSize}px 'IBM Plex Mono'`, "left");
+    drawText(ctx, "CAU  ·  SEOUL CAMPUS", copyX, topY, topSize, isPierrot ? "rgba(255, 239, 213, .86)" : "#5a3130", `700 ${topSize}px 'IBM Plex Mono'`, "left");
     drawText(ctx, "2026  /  FALL FESTIVAL", width - (compact ? 18 : 28), topY, topSize, accent, `700 ${topSize}px 'IBM Plex Mono'`, "right");
 
-    const titleSize = compact ? 27 : 64;
-    const titleY = compact ? 64 : 91;
+    const titleSize = compact ? 27 : 60;
+    const titleY = compact ? 64 : 86;
     const title = isPierrot ? "삐에로" : "화개장터";
-    const colors = isPierrot ? ["#fff5e5", "#ffd05d", "#f07a6a", "#f3b45e"] : ["#fff3d8", "#f2bf6b", "#df755d", "#fff0c9"];
+    const colors = isPierrot ? ["#fff5e5", "#ffd05d", "#f07a6a"] : ["#3b2024", "#9b433b", "#d17b4f"];
     drawGradientText(ctx, title, width / 2, titleY, titleSize, `700 ${titleSize}px 'Black Han Sans'`, colors);
     if (isPierrot) {
-      drawPierrotMakeupMark(ctx, width * .19, compact ? 64 : 91, compact ? 3 : 7, -.18, "#e9574b");
-      drawPierrotMakeupMark(ctx, width * .81, compact ? 64 : 91, compact ? 3 : 7, .18, "#ffd05d");
+      drawPierrotMakeupMark(ctx, width * .18, compact ? 63 : 84, compact ? 3 : 7, -.18, "#e9574b");
+      drawPierrotMakeupMark(ctx, width * .82, compact ? 63 : 84, compact ? 3 : 7, .18, "#ffd05d");
     } else {
-      drawMapleLeaf(ctx, width * .18, compact ? 61 : 88, compact ? 3 : 7, -.32, "#d95345");
-      drawMapleLeaf(ctx, width * .82, compact ? 61 : 88, compact ? 3 : 7, .32, "#f2bd68");
+      drawMapleLeaf(ctx, width * .17, compact ? 61 : 82, compact ? 3 : 7, -.32, "#d95345");
+      drawMapleLeaf(ctx, width * .83, compact ? 61 : 82, compact ? 3 : 7, .32, "#d68b50");
     }
-    ctx.strokeStyle = isPierrot ? "rgba(255, 208, 93, .5)" : "rgba(246, 194, 101, .58)";
-    ctx.lineWidth = compact ? 1 : 2;
+    ctx.strokeStyle = isPierrot ? "rgba(255, 208, 93, .52)" : "rgba(101, 54, 44, .44)";
+    ctx.lineWidth = compact ? 1 : 1.5;
     ctx.beginPath();
-    ctx.moveTo(width * .25, compact ? 73 : 111);
-    ctx.lineTo(width * .75, compact ? 73 : 111);
+    ctx.moveTo(width * .27, compact ? 73 : 104);
+    ctx.lineTo(width * .73, compact ? 73 : 104);
     ctx.stroke();
+    drawText(ctx, isPierrot ? "PIERROT THEATRE" : "MARKET NIGHT", width / 2, compact ? 82 : 116, compact ? 5 : 8, isPierrot ? "rgba(255, 235, 201, .72)" : "#7b4b42", `700 ${compact ? 5 : 8}px 'IBM Plex Mono'`);
     ctx.restore();
   }
 
@@ -1693,7 +1683,7 @@
   }
 
   function paintFrame(ctx, width, height, frame, headerOverride, footerOverride) {
-    const compact = headerOverride != null ? headerOverride < 120 : height < 700;
+    const compact = headerOverride != null ? headerOverride < 110 : height < 700;
     const header = headerOverride ?? (compact ? 88 : 174);
     const footer = footerOverride ?? (compact ? 76 : 186);
     const baseGradient = ctx.createLinearGradient(0, 0, width, height);
@@ -1722,10 +1712,10 @@
   }
 
   function drawFrameFooter(ctx, width, y, height, frame, poong) {
-    const compact = height < 120;
+    const compact = height < 100;
     const isPierrot = frame === "pierrot";
-    const mascotWidth = compact ? 42 : 100;
-    const mascotHeight = compact ? 54 : 114;
+    const mascotWidth = compact ? 42 : 96;
+    const mascotHeight = compact ? 54 : 104;
     const mascotX = width - mascotWidth - (compact ? 9 : 24);
     const mascotY = y + height - mascotHeight - (compact ? 2 : 6);
     const footerGradient = ctx.createLinearGradient(0, y, 0, y + height);
@@ -1742,8 +1732,8 @@
     const contentRight = mascotX - (compact ? 14 : 28);
     const contentCenter = (contentLeft + contentRight) / 2;
     const kickerY = y + (compact ? 24 : 34);
-    const titleY = y + (compact ? 45 : 72);
-    const metaY = y + (compact ? 62 : 98);
+    const titleY = y + (compact ? 45 : 69);
+    const metaY = y + (compact ? 62 : 94);
     const kicker = isPierrot ? "PIERROT THEATRE" : "MARKET NIGHT";
     const message = compact ? (isPierrot ? "무대의 순간을 간직해요" : "오늘 밤을 간직해요") : (isPierrot ? "무대의 순간을 간직해요" : "오늘 밤의 장면을 간직해요");
     drawText(ctx, kicker, contentCenter, kickerY, compact ? 5 : 9, isPierrot ? "#ffd36f" : "#f3c66f", `700 ${compact ? 5 : 9}px 'IBM Plex Mono'`);
@@ -1761,7 +1751,7 @@
 
   async function composeStrip() {
     const poong = themedPoong[selectedFrame] || await loadImage("poong.png");
-    const photoWidth = 360; const photoHeight = 270; const padding = 32; const gap = 18; const header = 132; const footer = 132;
+    const photoWidth = 360; const photoHeight = 270; const padding = 32; const gap = 18; const header = 124; const footer = 112;
     const renderScale = 2;
     const width = photoWidth * 2 + gap + padding * 2; const height = header + photoHeight * 2 + gap + footer;
     const canvas = document.createElement("canvas"); canvas.width = Math.round(width * renderScale); canvas.height = Math.round(height * renderScale);
@@ -1777,8 +1767,12 @@
         const row = Math.floor(index / 2);
         const x = padding + column * (photoWidth + gap);
         const y = header + row * (photoHeight + gap);
-        ctx.save(); ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13; drawCover(ctx, shot, x, y, photoWidth, photoHeight); ctx.restore();
-        ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; ctx.strokeRect(x, y, photoWidth, photoHeight);
+        ctx.save();
+        ctx.shadowColor = "rgba(0,0,0,.28)"; ctx.shadowBlur = 13;
+        roundedRect(ctx, x, y, photoWidth, photoHeight, 10); ctx.clip();
+        drawCover(ctx, shot, x, y, photoWidth, photoHeight);
+        ctx.restore();
+        ctx.strokeStyle = selectedFrame === "pierrot" ? "rgba(255,224,160,.62)" : "rgba(255,248,218,.7)"; ctx.lineWidth = 3; roundedRect(ctx, x, y, photoWidth, photoHeight, 10); ctx.stroke();
         const expression = getPreferredPoong(index);
         if (expression) {
           const layout = getFourCutStickerLayout(index);
