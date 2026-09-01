@@ -356,6 +356,11 @@
     ctx.restore();
   }
 
+  function drawAccessory(ctx, accessory, width) {
+    if (accessory === "maple-pin") drawMapleHairpin(ctx, width);
+    else if (accessory === "poong-band") drawPoongHeadband(ctx, width);
+  }
+
   function drawFaceAccessories(ctx, detections, crop, width, height) {
     if (selectedAccessory === "none" || !detections?.length) return;
     detections.slice(0, 4).forEach((detection) => {
@@ -364,8 +369,45 @@
       ctx.save();
       ctx.translate(face.x, face.y);
       ctx.rotate(face.angle);
-      if (selectedAccessory === "maple-pin") drawMapleHairpin(ctx, face.width);
-      else drawPoongHeadband(ctx, face.width);
+      drawAccessory(ctx, selectedAccessory, face.width);
+      ctx.restore();
+    });
+  }
+
+  function drawAccessoryPreviews() {
+    $$('[data-accessory-preview]').forEach((canvas) => {
+      const ctx = configureCanvasContext(canvas.getContext("2d"));
+      if (!ctx) return;
+      const width = canvas.width;
+      const height = canvas.height;
+      const faceWidth = 45;
+
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.translate(width / 2, height * .64);
+
+      const faceGradient = ctx.createLinearGradient(0, -height * .28, 0, height * .1);
+      faceGradient.addColorStop(0, "rgba(111, 207, 235, .92)");
+      faceGradient.addColorStop(1, "rgba(49, 139, 190, .92)");
+      ctx.fillStyle = faceGradient;
+      ctx.beginPath();
+      ctx.ellipse(0, 2, faceWidth * .4, height * .3, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = "rgba(14, 44, 73, .78)";
+      ctx.lineWidth = 1.4;
+      ctx.stroke();
+      ctx.fillStyle = "rgba(247, 253, 245, .88)";
+      ctx.beginPath();
+      ctx.ellipse(-faceWidth * .14, -height * .09, faceWidth * .08, height * .1, -.25, 0, Math.PI * 2);
+      ctx.ellipse(faceWidth * .14, -height * .09, faceWidth * .08, height * .1, .25, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "#163451";
+      ctx.beginPath();
+      ctx.arc(-faceWidth * .14, 1, 2.1, 0, Math.PI * 2);
+      ctx.arc(faceWidth * .14, 1, 2.1, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawAccessory(ctx, canvas.dataset.accessoryPreview, faceWidth);
       ctx.restore();
     });
   }
@@ -1659,7 +1701,7 @@
     showToast(autoEnhance ? "AUTO BEAUTY 보정을 켰어요." : "AUTO BEAUTY 보정을 껐어요.");
   });
 
-  updateFrameSelection(); updateFilterSelection(); updatePose(); setFlow("home");
+  updateFrameSelection(); updateFilterSelection(); updatePose(); drawAccessoryPreviews(); setFlow("home");
   Promise.all([
     loadImage("cau-anniversary-mark.png"),
     loadImage("poong-market.png"),
