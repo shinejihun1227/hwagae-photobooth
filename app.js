@@ -98,6 +98,9 @@
   const accessoryLabels = {
     "poong-band": { title: "푸앙 머리띠", description: "푸앙이 얼굴을 기준으로 머리띠가 이렇게 씌워져요." },
     "maple-pin": { title: "낙엽 핀", description: "푸앙이 얼굴 옆에 낙엽 핀이 이렇게 꽂혀요." },
+    "star-clip": { title: "별 머리핀", description: "푸앙이 얼굴 옆에 반짝이는 별 핀이 이렇게 보여요." },
+    "flower-clip": { title: "꽃 머리핀", description: "푸앙이 얼굴 옆에 작은 꽃 장식이 이렇게 피어요." },
+    "heart-cheek": { title: "하트 스티커", description: "푸앙이 양 볼에 귀여운 하트 포인트가 이렇게 남아요." },
     none: { title: "액세서리 없음", description: "푸앙이 얼굴에 아무 액세서리도 없이 깔끔하게 보여요." },
   };
   let accessoryModalTrigger = null;
@@ -368,9 +371,104 @@
     ctx.restore();
   }
 
+  function drawStarShape(ctx, x, y, outerRadius, innerRadius, fill, stroke = "rgba(255, 244, 207, .85)") {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    for (let point = 0; point < 10; point += 1) {
+      const radius = point % 2 === 0 ? outerRadius : innerRadius;
+      const angle = -Math.PI / 2 + point * Math.PI / 5;
+      const pointX = Math.cos(angle) * radius;
+      const pointY = Math.sin(angle) * radius;
+      if (point === 0) ctx.moveTo(pointX, pointY);
+      else ctx.lineTo(pointX, pointY);
+    }
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.shadowColor = "rgba(255, 208, 93, .42)";
+    ctx.shadowBlur = Math.max(3, outerRadius * .32);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = Math.max(.8, outerRadius * .08);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawHeartShape(ctx, x, y, size, fill, stroke = "rgba(255, 239, 224, .8)") {
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.beginPath();
+    ctx.moveTo(0, size * .86);
+    ctx.bezierCurveTo(-size * .12, size * .65, -size * .78, size * .2, -size * .58, -size * .24);
+    ctx.bezierCurveTo(-size * .46, -size * .7, -.05 * size, -size * .66, 0, -size * .3);
+    ctx.bezierCurveTo(.05 * size, -size * .66, size * .46, -size * .7, size * .58, -size * .24);
+    ctx.bezierCurveTo(size * .78, size * .2, size * .12, size * .65, 0, size * .86);
+    ctx.closePath();
+    ctx.fillStyle = fill;
+    ctx.shadowColor = "rgba(235, 80, 116, .35)";
+    ctx.shadowBlur = Math.max(3, size * .2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = stroke;
+    ctx.lineWidth = Math.max(.8, size * .08);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawStarClip(ctx, width) {
+    const size = Math.max(8, width * .105);
+    ctx.save();
+    ctx.translate(-width * .4, -width * .14);
+    ctx.rotate(-.18);
+    drawStarShape(ctx, 0, 0, size, size * .42, "#ffd05d");
+    drawStarShape(ctx, size * .72, size * .45, size * .28, size * .1, "#f07a5c", "rgba(255, 244, 207, .65)");
+    ctx.strokeStyle = "#e9a74f";
+    ctx.lineWidth = Math.max(1.5, width * .012);
+    ctx.beginPath(); ctx.moveTo(-size * .2, size * .72); ctx.lineTo(size * .34, size * 1.24); ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawFlowerClip(ctx, width) {
+    const size = Math.max(8, width * .115);
+    ctx.save();
+    ctx.translate(width * .39, -width * .12);
+    ctx.rotate(.16);
+    ctx.shadowColor = "rgba(255, 120, 126, .32)";
+    ctx.shadowBlur = Math.max(3, size * .2);
+    for (let petal = 0; petal < 6; petal += 1) {
+      const angle = petal * Math.PI / 3;
+      ctx.save();
+      ctx.rotate(angle);
+      ctx.fillStyle = petal % 2 ? "#f59b9b" : "#ffcf70";
+      ctx.beginPath();
+      ctx.ellipse(0, -size * .42, size * .3, size * .48, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#8d4a55";
+    ctx.beginPath(); ctx.arc(0, 0, size * .24, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = "#ffe08a";
+    ctx.beginPath(); ctx.arc(-size * .06, -size * .06, size * .09, 0, Math.PI * 2); ctx.fill();
+    drawMapleLeaf(ctx, -size * 1.05, size * .86, size * .32, -.7, "#86bd86");
+    ctx.restore();
+  }
+
+  function drawHeartCheek(ctx, width) {
+    const size = Math.max(8, width * .075);
+    ctx.save();
+    drawHeartShape(ctx, -width * .31, width * .1, size, "#f47f9a");
+    drawHeartShape(ctx, width * .31, width * .1, size * .88, "#f47f9a");
+    ctx.restore();
+  }
+
   function drawAccessory(ctx, accessory, width) {
     if (accessory === "maple-pin") drawMapleHairpin(ctx, width);
     else if (accessory === "poong-band") drawPoongHeadband(ctx, width);
+    else if (accessory === "star-clip") drawStarClip(ctx, width);
+    else if (accessory === "flower-clip") drawFlowerClip(ctx, width);
+    else if (accessory === "heart-cheek") drawHeartCheek(ctx, width);
   }
 
   function drawFaceAccessories(ctx, detections, crop, width, height) {
@@ -394,7 +492,7 @@
     });
   }
 
-  function drawAccessoryPreviewScene(ctx, accessory, width, height) {
+  function drawVectorAccessoryPreviewScene(ctx, accessory, width, height) {
     const faceWidth = Math.min(width * .48, height * .58);
     ctx.clearRect(0, 0, width, height);
     ctx.save();
@@ -433,6 +531,32 @@
 
     drawAccessory(ctx, accessory, faceWidth);
     ctx.restore();
+  }
+
+  function drawAccessoryPreviewScene(ctx, accessory, width, height) {
+    const artworkSource = themedPoong[selectedFrame] || previewPoong;
+    const sourceWidth = artworkSource?.naturalWidth || artworkSource?.width;
+    const sourceHeight = artworkSource?.naturalHeight || artworkSource?.height;
+    if (artworkSource && sourceWidth && sourceHeight) {
+      const artwork = getPoongArtwork(artworkSource, "neutral");
+      const aspectRatio = sourceWidth / sourceHeight;
+      const artWidth = Math.min(width * .76, height * aspectRatio * .94);
+      const artHeight = artWidth / aspectRatio;
+      const artX = (width - artWidth) / 2;
+      const artY = height - artHeight - height * .01;
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.shadowColor = "rgba(0, 0, 0, .28)";
+      ctx.shadowBlur = Math.max(4, width * .02);
+      ctx.drawImage(artwork, artX, artY, artWidth, artHeight);
+      ctx.restore();
+      ctx.save();
+      ctx.translate(width / 2, artY + artHeight * .245);
+      drawAccessory(ctx, accessory, artWidth * .55);
+      ctx.restore();
+      return;
+    }
+    drawVectorAccessoryPreviewScene(ctx, accessory, width, height);
   }
 
   function openAccessoryPreview(accessory, trigger) {
@@ -602,6 +726,7 @@
   function updateFrameSelection() {
     $$(".frame-option").forEach((button) => button.classList.toggle("selected", button.dataset.frame === selectedFrame));
     if (cameraWindow) cameraWindow.dataset.frame = selectedFrame;
+    drawAccessoryPreviews();
     drawThemePreview();
     updateCameraPoongGuide(activeShotIndex);
   }
@@ -1782,6 +1907,7 @@
       swatch.src = getPoongArtwork(image, "neutral").toDataURL("image/png");
       swatch.classList.add("ready");
     });
+    drawAccessoryPreviews();
     drawThemePreview();
     updateCameraPoongGuide();
   });
